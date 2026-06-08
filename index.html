@@ -68,6 +68,9 @@
       <button class="top-nav-item" data-page="players" onclick="navigate('players')">
         <span class="top-nav-icon">👥</span><span>שחקנים</span>
       </button>
+      <button class="top-nav-item" data-page="settlement" onclick="navigate('settlement')">
+        <span class="top-nav-icon">🔄</span><span>התקזזות</span>
+      </button>
     </nav>
 
     <div class="topbar-user">
@@ -95,6 +98,9 @@
     </button>
     <button class="bottom-tab" data-page="players" onclick="navigate('players')">
       <span>👥</span><span>שחקנים</span>
+    </button>
+    <button class="bottom-tab" data-page="settlement" onclick="navigate('settlement')">
+      <span>🔄</span><span>התקזזות</span>
     </button>
   </nav>
 
@@ -143,7 +149,7 @@
           פעולה זו תשמור את נתוני התקופה הנוכחית בהיסטוריה ותאפס את כל ה­נתונים.<br>
           <strong style="color:var(--negative)">⚠️ פעולה זו בלתי הפיכה!</strong>
         </p>
-        <button class="close-period-btn" onclick="confirmClosePeriod()">🔒 סגור תקופה</button>
+        <button class="close-period-btn" onclick="navigate('settlement')">🔒 סגור תקופה</button>
       </div>
     </div>
 
@@ -191,6 +197,11 @@
             </div>
             <input type="number" id="paybox" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
             <div class="fund-tile-currency">₪</div>
+            <div class="paybox-owner-toggle">
+              <span class="paybox-owner-label">אחריות:</span>
+              <button class="paybox-owner-btn active" id="paybox-owner-ido" onclick="setPayboxOwner('ido')">עידו</button>
+              <button class="paybox-owner-btn" id="paybox-owner-maor" onclick="setPayboxOwner('maor')">מאור</button>
+            </div>
           </div>
           <div class="fund-tile">
             <div class="fund-tile-label">💰 CashCash</div>
@@ -665,6 +676,85 @@
 
         <!-- Mobile cards -->
         <div class="players-mobile" id="players-cards-body"></div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE 7: SETTLEMENT ===== -->
+    <div id="page-settlement" class="page">
+      <div class="page-header">
+        <h1>🔄 התקזזות</h1>
+        <p>חישוב העברות לסגירת תקופה</p>
+      </div>
+
+      <!-- Team holdings -->
+      <div class="settlement-teams">
+        <div class="card settlement-team-card">
+          <div class="settlement-team-title">Team עידו</div>
+          <div class="settlement-team-row">
+            <span>Bit עידו</span>
+            <span id="st-bit-ido">₪0</span>
+          </div>
+          <div class="settlement-team-row">
+            <span>Bit דורין</span>
+            <span id="st-bit-dorin">₪0</span>
+          </div>
+          <div class="settlement-team-row paybox-row" id="st-paybox-ido-row" style="display:none">
+            <span>PayBox (אחריות עידו)</span>
+            <span id="st-paybox-ido-val">₪0</span>
+          </div>
+          <div class="settlement-team-total">
+            <span>סה"כ</span>
+            <span id="st-total-ido">₪0</span>
+          </div>
+        </div>
+
+        <div class="card settlement-team-card">
+          <div class="settlement-team-title">Team מאור</div>
+          <div class="settlement-team-row">
+            <span>Bit מאור</span>
+            <span id="st-bit-maor">₪0</span>
+          </div>
+          <div class="settlement-team-row">
+            <span>Bit רוית</span>
+            <span id="st-bit-ravit">₪0</span>
+          </div>
+          <div class="settlement-team-row paybox-row" id="st-paybox-maor-row" style="display:none">
+            <span>PayBox (אחריות מאור)</span>
+            <span id="st-paybox-maor-val">₪0</span>
+          </div>
+          <div class="settlement-team-total">
+            <span>סה"כ</span>
+            <span id="st-total-maor">₪0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profit & PayBox toggle -->
+      <div class="card" style="margin-bottom:20px">
+        <div class="settlement-info-row">
+          <span>רווח לכל שותף</span>
+          <strong id="st-profit-each">₪0</strong>
+        </div>
+        <div class="settlement-info-row" style="margin-top:14px;align-items:center">
+          <span>לכלול יתרת PayBox בחישוב?</span>
+          <div class="paybox-use-toggle">
+            <button class="paybox-use-btn active" id="paybox-use-yes" onclick="setPayboxUsage(true)">כן</button>
+            <button class="paybox-use-btn" id="paybox-use-no" onclick="setPayboxUsage(false)">לא</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transfer result -->
+      <div class="card settlement-result-card" id="settlement-result">
+        <div class="settlement-result-label" id="st-result-label">מחשב...</div>
+        <div class="settlement-result-amount" id="st-result-amount"></div>
+        <div class="settlement-result-sub" id="st-result-sub"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="settlement-actions">
+        <button class="btn btn-secondary" onclick="navigate('dashboard')">← חזור ללוח</button>
+        <button class="btn btn-danger close-period-btn" onclick="confirmClosePeriod()">⚠️ אשר וסגור תקופה</button>
       </div>
     </div>
 

@@ -153,6 +153,7 @@ async function mountApp() {
     showNotif('שגיאה בטעינת הנתונים: ' + e.message, 'error');
   }
 
+  initPayboxOwnerUI();
   navigate('dashboard');
 }
 
@@ -207,12 +208,13 @@ function navigate(page) {
 async function loadPageData(page) {
   try {
     switch (page) {
-      case 'dashboard':  await loadDashboard();  break;
-      case 'funds':      await loadFunds();       break;
-      case 'blue-table': await loadBlueTable();   break;
-      case 'debts':      await loadDebts();       break;
-      case 'history':    await loadHistory();     break;
-      case 'players':    await loadPlayers();     break;
+      case 'dashboard':   await loadDashboard();    break;
+      case 'funds':       await loadFunds();        break;
+      case 'blue-table':  await loadBlueTable();    break;
+      case 'debts':       await loadDebts();        break;
+      case 'history':     await loadHistory();      break;
+      case 'players':     await loadPlayers();      break;
+      case 'settlement':  loadSettlementPage();     break;
     }
   } catch (e) {
     showNotif('שגיאה בטעינת הדף: ' + e.message, 'error');
@@ -1123,6 +1125,112 @@ function toggleSidebar() {} // kept for safety, no longer used
 function closeSidebar()  {} // kept for safety, no longer used
 
 // ============================================================
+// PAYBOX OWNER — localStorage
+// ============================================================
+function getPayboxOwner() {
+  return localStorage.getItem('payboxOwner') || 'ido';
+}
+
+function setPayboxOwner(who) {
+  localStorage.setItem('payboxOwner', who);
+  document.getElementById('paybox-owner-ido').classList.toggle('active',  who === 'ido');
+  document.getElementById('paybox-owner-maor').classList.toggle('active', who === 'maor');
+}
+
+function initPayboxOwnerUI() {
+  const owner = getPayboxOwner();
+  const idoBtn  = document.getElementById('paybox-owner-ido');
+  const maorBtn = document.getElementById('paybox-owner-maor');
+  if (idoBtn)  idoBtn.classList.toggle('active',  owner === 'ido');
+  if (maorBtn) maorBtn.classList.toggle('active', owner === 'maor');
+}
+
+// ============================================================
+// PAGE 7 — SETTLEMENT (התקזזות)
+// ============================================================
+let settlementUsePaybox = true;
+
+function loadSettlementPage() {
+  const cp = currentPeriod || {};
+
+  // Populate team tiles
+  const bitIdo   = n(cp.bit_ido);
+  const bitDorin = n(cp.bit_dorin);
+  const bitMaor  = n(cp.bit_maor);
+  const bitRavit = n(cp.bit_ravit);
+  const paybox   = n(cp.paybox);
+
+  setText('st-bit-ido',   '₪' + fmt(bitIdo));
+  setText('st-bit-dorin', '₪' + fmt(bitDorin));
+  setText('st-bit-maor',  '₪' + fmt(bitMaor));
+  setText('st-bit-ravit', '₪' + fmt(bitRavit));
+
+  // PayBox rows visibility
+  const owner = getPayboxOwner();
+  const rowIdo  = document.getElementById('st-paybox-ido-row');
+  const rowMaor = document.getElementById('st-paybox-maor-row');
+  if (rowIdo)  { rowIdo.style.display  = (owner === 'ido'  && settlementUsePaybox) ? 'flex' : 'none'; }
+  if (rowMaor) { rowMaor.style.display = (owner === 'maor' && settlementUsePaybox) ? 'flex' : 'none'; }
+  setText('st-paybox-ido-val',  '₪' + fmt(paybox));
+  setText('st-paybox-maor-val', '₪' + fmt(paybox));
+
+  // Profit per partner
+  const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + paybox + n(cp.cashcash);
+  const chipsIls   = n(cp.counter) / 10;
+  const profitEach = (chipsIls - liquid) / 2;
+
+  setText('st-profit-each', '₪' + fmt(profitEach));
+
+  // Team totals
+  const ipoExtra  = (settlementUsePaybox && owner === 'ido')  ? paybox : 0;
+  const maorExtra = (settlementUsePaybox && owner === 'maor') ? paybox : 0;
+  const teamIdo   = bitIdo + bitDorin + ipoExtra;
+  const teamMaor  = bitMaor + bitRavit + maorExtra;
+
+  setText('st-total-ido',  '₪' + fmt(teamIdo));
+  setText('st-total-maor', '₪' + fmt(teamMaor));
+
+  // Transfer calculation
+  const transfer = profitEach - teamIdo;
+  renderSettlementResult(transfer, profitEach);
+}
+
+function renderSettlementResult(transfer, profitEach) {
+  const label  = document.getElementById('st-result-label');
+  const amount = document.getElementById('st-result-amount');
+  const sub    = document.getElementById('st-result-sub');
+  if (!label || !amount || !sub) return;
+
+  const abs = Math.abs(transfer);
+
+  if (Math.abs(transfer) < 0.5) {
+    label.textContent  = 'אין צורך בהעברות';
+    amount.textContent = '✓';
+    amount.style.color = 'var(--positive)';
+    sub.textContent    = 'כל שותף ימשוך את יתרתו ישירות';
+  } else if (transfer > 0) {
+    label.textContent  = 'מאור מעביר לעידו';
+    amount.textContent = '₪' + fmt(abs);
+    amount.style.color = 'var(--accent)';
+    sub.innerHTML      = `מאור מעביר לעידו <strong>₪${fmt(abs)}</strong> דרך ביט<br>` +
+                         `מאור ימשוך לעצמו <strong>₪${fmt(profitEach)}</strong> מהביט שלו`;
+  } else {
+    label.textContent  = 'עידו מעביר למאור';
+    amount.textContent = '₪' + fmt(abs);
+    amount.style.color = 'var(--warning)';
+    sub.innerHTML      = `עידו מעביר למאור <strong>₪${fmt(abs)}</strong> דרך ביט<br>` +
+                         `עידו ימשוך לעצמו <strong>₪${fmt(profitEach)}</strong> מהביט שלו`;
+  }
+}
+
+function setPayboxUsage(useIt) {
+  settlementUsePaybox = useIt;
+  document.getElementById('paybox-use-yes').classList.toggle('active',  useIt);
+  document.getElementById('paybox-use-no').classList.toggle('active',  !useIt);
+  loadSettlementPage();
+}
+
+// ============================================================
 // UTILITIES
 // ============================================================
 function n(v)   { return parseFloat(v) || 0; }
@@ -1156,6 +1264,13 @@ function escHtml(s) {
   return String(s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function playerLabel(name, nickname) {
+  if (!name && !nickname) return '—';
+  const primary   = escHtml(nickname || name);
+  const secondary = nickname ? `<span class="player-label-sub">${escHtml(name)}</span>` : '';
+  return `<span class="player-label-main">${primary}</span>${secondary}`;
 }
 
 // ============================================================

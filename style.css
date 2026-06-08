@@ -1055,9 +1055,159 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 /* ===== RESPONSIVE ===== */
 
 /* Tablet — hide topbar nav labels, keep icons */
+/* ===== PAYBOX OWNER TOGGLE ===== */
+.paybox-owner-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.paybox-owner-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.paybox-owner-btn {
+  font-size: 10px;
+  font-family: var(--font);
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.paybox-owner-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ===== PAYBOX USE TOGGLE (settlement page) ===== */
+.paybox-use-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.paybox-use-btn {
+  font-size: 12px;
+  font-family: var(--font);
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.paybox-use-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* ===== SETTLEMENT PAGE ===== */
+.settlement-teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.settlement-team-card {
+  padding: 18px;
+}
+
+.settlement-team-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+
+.settlement-team-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.settlement-team-row.paybox-row {
+  color: var(--accent);
+}
+
+.settlement-team-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-top: 10px;
+  padding-top: 8px;
+}
+
+.settlement-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.settlement-result-card {
+  text-align: center;
+  padding: 28px 20px;
+  margin-bottom: 20px;
+  border-color: var(--accent);
+}
+
+.settlement-result-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.settlement-result-amount {
+  font-size: 36px;
+  font-weight: 900;
+  color: var(--accent);
+  margin-bottom: 8px;
+  direction: ltr;
+}
+
+.settlement-result-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.settlement-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 1100px) {
   .topbar-title { display: none; }
-  .top-nav-item { padding: 7px 10px; font-size: 12px; }
+  .top-nav-item { padding: 7px 8px; font-size: 11px; }
 }
 
 /* Mobile — switch to bottom tabs */
@@ -1115,7 +1265,12 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   .col-hide-sm { display: none; }
 
   /* Bottom tabs — prevent overflow */
-  .bottom-tab { min-width: 0; flex: 1; }
+  .bottom-tab { min-width: 0; flex: 1; font-size: 9px; }
+
+  /* Settlement — stack teams vertically on mobile */
+  .settlement-teams { grid-template-columns: 1fr; gap: 12px; }
+  .settlement-actions { justify-content: stretch; }
+  .settlement-actions .btn { flex: 1; text-align: center; }
 }
 
 @media (max-width: 480px) {
