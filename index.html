@@ -547,70 +547,49 @@
                 <th class="col-hide-sm">הוצאות (צ')</th>
                 <th class="col-hide-sm">משיכות (₪)</th>
                 <th>רווח כללי</th>
+                <th>רווח לאחד</th>
                 <th class="col-hide-sm">רווח עידו</th>
                 <th class="col-hide-sm">רווח מאור</th>
-                <th>סוג</th>
+                <th class="col-hide-sm">סוג</th>
                 <th class="col-hide-sm">נסגר ע"י</th>
                 <th class="col-hide-xs">הערות</th>
                 <th>פעולות</th>
               </tr>
             </thead>
             <tbody id="history-table-body">
-              <tr><td colspan="10" class="empty-state">אין נתוני היסטוריה</td></tr>
+              <tr><td colspan="11" class="empty-state">אין נתוני היסטוריה</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
       <div class="card" style="margin-bottom:24px">
-        <div class="card-title">📈 גרף רווח לאורך זמן</div>
+        <div class="chart-header">
+          <div class="card-title" style="margin-bottom:0">📈 גרף רווח לאורך זמן</div>
+          <div class="chart-controls">
+            <!-- Chart type toggle -->
+            <div class="chart-toggle-group">
+              <button class="chart-toggle-btn active" id="chart-mode-person" onclick="setChartMode('person')">רווח לאחד</button>
+              <button class="chart-toggle-btn" id="chart-mode-total" onclick="setChartMode('total')">רווח כולל</button>
+            </div>
+            <!-- Month filter -->
+            <div class="chart-toggle-group">
+              <button class="chart-toggle-btn" id="chart-filter-3" onclick="setChartFilter(3)">3M</button>
+              <button class="chart-toggle-btn" id="chart-filter-6" onclick="setChartFilter(6)">6M</button>
+              <button class="chart-toggle-btn" id="chart-filter-12" onclick="setChartFilter(12)">12M</button>
+              <button class="chart-toggle-btn active" id="chart-filter-all" onclick="setChartFilter(null)">הכל</button>
+            </div>
+          </div>
+        </div>
+        <!-- Cumulative sum -->
+        <div class="chart-summary">
+          סכום מצטבר בתקופה: <strong id="chart-cumulative">₪0</strong>
+        </div>
         <div class="chart-container">
           <canvas id="profit-chart"></canvas>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-title">📥 ייבוא תקופה היסטורית</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>תאריך התחלה</label>
-            <input type="date" id="hist-start">
-          </div>
-          <div class="form-group">
-            <label>תאריך סיום *</label>
-            <input type="date" id="hist-end">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>סה"כ הוצאות (צ'יפים)</label>
-            <input type="number" id="hist-expenses" placeholder="0">
-          </div>
-          <div class="form-group">
-            <label>סה"כ משיכות (₪)</label>
-            <input type="number" id="hist-withdrawals" placeholder="0">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>רווח כללי (₪)</label>
-            <input type="number" id="hist-profit-total" placeholder="0" oninput="autoSplitProfit()">
-          </div>
-          <div class="form-group">
-            <label>רווח עידו (₪)</label>
-            <input type="number" id="hist-profit-ido" placeholder="0">
-          </div>
-          <div class="form-group">
-            <label>רווח מאור (₪)</label>
-            <input type="number" id="hist-profit-maor" placeholder="0">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>הערה (אופציונלי)</label>
-          <input type="text" id="hist-notes" placeholder="הזן הערה חופשית...">
-        </div>
-        <button class="btn btn-primary" onclick="importHistory()">💾 שמור בהיסטוריה</button>
-      </div>
     </div>
 
     <!-- ===== PAGE 6: PLAYERS ===== -->

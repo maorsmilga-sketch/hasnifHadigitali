@@ -21,6 +21,9 @@ const USER_DISPLAY = { ido: 'עידו', maor: 'מאור' };
 let currentPeriod = null;
 let players       = [];
 let profitChart   = null;
+let historyData   = [];
+let chartMode     = 'person'; // 'person' | 'total'
+let chartMonths   = null;     // null = all, or number of months
 
 // ============================================================
 // SUPABASE REST HELPERS
@@ -701,8 +704,9 @@ async function _updateDebt(person, newVal) {
 async function loadHistory() {
   try {
     const data = await dbGet('history', '?order=period_end.desc');
-    renderHistoryTable(data || []);
-    renderProfitChart(data || []);
+    historyData = data || [];
+    renderHistoryTable(historyData);
+    renderProfitChart();
   } catch (e) {
     showNotif('שגיאה בטעינת היסטוריה: ' + e.message, 'error');
   }
@@ -711,20 +715,22 @@ async function loadHistory() {
 function renderHistoryTable(data) {
   const tbody = document.getElementById('history-table-body');
   if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">אין נתוני היסטוריה</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="empty-state">אין נתוני היסטוריה</td></tr>';
     return;
   }
   tbody.innerHTML = data.map(r => {
-    const profitColor = n(r.profit_total) >= 0 ? 'positive-color' : 'negative-color';
+    const profitColor    = n(r.profit_total) >= 0 ? 'positive-color' : 'negative-color';
+    const perPersonColor = (n(r.profit_total) / 2) >= 0 ? 'positive-color' : 'negative-color';
     return `
     <tr>
       <td>${r.period_end || '—'}</td>
       <td class="col-hide-sm">${fmt(r.total_expenses_chips)} צ'</td>
       <td class="col-hide-sm">₪${fmt(r.total_withdrawals_ils)}</td>
       <td class="${profitColor}"><strong>₪${fmt(r.profit_total)}</strong></td>
+      <td class="${perPersonColor}"><strong>₪${fmt(n(r.profit_total) / 2)}</strong></td>
       <td class="col-hide-sm">₪${fmt(r.profit_ido)}</td>
       <td class="col-hide-sm">₪${fmt(r.profit_maor)}</td>
-      <td><span class="badge ${r.entry_type === 'manual_import' ? 'badge-manual' : 'badge-regular'}">${r.entry_type === 'manual_import' ? 'ייבוא ידני' : 'סגירה רגילה'}</span></td>
+      <td class="col-hide-sm"><span class="badge ${r.entry_type === 'manual_import' ? 'badge-manual' : 'badge-regular'}">${r.entry_type === 'manual_import' ? 'ייבוא ידני' : 'סגירה רגילה'}</span></td>
       <td class="col-hide-sm">${r.closed_by || '—'}</td>
       <td class="col-hide-xs" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notes || '—'}</td>
       <td><button class="btn btn-danger btn-xs" onclick="deleteHistory('${r.id}')">מחק</button></td>
@@ -732,23 +738,59 @@ function renderHistoryTable(data) {
   }).join('');
 }
 
-function renderProfitChart(data) {
+function setChartMode(mode) {
+  chartMode = mode;
+  document.getElementById('chart-mode-person')?.classList.toggle('active', mode === 'person');
+  document.getElementById('chart-mode-total')?.classList.toggle('active',  mode === 'total');
+  renderProfitChart();
+}
+
+function setChartFilter(months) {
+  chartMonths = months;
+  ['3','6','12','all'].forEach(k => {
+    const el = document.getElementById('chart-filter-' + k);
+    if (el) el.classList.toggle('active', k === (months === null ? 'all' : String(months)));
+  });
+  renderProfitChart();
+}
+
+function renderProfitChart() {
   const ctx = document.getElementById('profit-chart');
   if (!ctx) return;
 
   if (profitChart) { profitChart.destroy(); profitChart = null; }
-  if (!data.length) return;
+  if (!historyData.length) return;
 
-  const sorted  = [...data].sort((a, b) => new Date(a.period_end) - new Date(b.period_end));
+  // Sort ascending by date
+  let sorted = [...historyData].sort((a, b) => new Date(a.period_end) - new Date(b.period_end));
+
+  // Apply month filter
+  if (chartMonths !== null) {
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - chartMonths);
+    sorted = sorted.filter(r => new Date(r.period_end) >= cutoff);
+  }
+
+  const isPersonMode = chartMode === 'person';
   const labels  = sorted.map(r => r.period_end || '');
-  const profits = sorted.map(r => n(r.profit_total));
+  const profits = sorted.map(r => isPersonMode ? n(r.profit_total) / 2 : n(r.profit_total));
+
+  // Cumulative sum
+  const cumulative = profits.reduce((sum, v) => sum + v, 0);
+  const cumulEl = document.getElementById('chart-cumulative');
+  if (cumulEl) {
+    cumulEl.textContent = '₪' + fmt(cumulative);
+    cumulEl.style.color = cumulative >= 0 ? 'var(--positive)' : 'var(--negative)';
+  }
+
+  const chartLabel = isPersonMode ? 'רווח לאחד (₪)' : 'רווח כולל (₪)';
 
   profitChart = new Chart(ctx, {
     type: 'line',
     data: {
       labels,
       datasets: [{
-        label: 'רווח כללי (₪)',
+        label: chartLabel,
         data: profits,
         borderColor: '#6c63ff',
         backgroundColor: 'rgba(108,99,255,0.08)',
@@ -767,7 +809,7 @@ function renderProfitChart(data) {
         legend: { labels: { color: '#9090b0', font: { family: 'Heebo', size: 12 } } },
         tooltip: {
           callbacks: {
-            label: ctx => '₪' + fmt(ctx.raw)
+            label: c => '₪' + fmt(c.raw)
           }
         }
       },
