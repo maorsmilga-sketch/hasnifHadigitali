@@ -153,53 +153,69 @@
       </div>
 
       <div class="card">
-        <div class="section-title">
+        <!-- Bit section -->
+        <div class="funds-section-label">
           <img src="Bit.png" alt="Bit" class="section-logo"> Bit
         </div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>יתרת Bit מאור (₪)</label>
+        <div class="funds-grid">
+          <div class="fund-tile">
+            <div class="fund-tile-label">מאור</div>
             <input type="number" id="bit_maor" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+            <div class="fund-tile-currency">₪</div>
           </div>
-          <div class="form-group">
-            <label>יתרת Bit עידו (₪)</label>
+          <div class="fund-tile">
+            <div class="fund-tile-label">עידו</div>
             <input type="number" id="bit_ido" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+            <div class="fund-tile-currency">₪</div>
           </div>
-          <div class="form-group">
-            <label>יתרת Bit רוית (₪)</label>
+          <div class="fund-tile">
+            <div class="fund-tile-label">רוית</div>
             <input type="number" id="bit_ravit" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+            <div class="fund-tile-currency">₪</div>
           </div>
-          <div class="form-group">
-            <label>יתרת Bit דורין (₪)</label>
+          <div class="fund-tile">
+            <div class="fund-tile-label">דורין</div>
             <input type="number" id="bit_dorin" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+            <div class="fund-tile-currency">₪</div>
           </div>
         </div>
 
-        <div class="section-title">📱 אפליקציות</div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label><img src="PayBox.png" alt="PayBox" class="label-logo"> יתרת PayBox (₪)</label>
+        <!-- Apps section -->
+        <div class="funds-section-label" style="margin-top:16px">📱 אפליקציות</div>
+        <div class="funds-grid">
+          <div class="fund-tile">
+            <div class="fund-tile-label">
+              <img src="PayBox.png" alt="PayBox" class="label-logo"> PayBox
+            </div>
             <input type="number" id="paybox" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+            <div class="fund-tile-currency">₪</div>
           </div>
-          <div class="form-group">
-            <label>יתרת CashCash (₪)</label>
+          <div class="fund-tile">
+            <div class="fund-tile-label">💰 CashCash</div>
             <input type="number" id="cashcash" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+            <div class="fund-tile-currency">₪</div>
           </div>
         </div>
 
-        <div class="section-title">⚖️ חובות <span style="font-size:11px;color:var(--text-muted);font-weight:400">(קריאה בלבד — נמנהלים בדף ניהול חובות)</span></div>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>חוב עידו (₪)</label>
+        <!-- Debts section -->
+        <div class="funds-section-label" style="margin-top:16px">
+          ⚖️ חובות <span style="font-size:11px;color:var(--text-muted);font-weight:400">(קריאה בלבד)</span>
+        </div>
+        <div class="funds-grid">
+          <div class="fund-tile fund-tile-readonly">
+            <div class="fund-tile-label">חוב עידו</div>
             <input type="number" id="funds-debt_ido" class="readonly-field" readonly>
+            <div class="fund-tile-currency">₪</div>
           </div>
-          <div class="form-group">
-            <label>חוב מאור (₪)</label>
+          <div class="fund-tile fund-tile-readonly">
+            <div class="fund-tile-label">חוב מאור</div>
             <input type="number" id="funds-debt_maor" class="readonly-field" readonly>
+            <div class="fund-tile-currency">₪</div>
           </div>
         </div>
 
-        <div class="summary-bar">
+        <!-- Summary -->
+        <div class="summary-bar" style="margin-top:20px">
           <div class="summary-item">
             <span class="summary-label">כסף נזיל</span>
             <span class="summary-value" id="funds-liquid">₪0</span>
@@ -210,7 +226,7 @@
           </div>
         </div>
 
-        <div style="margin-top:20px">
+        <div style="margin-top:16px">
           <button class="btn btn-success" onclick="saveFunds()">💾 שמור שינויים</button>
         </div>
       </div>
@@ -514,9 +530,16 @@
           <table>
             <thead>
               <tr>
-                <th>תאריך סגירה</th><th>הוצאות (צ')</th><th>משיכות (₪)</th>
-                <th>רווח כללי</th><th>רווח עידו</th><th>רווח מאור</th>
-                <th>סוג</th><th>נסגר ע"י</th><th>הערות</th><th>פעולות</th>
+                <th>תאריך סגירה</th>
+                <th class="col-hide-sm">הוצאות (צ')</th>
+                <th class="col-hide-sm">משיכות (₪)</th>
+                <th>רווח כללי</th>
+                <th class="col-hide-sm">רווח עידו</th>
+                <th class="col-hide-sm">רווח מאור</th>
+                <th>סוג</th>
+                <th class="col-hide-sm">נסגר ע"י</th>
+                <th class="col-hide-xs">הערות</th>
+                <th>פעולות</th>
               </tr>
             </thead>
             <tbody id="history-table-body">

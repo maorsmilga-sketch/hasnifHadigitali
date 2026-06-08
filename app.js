@@ -713,14 +713,14 @@ function renderHistoryTable(data) {
     return `
     <tr>
       <td>${r.period_end || '—'}</td>
-      <td>${fmt(r.total_expenses_chips)} צ'</td>
-      <td>₪${fmt(r.total_withdrawals_ils)}</td>
+      <td class="col-hide-sm">${fmt(r.total_expenses_chips)} צ'</td>
+      <td class="col-hide-sm">₪${fmt(r.total_withdrawals_ils)}</td>
       <td class="${profitColor}"><strong>₪${fmt(r.profit_total)}</strong></td>
-      <td>₪${fmt(r.profit_ido)}</td>
-      <td>₪${fmt(r.profit_maor)}</td>
+      <td class="col-hide-sm">₪${fmt(r.profit_ido)}</td>
+      <td class="col-hide-sm">₪${fmt(r.profit_maor)}</td>
       <td><span class="badge ${r.entry_type === 'manual_import' ? 'badge-manual' : 'badge-regular'}">${r.entry_type === 'manual_import' ? 'ייבוא ידני' : 'סגירה רגילה'}</span></td>
-      <td>${r.closed_by || '—'}</td>
-      <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notes || '—'}</td>
+      <td class="col-hide-sm">${r.closed_by || '—'}</td>
+      <td class="col-hide-xs" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notes || '—'}</td>
       <td><button class="btn btn-danger btn-xs" onclick="deleteHistory('${r.id}')">מחק</button></td>
     </tr>`;
   }).join('');
