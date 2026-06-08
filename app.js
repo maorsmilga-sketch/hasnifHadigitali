@@ -15,15 +15,21 @@ const USERS = {
 
 const USER_DISPLAY = { ido: 'עידו', maor: 'מאור' };
 
+const PIN_CODE          = '211286';
+const PIN_TIMEOUT_MS    = 10 * 60 * 1000; // 10 minutes
+
 // ============================================================
 // STATE
 // ============================================================
-let currentPeriod = null;
-let players       = [];
-let profitChart   = null;
-let historyData   = [];
-let chartMode     = 'person'; // 'person' | 'total'
-let chartMonths   = null;     // null = all, or number of months
+let currentPeriod   = null;
+let players         = [];
+let profitChart     = null;
+let historyData     = [];
+let chartMode       = 'person'; // 'person' | 'total'
+let chartMonths     = null;     // null = all, or number of months
+let pinEntry        = '';
+let pinLocked       = false;
+let pinInactiveTimer = null;
 
 // ============================================================
 // SUPABASE REST HELPERS
@@ -157,6 +163,7 @@ async function mountApp() {
   }
 
   initPayboxOwnerUI();
+  initPinLock();
   navigate('dashboard');
 }
 
@@ -1526,12 +1533,107 @@ function playerLabel(name, nickname) {
 }
 
 // ============================================================
+// PIN LOCK
+// ============================================================
+function showPinLock() {
+  pinEntry  = '';
+  pinLocked = true;
+  updatePinDots();
+  clearPinError();
+  document.getElementById('pin-overlay').style.display = 'flex';
+}
+
+function hidePinLock() {
+  pinLocked = false;
+  document.getElementById('pin-overlay').style.display = 'none';
+  resetInactivityTimer();
+}
+
+function pinPress(digit) {
+  if (pinEntry.length >= PIN_CODE.length) return;
+  pinEntry += digit;
+  updatePinDots();
+  if (pinEntry.length === PIN_CODE.length) {
+    setTimeout(checkPin, 120); // brief delay so last dot animates
+  }
+}
+
+function pinDel() {
+  pinEntry = pinEntry.slice(0, -1);
+  updatePinDots();
+  clearPinError();
+}
+
+function checkPin() {
+  if (pinEntry === PIN_CODE) {
+    hidePinLock();
+  } else {
+    // Wrong PIN — flash red, clear
+    document.querySelectorAll('.pin-dot').forEach(d => {
+      d.classList.remove('filled');
+      d.classList.add('error');
+    });
+    document.getElementById('pin-error').textContent = 'קוד שגוי, נסה שוב';
+    setTimeout(() => {
+      pinEntry = '';
+      updatePinDots();
+      document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('error'));
+    }, 700);
+  }
+}
+
+function updatePinDots() {
+  for (let i = 0; i < PIN_CODE.length; i++) {
+    const dot = document.getElementById('pd' + i);
+    if (dot) {
+      dot.classList.toggle('filled', i < pinEntry.length);
+      dot.classList.remove('error');
+    }
+  }
+}
+
+function clearPinError() {
+  const el = document.getElementById('pin-error');
+  if (el) el.textContent = '';
+}
+
+function resetInactivityTimer() {
+  clearTimeout(pinInactiveTimer);
+  if (getCurrentUser()) {
+    pinInactiveTimer = setTimeout(showPinLock, PIN_TIMEOUT_MS);
+  }
+}
+
+function initPinLock() {
+  // Reset timer on any user interaction
+  ['click','touchstart','keydown','scroll'].forEach(evt =>
+    document.addEventListener(evt, resetInactivityTimer, { passive: true })
+  );
+
+  // Lock when tab/app goes to background then returns after timeout
+  let hiddenAt = null;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      hiddenAt = Date.now();
+    } else {
+      if (hiddenAt && (Date.now() - hiddenAt) >= PIN_TIMEOUT_MS && getCurrentUser()) {
+        showPinLock();
+      }
+      hiddenAt = null;
+    }
+  });
+
+  resetInactivityTimer();
+}
+
+// ============================================================
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   const user = getCurrentUser();
   if (user) {
     mountApp();
+    initPinLock();
   } else {
     document.getElementById('login-page').style.display = 'flex';
     document.getElementById('app').style.display        = 'none';

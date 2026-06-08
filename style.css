@@ -1213,6 +1213,125 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 /* ===== RESPONSIVE ===== */
 
 /* Tablet — hide topbar nav labels, keep icons */
+/* ===== PIN LOCK OVERLAY ===== */
+#pin-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-primary);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.pin-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  max-width: 320px;
+  padding: 0 24px;
+}
+
+.pin-logo {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.pin-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.pin-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.pin-dots {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--border-light);
+  background: transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pin-dot.filled {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.pin-dot.error {
+  background: var(--negative);
+  border-color: var(--negative);
+}
+
+.pin-error {
+  height: 18px;
+  font-size: 12px;
+  color: var(--negative);
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.pin-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 280px;
+}
+
+.pin-key {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 72px;
+  height: 72px;
+  font-size: 24px;
+  font-weight: 700;
+  font-family: var(--font);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.12s, transform 0.08s;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pin-key:active {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(0.92);
+}
+
+.pin-key-empty {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.pin-key-del {
+  font-size: 20px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
 /* ===== PAYBOX OWNER TOGGLE ===== */
 .paybox-owner-toggle {
   display: flex;
