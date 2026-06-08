@@ -750,6 +750,30 @@
   </div>
 </div>
 
+<!-- PERIOD DETAIL MODAL -->
+<div id="period-detail-overlay" class="confirm-overlay" style="display:none" onclick="closePeriodDetail(event)">
+  <div class="detail-modal" onclick="event.stopPropagation()">
+    <div class="detail-modal-header">
+      <h3 id="pd-title">פרטי תקופה</h3>
+      <button class="detail-modal-close" onclick="closePeriodDetail()">✕</button>
+    </div>
+    <div class="detail-modal-body" id="pd-body">
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER STATS MODAL -->
+<div id="player-stats-overlay" class="confirm-overlay" style="display:none" onclick="closePlayerStats(event)">
+  <div class="detail-modal" onclick="event.stopPropagation()">
+    <div class="detail-modal-header">
+      <h3 id="ps-title">סטטיסטיקות שחקן</h3>
+      <button class="detail-modal-close" onclick="closePlayerStats()">✕</button>
+    </div>
+    <div class="detail-modal-body" id="ps-body">
+    </div>
+  </div>
+</div>
+
 <script src="app.js"></script>
 </body>
 </html>
