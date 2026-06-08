@@ -784,16 +784,17 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 .chart-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .chart-controls {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .chart-toggle-group {
@@ -828,6 +829,8 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   font-size: 12px;
   color: var(--text-muted);
   margin-bottom: 10px;
+  display: block;
+  width: 100%;
 }
 
 .chart-summary strong {
@@ -1314,6 +1317,12 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 
   /* History chart — smaller on mobile */
   .chart-container { height: 200px !important; }
+
+  /* Chart controls — stack below title on mobile */
+  .chart-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .chart-controls { width: 100%; }
+  .chart-toggle-group { flex-wrap: wrap; border-radius: 12px; }
+  .chart-summary { font-size: 13px; }
 
   /* History table — hide less important columns */
   .col-hide-sm { display: none; }

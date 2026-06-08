@@ -715,24 +715,23 @@ async function loadHistory() {
 function renderHistoryTable(data) {
   const tbody = document.getElementById('history-table-body');
   if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="11" class="empty-state">אין נתוני היסטוריה</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">אין נתוני היסטוריה</td></tr>';
     return;
   }
   tbody.innerHTML = data.map(r => {
     const profitColor    = n(r.profit_total) >= 0 ? 'positive-color' : 'negative-color';
     const perPersonColor = (n(r.profit_total) / 2) >= 0 ? 'positive-color' : 'negative-color';
+    const expensesIls    = n(r.total_expenses_chips) / 10;
     return `
     <tr>
       <td>${r.period_end || '—'}</td>
-      <td class="col-hide-sm">${fmt(r.total_expenses_chips)} צ'</td>
+      <td class="col-hide-sm">₪${fmt(expensesIls)}</td>
       <td class="col-hide-sm">₪${fmt(r.total_withdrawals_ils)}</td>
       <td class="${profitColor}"><strong>₪${fmt(r.profit_total)}</strong></td>
       <td class="${perPersonColor}"><strong>₪${fmt(n(r.profit_total) / 2)}</strong></td>
       <td class="col-hide-sm">₪${fmt(r.profit_ido)}</td>
       <td class="col-hide-sm">₪${fmt(r.profit_maor)}</td>
-      <td class="col-hide-sm"><span class="badge ${r.entry_type === 'manual_import' ? 'badge-manual' : 'badge-regular'}">${r.entry_type === 'manual_import' ? 'ייבוא ידני' : 'סגירה רגילה'}</span></td>
-      <td class="col-hide-sm">${r.closed_by || '—'}</td>
-      <td class="col-hide-xs" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notes || '—'}</td>
+      <td class="col-hide-xs" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notes || '—'}</td>
       <td><button class="btn btn-danger btn-xs" onclick="deleteHistory('${r.id}')">מחק</button></td>
     </tr>`;
   }).join('');
