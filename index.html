@@ -14,10 +14,6 @@
 <!-- TOAST NOTIFICATION -->
 <div id="notification"></div>
 
-<!-- MOBILE HAMBURGER -->
-<button class="hamburger" onclick="toggleSidebar()" aria-label="תפריט">☰</button>
-<div id="overlay" onclick="closeSidebar()"></div>
-
 <!-- ===================== LOGIN PAGE ===================== -->
 <div id="login-page">
   <div class="login-card">
@@ -46,42 +42,60 @@
 <!-- ===================== MAIN APP ===================== -->
 <div id="app" style="display:none">
 
-  <!-- SIDEBAR -->
-  <nav id="sidebar">
-    <div class="sidebar-header">
-      <img src="logo1.png" alt="לוגו" class="sidebar-logo-img">
-      <div>
-        <div class="sidebar-title">הסניף הדיגיטלי</div>
-        <div class="sidebar-sub">ניהול קופה משותפת</div>
-      </div>
+  <!-- TOP NAVBAR -->
+  <header id="topbar">
+    <div class="topbar-brand">
+      <img src="logo1.png" alt="לוגו" class="topbar-logo">
+      <span class="topbar-title">הסניף הדיגיטלי</span>
     </div>
-    <div class="sidebar-user">
-      <span class="sidebar-user-label">מחובר:</span>
+
+    <nav class="topbar-nav">
+      <button class="top-nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+        <span class="top-nav-icon">📊</span><span>לוח בקרה</span>
+      </button>
+      <button class="top-nav-item" data-page="funds" onclick="navigate('funds')">
+        <span class="top-nav-icon">💰</span><span>כספים בחוץ</span>
+      </button>
+      <button class="top-nav-item" data-page="blue-table" onclick="navigate('blue-table')">
+        <span class="top-nav-icon">📋</span><span>הטבלה הכחולה</span>
+      </button>
+      <button class="top-nav-item" data-page="debts" onclick="navigate('debts')">
+        <span class="top-nav-icon">⚖️</span><span>חובות</span>
+      </button>
+      <button class="top-nav-item" data-page="history" onclick="navigate('history')">
+        <span class="top-nav-icon">📈</span><span>היסטוריה</span>
+      </button>
+      <button class="top-nav-item" data-page="players" onclick="navigate('players')">
+        <span class="top-nav-icon">👥</span><span>שחקנים</span>
+      </button>
+    </nav>
+
+    <div class="topbar-user">
       <span class="user-badge" id="user-badge">—</span>
+      <button class="btn-logout-top" onclick="doLogout()">🚪</button>
     </div>
-    <div class="nav-items">
-      <button class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
-        <span class="nav-icon">📊</span><span>לוח בקרה</span>
-      </button>
-      <button class="nav-item" data-page="funds" onclick="navigate('funds')">
-        <span class="nav-icon">💰</span><span>כספים בחוץ</span>
-      </button>
-      <button class="nav-item" data-page="blue-table" onclick="navigate('blue-table')">
-        <span class="nav-icon">📋</span><span>הטבלה הכחולה</span>
-      </button>
-      <button class="nav-item" data-page="debts" onclick="navigate('debts')">
-        <span class="nav-icon">⚖️</span><span>ניהול חובות</span>
-      </button>
-      <button class="nav-item" data-page="history" onclick="navigate('history')">
-        <span class="nav-icon">📈</span><span>היסטוריה וגרפים</span>
-      </button>
-      <button class="nav-item" data-page="players" onclick="navigate('players')">
-        <span class="nav-icon">👥</span><span>ניהול שחקנים</span>
-      </button>
-    </div>
-    <div class="sidebar-footer">
-      <button class="btn-logout" onclick="doLogout()">🚪 התנתק</button>
-    </div>
+  </header>
+
+  <!-- BOTTOM TAB BAR (mobile only) -->
+  <nav id="bottom-tabs">
+    <button class="bottom-tab active" data-page="dashboard" onclick="navigate('dashboard')">
+      <span>📊</span><span>בקרה</span>
+    </button>
+    <button class="bottom-tab" data-page="funds" onclick="navigate('funds')">
+      <span>💰</span><span>כספים</span>
+    </button>
+    <button class="bottom-tab" data-page="blue-table" onclick="navigate('blue-table')">
+      <span>📋</span><span>כחולה</span>
+    </button>
+    <button class="bottom-tab" data-page="debts" onclick="navigate('debts')">
+      <span>⚖️</span><span>חובות</span>
+    </button>
+    <button class="bottom-tab" data-page="history" onclick="navigate('history')">
+      <span>📈</span><span>גרפים</span>
+    </button>
+    <button class="bottom-tab" data-page="players" onclick="navigate('players')">
+      <span>👥</span><span>שחקנים</span>
+    </button>
   </nav>
 
   <!-- MAIN CONTENT -->

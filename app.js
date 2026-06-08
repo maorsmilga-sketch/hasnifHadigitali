@@ -190,15 +190,17 @@ async function loadInitialData() {
 // ============================================================
 function navigate(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('[data-page]').forEach(n => n.classList.remove('active'));
 
   const pageEl = document.getElementById('page-' + page);
-  const navEl  = document.querySelector(`[data-page="${page}"]`);
-
   if (pageEl) pageEl.classList.add('active');
-  if (navEl)  navEl.classList.add('active');
 
-  closeSidebar();
+  // Highlight both topbar and bottom-tabs items
+  document.querySelectorAll(`[data-page="${page}"]`).forEach(el => el.classList.add('active'));
+
+  // Scroll to top on page change (important on mobile)
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
   loadPageData(page);
 }
 
@@ -1111,17 +1113,10 @@ async function closePeriod() {
 }
 
 // ============================================================
-// MOBILE SIDEBAR
+// MOBILE — logout from bottom bar
 // ============================================================
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('overlay').classList.toggle('show');
-}
-
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('overlay').classList.remove('show');
-}
+function toggleSidebar() {} // kept for safety, no longer used
+function closeSidebar()  {} // kept for safety, no longer used
 
 // ============================================================
 // UTILITIES
