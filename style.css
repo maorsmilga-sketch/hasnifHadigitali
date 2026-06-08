@@ -819,14 +819,90 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 /* ===== ACTION ROW ===== */
 .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
+/* ===== PLAYERS ADMIN ===== */
+.admin-card { border-top: 3px solid var(--accent); }
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field-hint {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.required { color: var(--negative); }
+
+/* Desktop table visible, cards hidden */
+.players-desktop { display: block; }
+.players-mobile  { display: none; }
+
+/* Player cards (mobile) */
+.player-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+
+.player-card:hover { border-color: var(--accent); }
+
+.player-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.player-card-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.player-card-nick {
+  font-size: 12px;
+  color: var(--accent);
+  margin-top: 2px;
+}
+
+.player-card-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.player-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.player-info-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.player-info-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
   .hamburger { display: flex; }
 
-  #sidebar {
-    transform: translateX(100%);
-  }
-
+  #sidebar { transform: translateX(100%); }
   #sidebar.open {
     transform: translateX(0);
     box-shadow: -8px 0 40px rgba(0,0,0,0.6);
@@ -840,23 +916,35 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   }
 
   .stats-grid { grid-template-columns: 1fr 1fr; }
-
-  .debt-grid { grid-template-columns: 1fr; }
-
+  .debt-grid  { grid-template-columns: 1fr; }
   .stat-value { font-size: 20px; }
-
   .debt-amount { font-size: 40px; }
-
   .grid-2 { grid-template-columns: 1fr; }
   .grid-3 { grid-template-columns: 1fr; }
+  .summary-bar { gap: 16px; padding: 14px 16px; }
+  .admin-form-grid { grid-template-columns: 1fr; }
 
-  .summary-bar { gap: 20px; }
+  /* Switch to card view on tablet/mobile */
+  .players-desktop { display: none; }
+  .players-mobile  { display: block; margin-top: 8px; }
+
+  /* Blue table tabs scroll */
+  .tabs { overflow-x: auto; }
+  .tab  { padding: 9px 14px; font-size: 12px; }
+
+  /* Debt quick buttons wrap nicely */
+  .quick-buttons { gap: 6px; }
+  .quick-btn { padding: 7px 10px; font-size: 11px; }
 }
 
 @media (max-width: 480px) {
-  .stats-grid { grid-template-columns: 1fr; }
-
-  .login-card { padding: 32px 24px; }
-
+  .stats-grid  { grid-template-columns: 1fr 1fr; }
+  .login-card  { padding: 28px 20px; }
+  .login-logo-img { max-width: 180px; max-height: 90px; }
   .page-header h1 { font-size: 20px; }
+  .card { padding: 16px; }
+  .close-period-btn { width: 100%; font-size: 14px; padding: 14px; }
+  .debt-amount { font-size: 36px; }
+  .player-card-info { grid-template-columns: 1fr 1fr; }
+  .summary-value { font-size: 16px; }
 }

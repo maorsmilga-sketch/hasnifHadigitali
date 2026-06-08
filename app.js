@@ -833,6 +833,13 @@ async function deleteHistory(id) {
 // ============================================================
 // PAGE 6 — PLAYERS
 // ============================================================
+const WITHDRAWAL_LABELS = {
+  bit:           '💳 ביט',
+  paybox:        '📱 פייבוקס',
+  cashcash:      '💰 קאשקאש',
+  bank_transfer: '🏦 העברה בנקאית'
+};
+
 async function loadPlayers() {
   try {
     players = (await dbGet('players', '?order=name.asc')) || [];
@@ -843,92 +850,166 @@ async function loadPlayers() {
 }
 
 function renderPlayersTable() {
-  const tbody = document.getElementById('players-table-body');
+  const tbody      = document.getElementById('players-table-body');
+  const cardsBody  = document.getElementById('players-cards-body');
+  const countEl    = document.getElementById('players-count');
+  if (countEl) countEl.textContent = players.length;
+
   if (!players.length) {
-    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">אין שחקנים רשומים</td></tr>';
+    tbody.innerHTML     = '<tr><td colspan="6" class="empty-state">אין שחקנים רשומים</td></tr>';
+    cardsBody.innerHTML = '<div class="empty-state">אין שחקנים רשומים</div>';
     return;
   }
-  tbody.innerHTML = players.map(p => `
+
+  // — Desktop table rows —
+  tbody.innerHTML = players.map(p => {
+    const rb    = p.rakeback_percent != null && p.rakeback_percent !== '' ? p.rakeback_percent + '%' : '—';
+    const wdLbl = WITHDRAWAL_LABELS[p.preferred_withdrawal] || '—';
+    return `
     <tr id="pr-${p.id}">
-      <td>
-        <span id="pname-${p.id}">${escHtml(p.name)}</span>
-        <input id="pname-edit-${p.id}" value="${escHtml(p.name)}" style="display:none"
-               class="inline-edit">
-      </td>
-      <td>
-        <span id="prb-${p.id}">${p.rakeback_percent}%</span>
-        <input id="prb-edit-${p.id}" type="number" value="${p.rakeback_percent}" min="0" max="100"
-               style="display:none;width:70px" class="inline-edit">
-      </td>
-      <td>${fmtDate(p.created_at)}</td>
+      <td><strong>${escHtml(p.name)}</strong></td>
+      <td style="color:var(--text-secondary)">${escHtml(p.nickname || '—')}</td>
+      <td>${rb}</td>
+      <td>${wdLbl}</td>
+      <td style="color:var(--text-muted)">${fmtDate(p.created_at)}</td>
       <td>
         <div class="action-row">
-          <button id="edit-btn-${p.id}" class="btn btn-secondary btn-xs" onclick="toggleEditPlayer('${p.id}')">✏️ ערוך</button>
-          <button id="save-btn-${p.id}" class="btn btn-success btn-xs" style="display:none" onclick="savePlayer('${p.id}')">💾 שמור</button>
-          <button class="btn btn-danger btn-xs" onclick="deletePlayer('${p.id}')">🗑️ מחק</button>
+          <button class="btn btn-secondary btn-xs" onclick="openEditModal('${p.id}')">✏️ ערוך</button>
+          <button class="btn btn-danger btn-xs" onclick="deletePlayer('${p.id}')">🗑️</button>
         </div>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
-  // Style inline edits
-  document.querySelectorAll('.inline-edit').forEach(el => {
-    Object.assign(el.style, {
-      background: 'var(--bg-secondary)',
-      border: '1px solid var(--border)',
-      borderRadius: '6px',
-      padding: '4px 8px',
-      color: 'var(--text-primary)',
-      fontFamily: 'var(--font)',
-      fontSize: '13px',
-      direction: 'rtl'
-    });
-  });
+  // — Mobile player cards —
+  cardsBody.innerHTML = players.map(p => {
+    const rb    = p.rakeback_percent != null && p.rakeback_percent !== '' ? p.rakeback_percent + '%' : '—';
+    const wdLbl = WITHDRAWAL_LABELS[p.preferred_withdrawal] || '—';
+    return `
+    <div class="player-card">
+      <div class="player-card-header">
+        <div>
+          <div class="player-card-name">${escHtml(p.name)}</div>
+          ${p.nickname ? `<div class="player-card-nick">"${escHtml(p.nickname)}"</div>` : ''}
+        </div>
+        <div class="action-row">
+          <button class="btn btn-secondary btn-xs" onclick="openEditModal('${p.id}')">✏️</button>
+          <button class="btn btn-danger btn-xs" onclick="deletePlayer('${p.id}')">🗑️</button>
+        </div>
+      </div>
+      <div class="player-card-info">
+        <div class="player-info-item">
+          <span class="player-info-label">החזר גנייה</span>
+          <span class="player-info-value">${rb}</span>
+        </div>
+        <div class="player-info-item">
+          <span class="player-info-label">משיכה מועדפת</span>
+          <span class="player-info-value">${wdLbl}</span>
+        </div>
+        <div class="player-info-item">
+          <span class="player-info-label">הצטרף</span>
+          <span class="player-info-value">${fmtDate(p.created_at)}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function toggleEditPlayer(id) {
-  const nameSpan  = document.getElementById(`pname-${id}`);
-  const nameInput = document.getElementById(`pname-edit-${id}`);
-  const rbSpan    = document.getElementById(`prb-${id}`);
-  const rbInput   = document.getElementById(`prb-edit-${id}`);
-  const editBtn   = document.getElementById(`edit-btn-${id}`);
-  const saveBtn   = document.getElementById(`save-btn-${id}`);
-  const editing   = nameInput.style.display !== 'none';
+// Edit modal
+function openEditModal(id) {
+  const p = players.find(pl => pl.id === id);
+  if (!p) return;
 
-  nameInput.style.display = editing ? 'none' : '';
-  nameSpan.style.display  = editing ? '' : 'none';
-  rbInput.style.display   = editing ? 'none' : '';
-  rbSpan.style.display    = editing ? '' : 'none';
-  editBtn.textContent     = editing ? '✏️ ערוך' : '❌ ביטול';
-  saveBtn.style.display   = editing ? 'none' : '';
+  // Remove existing modal if any
+  const existing = document.getElementById('edit-player-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'edit-player-modal';
+  modal.className = 'confirm-overlay';
+  modal.innerHTML = `
+    <div class="confirm-dialog" style="max-width:480px;text-align:right">
+      <h3 style="color:var(--accent);margin-bottom:20px">✏️ עריכת שחקן</h3>
+      <div class="form-group">
+        <label>שם מלא <span class="required">*</span></label>
+        <input type="text" id="ep-name" value="${escHtml(p.name)}" placeholder="שם מלא...">
+      </div>
+      <div class="form-group">
+        <label>כינוי</label>
+        <input type="text" id="ep-nickname" value="${escHtml(p.nickname || '')}" placeholder="כינוי / ניק...">
+      </div>
+      <div class="form-group">
+        <label>אחוז החזר גנייה (%)</label>
+        <input type="number" id="ep-rakeback" value="${p.rakeback_percent ?? ''}" min="0" max="100" placeholder="השאר ריק אם אין">
+      </div>
+      <div class="form-group">
+        <label>אופן משיכה מועדף</label>
+        <select id="ep-withdrawal">
+          <option value="bit"           ${p.preferred_withdrawal==='bit'           ?'selected':''}>💳 ביט</option>
+          <option value="paybox"        ${p.preferred_withdrawal==='paybox'        ?'selected':''}>📱 פייבוקס</option>
+          <option value="cashcash"      ${p.preferred_withdrawal==='cashcash'      ?'selected':''}>💰 קאשקאש</option>
+          <option value="bank_transfer" ${p.preferred_withdrawal==='bank_transfer' ?'selected':''}>🏦 העברה בנקאית</option>
+        </select>
+      </div>
+      <div class="confirm-buttons" style="margin-top:20px">
+        <button class="btn btn-success" onclick="savePlayer('${id}')">💾 שמור</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('edit-player-modal').remove()">ביטול</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('ep-name').focus();
 }
 
 async function savePlayer(id) {
-  const name = document.getElementById(`pname-edit-${id}`).value.trim();
-  const rb   = parseFloat(document.getElementById(`prb-edit-${id}`).value);
+  const name       = document.getElementById('ep-name')?.value.trim();
+  const nickname   = document.getElementById('ep-nickname')?.value.trim() || null;
+  const rbVal      = document.getElementById('ep-rakeback')?.value;
+  const rb         = rbVal !== '' ? parseFloat(rbVal) : null;
+  const withdrawal = document.getElementById('ep-withdrawal')?.value || 'bit';
+
   if (!name) { showNotif('אנא הזן שם שחקן', 'error'); return; }
-  if (isNaN(rb) || rb < 0 || rb > 100) { showNotif('אחוז החזר חייב להיות 0–100', 'error'); return; }
+  if (rb !== null && (isNaN(rb) || rb < 0 || rb > 100)) {
+    showNotif('אחוז החזר חייב להיות 0–100', 'error'); return;
+  }
 
   try {
-    await dbPatch('players', `?id=eq.${id}`, { name, rakeback_percent: rb });
+    await dbPatch('players', `?id=eq.${id}`, {
+      name, nickname, rakeback_percent: rb, preferred_withdrawal: withdrawal
+    });
     const p = players.find(pl => pl.id === id);
-    if (p) { p.name = name; p.rakeback_percent = rb; }
+    if (p) Object.assign(p, { name, nickname, rakeback_percent: rb, preferred_withdrawal: withdrawal });
+
+    document.getElementById('edit-player-modal')?.remove();
     renderPlayersTable();
-    showNotif('✅ שחקן עודכן');
+    showNotif('✅ שחקן עודכן בהצלחה');
   } catch (e) {
     showNotif('שגיאה: ' + e.message, 'error');
   }
 }
 
 async function addPlayer() {
-  const name = document.getElementById('new-player-name').value.trim();
-  const rb   = parseFloat(document.getElementById('new-player-rakeback').value) || 60;
+  const name       = document.getElementById('new-player-name').value.trim();
+  const nickname   = document.getElementById('new-player-nickname').value.trim() || null;
+  const rbVal      = document.getElementById('new-player-rakeback').value;
+  const rb         = rbVal !== '' ? parseFloat(rbVal) : null;
+  const withdrawal = document.getElementById('new-player-withdrawal').value || 'bit';
+
   if (!name) { showNotif('אנא הזן שם שחקן', 'error'); return; }
+  if (rb !== null && (isNaN(rb) || rb < 0 || rb > 100)) {
+    showNotif('אחוז החזר חייב להיות 0–100', 'error'); return;
+  }
 
   try {
-    const result = await dbPost('players', { name, rakeback_percent: rb });
+    const result = await dbPost('players', {
+      name, nickname, rakeback_percent: rb, preferred_withdrawal: withdrawal
+    });
     if (result && result[0]) players.push(result[0]);
-    document.getElementById('new-player-name').value      = '';
-    document.getElementById('new-player-rakeback').value  = '60';
+
+    document.getElementById('new-player-name').value       = '';
+    document.getElementById('new-player-nickname').value   = '';
+    document.getElementById('new-player-rakeback').value   = '';
+    document.getElementById('new-player-withdrawal').value = 'bit';
+
     renderPlayersTable();
     showNotif('✅ שחקן נוסף בהצלחה');
   } catch (e) {

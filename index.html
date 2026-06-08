@@ -566,40 +566,66 @@
     <!-- ===== PAGE 6: PLAYERS ===== -->
     <div id="page-players" class="page">
       <div class="page-header">
-        <h1>ניהול שחקנים</h1>
-        <p>ניהול רשימת השחקנים ואחוזי ה-Rakeback</p>
+        <h1>👥 ניהול שחקנים</h1>
+        <p>הוספה, עריכה ומחיקה של שחקני המועדון</p>
       </div>
 
-      <div class="card" style="margin-bottom:24px">
+      <!-- ADD PLAYER CARD -->
+      <div class="card admin-card" style="margin-bottom:24px">
         <div class="card-title">➕ הוסף שחקן חדש</div>
-        <div class="form-row">
+        <div class="admin-form-grid">
           <div class="form-group">
-            <label>שם שחקן</label>
-            <input type="text" id="new-player-name" placeholder="שם מלא..."
+            <label>שם מלא <span class="required">*</span></label>
+            <input type="text" id="new-player-name" placeholder="ישראל ישראלי"
                    onkeydown="if(event.key==='Enter') addPlayer()">
           </div>
           <div class="form-group">
-            <label>אחוז החזר גנייה (%)</label>
-            <input type="number" id="new-player-rakeback" placeholder="60" min="0" max="100" value="60">
+            <label>כינוי</label>
+            <input type="text" id="new-player-nickname" placeholder="ניק / שם בשולחן...">
           </div>
-          <div class="form-group" style="display:flex;align-items:flex-end">
-            <button class="btn btn-primary" onclick="addPlayer()">➕ הוסף שחקן</button>
+          <div class="form-group">
+            <label>אחוז החזר גנייה (%)</label>
+            <input type="number" id="new-player-rakeback" placeholder="0" min="0" max="100" value="">
+            <span class="field-hint">השאר ריק אם אין החזר גנייה</span>
+          </div>
+          <div class="form-group">
+            <label>אופן משיכה מועדף</label>
+            <select id="new-player-withdrawal">
+              <option value="bit">💳 ביט</option>
+              <option value="paybox">📱 פייבוקס</option>
+              <option value="cashcash">💰 קאשקאש</option>
+              <option value="bank_transfer">🏦 העברה בנקאית</option>
+            </select>
           </div>
         </div>
+        <button class="btn btn-primary" onclick="addPlayer()" style="margin-top:8px">➕ הוסף שחקן</button>
       </div>
 
+      <!-- PLAYERS LIST -->
       <div class="card">
-        <div class="card-title">👥 רשימת שחקנים</div>
-        <div class="table-container">
+        <div class="card-title">👥 רשימת שחקנים (<span id="players-count">0</span>)</div>
+
+        <!-- Desktop table -->
+        <div class="table-container players-desktop">
           <table>
             <thead>
-              <tr><th>שם שחקן</th><th>אחוז החזר גנייה</th><th>תאריך הוספה</th><th>פעולות</th></tr>
+              <tr>
+                <th>שם מלא</th>
+                <th>כינוי</th>
+                <th>% החזר גנייה</th>
+                <th>משיכה מועדפת</th>
+                <th>תאריך הוספה</th>
+                <th>פעולות</th>
+              </tr>
             </thead>
             <tbody id="players-table-body">
-              <tr><td colspan="4" class="empty-state">אין שחקנים רשומים</td></tr>
+              <tr><td colspan="6" class="empty-state">אין שחקנים רשומים</td></tr>
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile cards -->
+        <div class="players-mobile" id="players-cards-body"></div>
       </div>
     </div>
 
