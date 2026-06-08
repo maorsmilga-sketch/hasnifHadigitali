@@ -493,6 +493,18 @@ body {
 .stat-card.negative::after{ background: var(--negative); }
 .stat-card.warning::after { background: var(--warning); }
 
+.stat-sub {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.stat-sub span {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
 .stat-label {
   font-size: 11px;
   font-weight: 600;
@@ -912,6 +924,7 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 
 .fund-tile input {
   width: 100%;
+  min-width: 0;
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--border-light);
@@ -919,12 +932,14 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   padding: 4px 0;
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 18px;
+  font-size: clamp(13px, 2.5vw, 18px);
   font-weight: 700;
   outline: none;
   direction: ltr;
   text-align: right;
   box-shadow: none !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .fund-tile input:focus {
@@ -932,10 +947,11 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 }
 
 .fund-tile input.readonly-field {
-  color: var(--text-muted) !important;
-  cursor: not-allowed;
-  border-bottom-style: dashed;
+  color: var(--text-secondary) !important;
+  cursor: default;
+  border-bottom-color: transparent;
   background: transparent !important;
+  pointer-events: none;
 }
 
 .fund-tile-currency {
@@ -999,7 +1015,7 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 
 .player-card-info {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
@@ -1055,9 +1071,14 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   /* Admin form — 2 columns on mobile */
   .admin-form-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
 
-  /* Switch to player card view */
+  /* Switch to player card view — 2-column grid */
   .players-desktop { display: none; }
-  .players-mobile  { display: block; margin-top: 8px; }
+  .players-mobile  {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+  }
 
   /* Blue table tabs scroll */
   .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -1089,12 +1110,15 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   .login-card  { padding: 28px 20px; }
   .login-logo-img { max-width: 180px; max-height: 90px; }
   .close-period-btn { width: 100%; font-size: 14px; padding: 14px; }
-  .player-card-info { grid-template-columns: 1fr 1fr; }
+  /* player-card-info stays 2 cols on small screens */
   .summary-value { font-size: 16px; }
   .topbar-logo { height: 30px; width: 30px; }
 
   /* Admin form — 1 column on very small screens */
   .admin-form-grid { grid-template-columns: 1fr; }
+
+  /* Players — 1 card per row on very small screens */
+  .players-mobile { grid-template-columns: 1fr; }
 
   /* Funds tiles — still 2 cols */
   .funds-grid { grid-template-columns: repeat(2, 1fr); }

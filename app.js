@@ -234,15 +234,19 @@ async function loadDashboard() {
   const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash);
   const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor);
   const chipsIls = n(cp.counter) / 10;
-  const profit   = chipsIls - total;
+  const profit   = chipsIls - liquid;   // רווח כללי ללא ניכוי חובות
   const half     = profit / 2;
+  const idoNet   = half - n(cp.debt_ido);
+  const maorNet  = half - n(cp.debt_maor);
 
-  setText('val-liquid',     fmt(liquid));
-  setText('val-total',      fmt(total));
-  setText('val-chips-ils',  fmt(chipsIls));
-  setText('val-profit',     fmt(profit));
-  setText('val-profit-ido', fmt(half));
-  setText('val-profit-maor',fmt(half));
+  setText('val-liquid',          fmt(liquid));
+  setText('val-total',           fmt(total));
+  setText('val-chips-ils',       fmt(chipsIls));
+  setText('val-profit',          fmt(profit));
+  setText('val-profit-ido',      fmt(half));
+  setText('val-profit-maor',     fmt(half));
+  setText('val-profit-ido-net',  '₪' + fmt(idoNet));
+  setText('val-profit-maor-net', '₪' + fmt(maorNet));
 
   // Dynamic profit card colour
   const profitEl = document.getElementById('sv-profit');
