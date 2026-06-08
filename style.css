@@ -102,11 +102,33 @@ body {
   50%       { transform: scale(1.08); }
 }
 
+.login-logo-img {
+  max-width: 220px;
+  max-height: 110px;
+  object-fit: contain;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 0 20px rgba(108,99,255,0.3));
+}
+
 .login-logo h1 {
   font-size: 26px;
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.5px;
+}
+
+.section-logo {
+  height: 22px;
+  vertical-align: middle;
+  margin-left: 6px;
+  object-fit: contain;
+}
+
+.label-logo {
+  height: 16px;
+  vertical-align: middle;
+  margin-left: 5px;
+  object-fit: contain;
 }
 
 .login-logo p {
@@ -255,7 +277,13 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
-.sidebar-logo { font-size: 28px; }
+.sidebar-logo-img {
+  height: 38px;
+  width: 38px;
+  object-fit: contain;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
 
 .sidebar-title {
   font-size: 16px;
