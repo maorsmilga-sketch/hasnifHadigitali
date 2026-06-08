@@ -969,6 +969,10 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   gap: 16px;
 }
 
+.admin-form-grid > .form-group {
+  min-width: 0;
+}
+
 .field-hint {
   display: block;
   font-size: 11px;
@@ -988,8 +992,11 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 0;
+  min-width: 0;
+  word-break: break-word;
   transition: border-color 0.2s;
+  overflow: hidden;
 }
 
 .player-card:hover { border-color: var(--accent); }
@@ -1005,6 +1012,9 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   font-size: 16px;
   font-weight: 700;
   color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .player-card-nick {
@@ -1037,6 +1047,9 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -1068,8 +1081,8 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   .grid-3 { grid-template-columns: 1fr; }
   .summary-bar { gap: 14px; padding: 12px 14px; flex-wrap: wrap; }
 
-  /* Admin form — 2 columns on mobile */
-  .admin-form-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  /* Admin form — 1 column on mobile */
+  .admin-form-grid { grid-template-columns: 1fr; gap: 10px; }
 
   /* Switch to player card view — 2-column grid */
   .players-desktop { display: none; }
