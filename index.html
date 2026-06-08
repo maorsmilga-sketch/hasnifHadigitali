@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הסניף הדיגיטלי 🃏</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- TOAST NOTIFICATION -->
+<div id="notification"></div>
+
+<!-- MOBILE HAMBURGER -->
+<button class="hamburger" onclick="toggleSidebar()" aria-label="תפריט">☰</button>
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ===================== LOGIN PAGE ===================== -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-icon">🃏</div>
+      <h1>הסניף הדיגיטלי</h1>
+      <p>מערכת ניהול קופה משותפת</p>
+    </div>
+    <div id="login-error" class="login-error">שם משתמש או סיסמא שגויים</div>
+    <div class="form-group">
+      <label>שם משתמש</label>
+      <select id="login-username">
+        <option value="">בחר משתמש...</option>
+        <option value="ido">עידו</option>
+        <option value="maor">מאור</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>סיסמא</label>
+      <input type="password" id="login-password" placeholder="הזן סיסמא"
+             onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()">התחבר למערכת</button>
+  </div>
+</div>
+
+<!-- ===================== MAIN APP ===================== -->
+<div id="app" style="display:none">
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-logo">🃏</span>
+      <div>
+        <div class="sidebar-title">הסניף הדיגיטלי</div>
+        <div class="sidebar-sub">ניהול קופה משותפת</div>
+      </div>
+    </div>
+    <div class="sidebar-user">
+      <span class="sidebar-user-label">מחובר:</span>
+      <span class="user-badge" id="user-badge">—</span>
+    </div>
+    <div class="nav-items">
+      <button class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+        <span class="nav-icon">📊</span><span>לוח בקרה</span>
+      </button>
+      <button class="nav-item" data-page="funds" onclick="navigate('funds')">
+        <span class="nav-icon">💰</span><span>כספים בחוץ</span>
+      </button>
+      <button class="nav-item" data-page="blue-table" onclick="navigate('blue-table')">
+        <span class="nav-icon">📋</span><span>הטבלה הכחולה</span>
+      </button>
+      <button class="nav-item" data-page="debts" onclick="navigate('debts')">
+        <span class="nav-icon">⚖️</span><span>ניהול חובות</span>
+      </button>
+      <button class="nav-item" data-page="history" onclick="navigate('history')">
+        <span class="nav-icon">📈</span><span>היסטוריה וגרפים</span>
+      </button>
+      <button class="nav-item" data-page="players" onclick="navigate('players')">
+        <span class="nav-icon">👥</span><span>ניהול שחקנים</span>
+      </button>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="doLogout()">🚪 התנתק</button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main id="main-content">
+
+    <!-- ===== PAGE 1: DASHBOARD ===== -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <h1>לוח בקרה ראשי</h1>
+        <p>סיכום נתוני הקופה בזמן אמת</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card accent">
+          <div class="stat-label">כסף נזיל</div>
+          <div class="stat-value"><span class="currency">₪</span><span id="val-liquid">0</span></div>
+        </div>
+        <div class="stat-card accent">
+          <div class="stat-label">סה"כ בקופה</div>
+          <div class="stat-value"><span class="currency">₪</span><span id="val-total">0</span></div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">צ'יפים בכסף</div>
+          <div class="stat-value"><span class="currency">₪</span><span id="val-chips-ils">0</span></div>
+        </div>
+        <div class="stat-card" id="card-profit">
+          <div class="stat-label">רווח כללי</div>
+          <div class="stat-value" id="sv-profit"><span class="currency">₪</span><span id="val-profit">0</span></div>
+        </div>
+        <div class="stat-card positive">
+          <div class="stat-label">רווח עידו</div>
+          <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-ido">0</span></div>
+        </div>
+        <div class="stat-card positive">
+          <div class="stat-label">רווח מאור</div>
+          <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-maor">0</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title" style="margin-top:0">🔒 סגירת תקופה</h3>
+        <p style="color:var(--text-secondary);font-size:13px;line-height:1.7;margin-bottom:20px">
+          פעולה זו תשמור את נתוני התקופה הנוכחית בהיסטוריה ותאפס את כל ה­נתונים.<br>
+          <strong style="color:var(--negative)">⚠️ פעולה זו בלתי הפיכה!</strong>
+        </p>
+        <button class="close-period-btn" onclick="confirmClosePeriod()">🔒 סגור תקופה</button>
+      </div>
+    </div>
+
+    <!-- ===== PAGE 2: FUNDS ===== -->
+    <div id="page-funds" class="page">
+      <div class="page-header">
+        <h1>כספים בחוץ</h1>
+        <p>עדכון יתרות ואמצעי תשלום</p>
+      </div>
+
+      <div class="card">
+        <div class="section-title">💳 Bit</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>יתרת Bit מאור (₪)</label>
+            <input type="number" id="bit_maor" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+          </div>
+          <div class="form-group">
+            <label>יתרת Bit עידו (₪)</label>
+            <input type="number" id="bit_ido" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+          </div>
+          <div class="form-group">
+            <label>יתרת Bit רוית (₪)</label>
+            <input type="number" id="bit_ravit" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+          </div>
+          <div class="form-group">
+            <label>יתרת Bit דורין (₪)</label>
+            <input type="number" id="bit_dorin" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+          </div>
+        </div>
+
+        <div class="section-title">📱 אפליקציות</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>יתרת PayBox (₪)</label>
+            <input type="number" id="paybox" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+          </div>
+          <div class="form-group">
+            <label>יתרת CashCash (₪)</label>
+            <input type="number" id="cashcash" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+          </div>
+        </div>
+
+        <div class="section-title">⚖️ חובות <span style="font-size:11px;color:var(--text-muted);font-weight:400">(קריאה בלבד — נמנהלים בדף ניהול חובות)</span></div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>חוב עידו (₪)</label>
+            <input type="number" id="funds-debt_ido" class="readonly-field" readonly>
+          </div>
+          <div class="form-group">
+            <label>חוב מאור (₪)</label>
+            <input type="number" id="funds-debt_maor" class="readonly-field" readonly>
+          </div>
+        </div>
+
+        <div class="summary-bar">
+          <div class="summary-item">
+            <span class="summary-label">כסף נזיל</span>
+            <span class="summary-value" id="funds-liquid">₪0</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">סה"כ בקופה</span>
+            <span class="summary-value" id="funds-total">₪0</span>
+          </div>
+        </div>
+
+        <div style="margin-top:20px">
+          <button class="btn btn-success" onclick="saveFunds()">💾 שמור שינויים</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE 3: BLUE TABLE ===== -->
+    <div id="page-blue-table" class="page">
+      <div class="page-header">
+        <h1>הטבלה הכחולה</h1>
+        <p>כל הסכומים בצ'יפים (10 צ'יפים = ₪1)</p>
+      </div>
+
+      <div class="tabs-wrapper">
+        <div class="tabs" id="blue-tabs">
+          <button class="tab active" onclick="switchBlueTab('counter',this)">🎰 Counter</button>
+          <button class="tab" onclick="switchBlueTab('rakeback',this)">💸 החזר גנייה</button>
+          <button class="tab" onclick="switchBlueTab('tournaments',this)">🏆 טורנירים</button>
+          <button class="tab" onclick="switchBlueTab('bonuses',this)">🎁 בונוס צ'יפים</button>
+          <button class="tab" onclick="switchBlueTab('referrals',this)">🤝 חבר מביא חבר</button>
+          <button class="tab" onclick="switchBlueTab('withdrawals-tab',this)">💳 משיכות</button>
+        </div>
+      </div>
+
+      <!-- Tab: Counter -->
+      <div id="bt-counter" class="tab-panel active">
+        <div class="card">
+          <div class="section-title" style="margin-top:0">ספירת צ'יפים פיזיים</div>
+          <div class="form-group" style="max-width:320px">
+            <label>כמות צ'יפים במועדון</label>
+            <input type="number" id="counter-value" placeholder="0" min="0" oninput="updateCounterDisplay()">
+          </div>
+          <div class="counter-display">
+            <span class="counter-label">שווה ערך בכסף:</span>
+            <span class="counter-value" id="counter-ils">₪0</span>
+          </div>
+          <button class="btn btn-success" onclick="saveCounter()" style="margin-top:16px">💾 שמור Counter</button>
+        </div>
+      </div>
+
+      <!-- Tab: Rakeback -->
+      <div id="bt-rakeback" class="tab-panel">
+        <div class="card" style="margin-bottom:20px">
+          <div class="section-title" style="margin-top:0">הוסף רשומת החזר גנייה</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>שחקן</label>
+              <select id="rb-player" onchange="updateRakebackCalc()">
+                <option value="">בחר שחקן...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>כמות גנייה שנלקחה (צ'יפים)</label>
+              <input type="number" id="rb-rake" placeholder="0" min="0" oninput="updateRakebackCalc()">
+            </div>
+          </div>
+          <div class="calc-display">
+            החזר לשחקן: <strong id="rb-calc">0 צ'יפים</strong>
+          </div>
+          <button class="btn btn-primary" onclick="addRakeback()">➕ הוסף רשומה</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>תאריך</th><th>שחקן</th><th>גנייה (צ')</th>
+                <th>אחוז</th><th>החזר (צ')</th><th>הוזן ע"י</th><th>פעולות</th>
+              </tr>
+            </thead>
+            <tbody id="rb-table-body"><tr><td colspan="7" class="empty-state">אין רשומות</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Tournaments -->
+      <div id="bt-tournaments" class="tab-panel">
+        <div class="card" style="margin-bottom:20px">
+          <div class="section-title" style="margin-top:0">הוסף רשומת טורניר</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>שחקן זוכה</label>
+              <select id="tn-player"><option value="">בחר שחקן...</option></select>
+            </div>
+            <div class="form-group">
+              <label>סוג טורניר</label>
+              <select id="tn-type">
+                <option value="holdem">הולדם</option>
+                <option value="omaha">אומהה</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>סכום פרס (צ'יפים)</label>
+              <input type="number" id="tn-prize" placeholder="0" min="0">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addTournament()">➕ הוסף רשומה</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>תאריך</th><th>שחקן</th><th>סוג</th>
+                <th>פרס (צ')</th><th>הוזן ע"י</th><th>פעולות</th>
+              </tr>
+            </thead>
+            <tbody id="tn-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Bonuses -->
+      <div id="bt-bonuses" class="tab-panel">
+        <div class="card" style="margin-bottom:20px">
+          <div class="section-title" style="margin-top:0">הוסף בונוס צ'יפים</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>שחקן</label>
+              <select id="bn-player"><option value="">בחר שחקן...</option></select>
+            </div>
+            <div class="form-group">
+              <label>כמות צ'יפים</label>
+              <input type="number" id="bn-chips" placeholder="0" min="0">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addBonus()">➕ הוסף רשומה</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>תאריך</th><th>שחקן</th><th>צ'יפים</th><th>הוזן ע"י</th><th>פעולות</th></tr>
+            </thead>
+            <tbody id="bn-table-body"><tr><td colspan="5" class="empty-state">אין רשומות</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Referrals -->
+      <div id="bt-referrals" class="tab-panel">
+        <div class="card" style="margin-bottom:20px">
+          <div class="section-title" style="margin-top:0">הוסף — חבר מביא חבר</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>שחקן מביא</label>
+              <select id="ref-from"><option value="">בחר שחקן...</option></select>
+            </div>
+            <div class="form-group">
+              <label>שחקן מובא</label>
+              <select id="ref-to"><option value="">בחר שחקן...</option></select>
+            </div>
+            <div class="form-group">
+              <label>סכום (צ'יפים)</label>
+              <input type="number" id="ref-chips" placeholder="0" min="0">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addReferral()">➕ הוסף רשומה</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>תאריך</th><th>מביא</th><th>מובא</th><th>צ'יפים</th><th>הוזן ע"י</th><th>פעולות</th></tr>
+            </thead>
+            <tbody id="ref-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab: Withdrawals -->
+      <div id="bt-withdrawals-tab" class="tab-panel">
+        <div class="card" style="margin-bottom:20px">
+          <div class="section-title" style="margin-top:0">הוסף משיכת שחקן</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>שחקן</label>
+              <select id="wd-player"><option value="">בחר שחקן...</option></select>
+            </div>
+            <div class="form-group">
+              <label>תאריך</label>
+              <input type="date" id="wd-date">
+            </div>
+            <div class="form-group">
+              <label>סכום בכסף (₪)</label>
+              <input type="number" id="wd-ils" placeholder="0" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label>כמות צ'יפים</label>
+              <input type="number" id="wd-chips" placeholder="0" min="0">
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addWithdrawal()">➕ הוסף רשומה</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>תאריך</th><th>שחקן</th><th>סכום (₪)</th><th>צ'יפים</th><th>הוזן ע"י</th><th>פעולות</th></tr>
+            </thead>
+            <tbody id="wd-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Blue Table Summary (fixed bottom) -->
+      <div class="summary-bar" style="margin-top:32px">
+        <div class="summary-item">
+          <span class="summary-label">סה"כ הוצאות (צ'יפים)</span>
+          <span class="summary-value chips-color" id="bt-total-chips">0</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">סה"כ הוצאות (₪)</span>
+          <span class="summary-value" id="bt-total-ils">₪0</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">סה"כ משיכות (₪)</span>
+          <span class="summary-value negative-color" id="bt-total-withdrawals">₪0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE 4: DEBTS ===== -->
+    <div id="page-debts" class="page">
+      <div class="page-header">
+        <h1>ניהול חובות</h1>
+        <p>עדכון חובות עידו ומאור לקופה</p>
+      </div>
+
+      <div class="debt-grid">
+        <!-- Ido -->
+        <div class="debt-block">
+          <h3>⚖️ חוב עידו</h3>
+          <div class="debt-amount">
+            <span class="debt-currency">₪</span><span id="debt-ido-display">0</span>
+          </div>
+          <div class="section-title">➕ הוספה מהירה</div>
+          <div class="quick-buttons">
+            <button class="quick-btn add" onclick="quickDebt('ido',50)">+₪50</button>
+            <button class="quick-btn add" onclick="quickDebt('ido',100)">+₪100</button>
+            <button class="quick-btn add" onclick="quickDebt('ido',150)">+₪150</button>
+            <button class="quick-btn add" onclick="quickDebt('ido',200)">+₪200</button>
+            <button class="quick-btn add" onclick="quickDebt('ido',250)">+₪250</button>
+            <button class="quick-btn add" onclick="quickDebt('ido',300)">+₪300</button>
+          </div>
+          <div class="section-title">➖ הפחתה מהירה</div>
+          <div class="quick-buttons">
+            <button class="quick-btn sub" onclick="quickDebt('ido',-50)">-₪50</button>
+            <button class="quick-btn sub" onclick="quickDebt('ido',-100)">-₪100</button>
+            <button class="quick-btn sub" onclick="quickDebt('ido',-150)">-₪150</button>
+            <button class="quick-btn sub" onclick="quickDebt('ido',-200)">-₪200</button>
+            <button class="quick-btn sub" onclick="quickDebt('ido',-250)">-₪250</button>
+            <button class="quick-btn sub" onclick="quickDebt('ido',-300)">-₪300</button>
+          </div>
+          <div class="section-title">✏️ הזנה ידנית</div>
+          <div class="manual-input">
+            <input type="number" id="debt-ido-manual" placeholder="סכום..." step="0.01">
+            <button class="btn btn-success btn-sm" onclick="manualDebt('ido',1)">+</button>
+            <button class="btn btn-danger btn-sm" onclick="manualDebt('ido',-1)">−</button>
+          </div>
+        </div>
+
+        <!-- Maor -->
+        <div class="debt-block">
+          <h3>⚖️ חוב מאור</h3>
+          <div class="debt-amount">
+            <span class="debt-currency">₪</span><span id="debt-maor-display">0</span>
+          </div>
+          <div class="section-title">➕ הוספה מהירה</div>
+          <div class="quick-buttons">
+            <button class="quick-btn add" onclick="quickDebt('maor',50)">+₪50</button>
+            <button class="quick-btn add" onclick="quickDebt('maor',100)">+₪100</button>
+            <button class="quick-btn add" onclick="quickDebt('maor',150)">+₪150</button>
+            <button class="quick-btn add" onclick="quickDebt('maor',200)">+₪200</button>
+            <button class="quick-btn add" onclick="quickDebt('maor',250)">+₪250</button>
+            <button class="quick-btn add" onclick="quickDebt('maor',300)">+₪300</button>
+          </div>
+          <div class="section-title">➖ הפחתה מהירה</div>
+          <div class="quick-buttons">
+            <button class="quick-btn sub" onclick="quickDebt('maor',-50)">-₪50</button>
+            <button class="quick-btn sub" onclick="quickDebt('maor',-100)">-₪100</button>
+            <button class="quick-btn sub" onclick="quickDebt('maor',-150)">-₪150</button>
+            <button class="quick-btn sub" onclick="quickDebt('maor',-200)">-₪200</button>
+            <button class="quick-btn sub" onclick="quickDebt('maor',-250)">-₪250</button>
+            <button class="quick-btn sub" onclick="quickDebt('maor',-300)">-₪300</button>
+          </div>
+          <div class="section-title">✏️ הזנה ידנית</div>
+          <div class="manual-input">
+            <input type="number" id="debt-maor-manual" placeholder="סכום..." step="0.01">
+            <button class="btn btn-success btn-sm" onclick="manualDebt('maor',1)">+</button>
+            <button class="btn btn-danger btn-sm" onclick="manualDebt('maor',-1)">−</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PAGE 5: HISTORY ===== -->
+    <div id="page-history" class="page">
+      <div class="page-header">
+        <h1>היסטוריה וגרפים</h1>
+        <p>נתוני תקופות קודמות</p>
+      </div>
+
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-title">📋 טבלת היסטוריה</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>תאריך סגירה</th><th>הוצאות (צ')</th><th>משיכות (₪)</th>
+                <th>רווח כללי</th><th>רווח עידו</th><th>רווח מאור</th>
+                <th>סוג</th><th>נסגר ע"י</th><th>הערות</th><th>פעולות</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <tr><td colspan="10" class="empty-state">אין נתוני היסטוריה</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-title">📈 גרף רווח לאורך זמן</div>
+        <div class="chart-container">
+          <canvas id="profit-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📥 ייבוא תקופה היסטורית</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>תאריך התחלה</label>
+            <input type="date" id="hist-start">
+          </div>
+          <div class="form-group">
+            <label>תאריך סיום *</label>
+            <input type="date" id="hist-end">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>סה"כ הוצאות (צ'יפים)</label>
+            <input type="number" id="hist-expenses" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>סה"כ משיכות (₪)</label>
+            <input type="number" id="hist-withdrawals" placeholder="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>רווח כללי (₪)</label>
+            <input type="number" id="hist-profit-total" placeholder="0" oninput="autoSplitProfit()">
+          </div>
+          <div class="form-group">
+            <label>רווח עידו (₪)</label>
+            <input type="number" id="hist-profit-ido" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>רווח מאור (₪)</label>
+            <input type="number" id="hist-profit-maor" placeholder="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>הערה (אופציונלי)</label>
+          <input type="text" id="hist-notes" placeholder="הזן הערה חופשית...">
+        </div>
+        <button class="btn btn-primary" onclick="importHistory()">💾 שמור בהיסטוריה</button>
+      </div>
+    </div>
+
+    <!-- ===== PAGE 6: PLAYERS ===== -->
+    <div id="page-players" class="page">
+      <div class="page-header">
+        <h1>ניהול שחקנים</h1>
+        <p>ניהול רשימת השחקנים ואחוזי ה-Rakeback</p>
+      </div>
+
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-title">➕ הוסף שחקן חדש</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>שם שחקן</label>
+            <input type="text" id="new-player-name" placeholder="שם מלא..."
+                   onkeydown="if(event.key==='Enter') addPlayer()">
+          </div>
+          <div class="form-group">
+            <label>אחוז החזר גנייה (%)</label>
+            <input type="number" id="new-player-rakeback" placeholder="60" min="0" max="100" value="60">
+          </div>
+          <div class="form-group" style="display:flex;align-items:flex-end">
+            <button class="btn btn-primary" onclick="addPlayer()">➕ הוסף שחקן</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">👥 רשימת שחקנים</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>שם שחקן</th><th>אחוז החזר גנייה</th><th>תאריך הוספה</th><th>פעולות</th></tr>
+            </thead>
+            <tbody id="players-table-body">
+              <tr><td colspan="4" class="empty-state">אין שחקנים רשומים</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- CONFIRM DIALOG (injected by JS) -->
+<div id="confirm-overlay" class="confirm-overlay" style="display:none">
+  <div class="confirm-dialog">
+    <h3 id="confirm-title">⚠️ אישור פעולה</h3>
+    <p id="confirm-msg"></p>
+    <div class="confirm-buttons">
+      <button id="confirm-ok" class="btn btn-danger">אשר</button>
+      <button class="btn btn-secondary" onclick="closeConfirm()">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
