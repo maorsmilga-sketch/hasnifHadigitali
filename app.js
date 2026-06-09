@@ -123,6 +123,7 @@ function doLogin() {
     sessionStorage.setItem('currentUser', username);
     errEl.style.display = 'none';
     mountApp();
+    initPinLock(); // start inactivity timer after fresh login (no PIN shown yet)
   } else {
     errEl.style.display = 'block';
     errEl.textContent   = 'שם משתמש או סיסמא שגויים';
@@ -163,7 +164,6 @@ async function mountApp() {
   }
 
   initPayboxOwnerUI();
-  initPinLock();
   navigate('dashboard');
 }
 
@@ -1633,7 +1633,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const user = getCurrentUser();
   if (user) {
     mountApp();
-    initPinLock();
+    initPinLock(); // register inactivity + visibility listeners
+    showPinLock(); // show PIN immediately when returning with an active session
   } else {
     document.getElementById('login-page').style.display = 'flex';
     document.getElementById('app').style.display        = 'none';
