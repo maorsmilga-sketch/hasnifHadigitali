@@ -1639,8 +1639,9 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   .debt-block h3 { font-size: 15px; margin-bottom: 4px; }
   .debt-amount { font-size: 40px; padding: 8px 0; text-align: center; flex: unset; }
   .debt-currency { font-size: 20px; }
-  .debt-block .manual-input { width: 100%; }
-  .debt-block .manual-input input { min-width: 0; flex: 1; }
+  .debt-block .manual-input { width: 100%; display: flex; gap: 8px; box-sizing: border-box; }
+  .debt-block .manual-input input { flex: 1 1 auto; min-width: 0; box-sizing: border-box; }
+  .debt-block .manual-input .btn { flex: 0 0 56px; width: 56px; padding: 0; height: 48px; font-size: 22px; }
   .stat-value { font-size: 20px; }
   .stat-card  { padding: 14px; }
   .debt-amount { font-size: 36px; }
