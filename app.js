@@ -1163,11 +1163,33 @@ async function loadPlayers() {
   }
 }
 
+function getPlayersSearchQuery() {
+  return (document.getElementById('players-search')?.value || '').trim().toLowerCase();
+}
+
+function getFilteredPlayers() {
+  const q = getPlayersSearchQuery();
+  if (!q) return [...players];
+  return players.filter(p =>
+    (p.name || '').toLowerCase().includes(q) ||
+    (p.nickname || '').toLowerCase().includes(q)
+  );
+}
+
+function filterPlayersList() {
+  renderPlayersTable();
+}
+
 function renderPlayersTable() {
   const tbody      = document.getElementById('players-table-body');
   const cardsBody  = document.getElementById('players-cards-body');
   const countEl    = document.getElementById('players-count');
-  if (countEl) countEl.textContent = players.length;
+  const filtered   = getFilteredPlayers();
+  const q          = getPlayersSearchQuery();
+
+  if (countEl) {
+    countEl.textContent = q ? `${filtered.length}/${players.length}` : String(players.length);
+  }
 
   if (!players.length) {
     tbody.innerHTML     = '<tr><td colspan="6" class="empty-state">אין שחקנים רשומים</td></tr>';
@@ -1175,8 +1197,14 @@ function renderPlayersTable() {
     return;
   }
 
+  if (!filtered.length) {
+    tbody.innerHTML     = '<tr><td colspan="6" class="empty-state">לא נמצאו שחקנים תואמים</td></tr>';
+    cardsBody.innerHTML = '<div class="empty-state">לא נמצאו שחקנים תואמים</div>';
+    return;
+  }
+
   // — Desktop table rows —
-  tbody.innerHTML = players.map(p => {
+  tbody.innerHTML = filtered.map(p => {
     const rb    = p.rakeback_percent != null && p.rakeback_percent !== '' ? p.rakeback_percent + '%' : '—';
     const wdLbl = WITHDRAWAL_LABELS[p.preferred_withdrawal] || '—';
     return `
@@ -1197,7 +1225,7 @@ function renderPlayersTable() {
   }).join('');
 
   // — Mobile player cards —
-  cardsBody.innerHTML = players.map(p => {
+  cardsBody.innerHTML = filtered.map(p => {
     const rb    = p.rakeback_percent != null && p.rakeback_percent !== '' ? p.rakeback_percent + '%' : '—';
     const wdLbl = WITHDRAWAL_LABELS[p.preferred_withdrawal] || '—';
     return `
@@ -1229,6 +1257,52 @@ function renderPlayersTable() {
       </div>
     </div>`;
   }).join('');
+}
+
+function openAddPlayerModal() {
+  const existing = document.getElementById('add-player-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'add-player-modal';
+  modal.className = 'confirm-overlay';
+  modal.innerHTML = `
+    <div class="confirm-dialog" style="max-width:480px;text-align:right">
+      <h3 style="color:var(--accent);margin-bottom:20px">➕ הוסף שחקן חדש</h3>
+      <div class="form-group">
+        <label>שם מלא <span class="required">*</span></label>
+        <input type="text" id="ap-name" placeholder="ישראל ישראלי"
+               onkeydown="if(event.key==='Enter') addPlayer()">
+      </div>
+      <div class="form-group">
+        <label>כינוי</label>
+        <input type="text" id="ap-nickname" placeholder="ניק / שם בשולחן...">
+      </div>
+      <div class="form-group">
+        <label>אחוז החזר גנייה (%)</label>
+        <input type="number" id="ap-rakeback" placeholder="0" min="0" max="100">
+        <span class="field-hint">השאר ריק אם אין החזר גנייה</span>
+      </div>
+      <div class="form-group">
+        <label>אופן משיכה מועדף</label>
+        <select id="ap-withdrawal">
+          <option value="bit">💳 ביט</option>
+          <option value="paybox">📱 פייבוקס</option>
+          <option value="cashcash">💰 קאשקאש</option>
+          <option value="bank_transfer">🏦 העברה בנקאית</option>
+        </select>
+      </div>
+      <div class="confirm-buttons" style="margin-top:20px">
+        <button class="btn btn-success" onclick="addPlayer()">➕ הוסף שחקן</button>
+        <button class="btn btn-secondary" onclick="closeAddPlayerModal()">ביטול</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('ap-name').focus();
+}
+
+function closeAddPlayerModal() {
+  document.getElementById('add-player-modal')?.remove();
 }
 
 // Edit modal
@@ -1304,11 +1378,11 @@ async function savePlayer(id) {
 }
 
 async function addPlayer() {
-  const name       = document.getElementById('new-player-name').value.trim();
-  const nickname   = document.getElementById('new-player-nickname').value.trim() || null;
-  const rbVal      = document.getElementById('new-player-rakeback').value;
+  const name       = document.getElementById('ap-name')?.value.trim();
+  const nickname   = document.getElementById('ap-nickname')?.value.trim() || null;
+  const rbVal      = document.getElementById('ap-rakeback')?.value;
   const rb         = rbVal !== '' ? parseFloat(rbVal) : null;
-  const withdrawal = document.getElementById('new-player-withdrawal').value || 'bit';
+  const withdrawal = document.getElementById('ap-withdrawal')?.value || 'bit';
 
   if (!name) { showNotif('אנא הזן שם שחקן', 'error'); return; }
   if (rb !== null && (isNaN(rb) || rb < 0 || rb > 100)) {
@@ -1321,11 +1395,7 @@ async function addPlayer() {
     });
     if (result && result[0]) players.push(result[0]);
 
-    document.getElementById('new-player-name').value       = '';
-    document.getElementById('new-player-nickname').value   = '';
-    document.getElementById('new-player-rakeback').value   = '';
-    document.getElementById('new-player-withdrawal').value = 'bit';
-
+    closeAddPlayerModal();
     renderPlayersTable();
     showNotif('✅ שחקן נוסף בהצלחה');
   } catch (e) {
