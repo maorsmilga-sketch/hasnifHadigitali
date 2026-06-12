@@ -751,6 +751,10 @@ async function refreshBTSummary() {
     setText('dash-bn-sum',  `${fmt(sumBn)} צ'`);
     setText('dash-ref-sum', `${fmt(sumRef)} צ'`);
     setText('dash-wd-sum',  `₪${fmt(sumWdIls)}`);
+
+    // Dashboard expenses cards
+    setText('val-expenses-chips', fmt(totalChips));
+    setText('val-expenses-ils',   fmt(totalChips / 10));
   } catch {}
 }
 

@@ -116,6 +116,14 @@
           <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-maor">0</span></div>
           <div class="stat-sub">לאחר חובות: <span id="val-profit-maor-net">₪0</span></div>
         </div>
+        <div class="stat-card negative">
+          <div class="stat-label">סה"כ הוצאות (צ')</div>
+          <div class="stat-value"><span id="val-expenses-chips">0</span></div>
+        </div>
+        <div class="stat-card negative">
+          <div class="stat-label">סה"כ הוצאות (₪)</div>
+          <div class="stat-value"><span class="currency">₪</span><span id="val-expenses-ils">0</span></div>
+        </div>
       </div>
 
       <div class="card">
@@ -494,25 +502,6 @@
           <div class="debt-amount">
             <span class="debt-currency">₪</span><span id="debt-ido-display">0</span>
           </div>
-          <div class="section-title">➕ הוספה מהירה</div>
-          <div class="quick-buttons">
-            <button class="quick-btn add" onclick="quickDebt('ido',50)">+₪50</button>
-            <button class="quick-btn add" onclick="quickDebt('ido',100)">+₪100</button>
-            <button class="quick-btn add" onclick="quickDebt('ido',150)">+₪150</button>
-            <button class="quick-btn add" onclick="quickDebt('ido',200)">+₪200</button>
-            <button class="quick-btn add" onclick="quickDebt('ido',250)">+₪250</button>
-            <button class="quick-btn add" onclick="quickDebt('ido',300)">+₪300</button>
-          </div>
-          <div class="section-title">➖ הפחתה מהירה</div>
-          <div class="quick-buttons">
-            <button class="quick-btn sub" onclick="quickDebt('ido',-50)">-₪50</button>
-            <button class="quick-btn sub" onclick="quickDebt('ido',-100)">-₪100</button>
-            <button class="quick-btn sub" onclick="quickDebt('ido',-150)">-₪150</button>
-            <button class="quick-btn sub" onclick="quickDebt('ido',-200)">-₪200</button>
-            <button class="quick-btn sub" onclick="quickDebt('ido',-250)">-₪250</button>
-            <button class="quick-btn sub" onclick="quickDebt('ido',-300)">-₪300</button>
-          </div>
-          <div class="section-title">✏️ הזנה ידנית</div>
           <div class="manual-input">
             <input type="number" id="debt-ido-manual" placeholder="סכום..." step="0.01">
             <button class="btn btn-success btn-sm" onclick="manualDebt('ido',1)">+</button>
@@ -526,25 +515,6 @@
           <div class="debt-amount">
             <span class="debt-currency">₪</span><span id="debt-maor-display">0</span>
           </div>
-          <div class="section-title">➕ הוספה מהירה</div>
-          <div class="quick-buttons">
-            <button class="quick-btn add" onclick="quickDebt('maor',50)">+₪50</button>
-            <button class="quick-btn add" onclick="quickDebt('maor',100)">+₪100</button>
-            <button class="quick-btn add" onclick="quickDebt('maor',150)">+₪150</button>
-            <button class="quick-btn add" onclick="quickDebt('maor',200)">+₪200</button>
-            <button class="quick-btn add" onclick="quickDebt('maor',250)">+₪250</button>
-            <button class="quick-btn add" onclick="quickDebt('maor',300)">+₪300</button>
-          </div>
-          <div class="section-title">➖ הפחתה מהירה</div>
-          <div class="quick-buttons">
-            <button class="quick-btn sub" onclick="quickDebt('maor',-50)">-₪50</button>
-            <button class="quick-btn sub" onclick="quickDebt('maor',-100)">-₪100</button>
-            <button class="quick-btn sub" onclick="quickDebt('maor',-150)">-₪150</button>
-            <button class="quick-btn sub" onclick="quickDebt('maor',-200)">-₪200</button>
-            <button class="quick-btn sub" onclick="quickDebt('maor',-250)">-₪250</button>
-            <button class="quick-btn sub" onclick="quickDebt('maor',-300)">-₪300</button>
-          </div>
-          <div class="section-title">✏️ הזנה ידנית</div>
           <div class="manual-input">
             <input type="number" id="debt-maor-manual" placeholder="סכום..." step="0.01">
             <button class="btn btn-success btn-sm" onclick="manualDebt('maor',1)">+</button>
