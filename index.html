@@ -144,6 +144,32 @@
       </div>
 
       <div class="card">
+        <h3 class="section-title" style="margin-top:0">📊 סיכום טבלה כחולה (תקופה נוכחית)</h3>
+        <div class="dash-bt-grid">
+          <div class="dash-bt-item">
+            <span class="dash-bt-label">💸 החזרי גנייה</span>
+            <span class="dash-bt-val" id="dash-rb-sum">—</span>
+          </div>
+          <div class="dash-bt-item">
+            <span class="dash-bt-label">🏆 טורנירים</span>
+            <span class="dash-bt-val" id="dash-tn-sum">—</span>
+          </div>
+          <div class="dash-bt-item">
+            <span class="dash-bt-label">🎁 בונוסים</span>
+            <span class="dash-bt-val" id="dash-bn-sum">—</span>
+          </div>
+          <div class="dash-bt-item">
+            <span class="dash-bt-label">🤝 חבר מביא חבר</span>
+            <span class="dash-bt-val" id="dash-ref-sum">—</span>
+          </div>
+          <div class="dash-bt-item">
+            <span class="dash-bt-label">💳 משיכות</span>
+            <span class="dash-bt-val negative-color" id="dash-wd-sum">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
         <h3 class="section-title" style="margin-top:0">🔒 סגירת תקופה</h3>
         <p style="color:var(--text-secondary);font-size:13px;line-height:1.7;margin-bottom:20px">
           פעולה זו תשמור את נתוני התקופה הנוכחית בהיסטוריה ותאפס את כל ה­נתונים.<br>
@@ -286,9 +312,11 @@
           <div class="form-row">
             <div class="form-group">
               <label>שחקן</label>
-              <select id="rb-player" onchange="updateRakebackCalc()">
-                <option value="">בחר שחקן...</option>
-              </select>
+              <div class="player-ac-wrap" id="rb-player-wrap">
+                <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                <input type="hidden" id="rb-player">
+                <ul class="player-ac-list"></ul>
+              </div>
             </div>
             <div class="form-group">
               <label>כמות גנייה שנלקחה (צ'יפים)</label>
@@ -311,6 +339,7 @@
             <tbody id="rb-table-body"><tr><td colspan="7" class="empty-state">אין רשומות</td></tr></tbody>
           </table>
         </div>
+        <div class="tab-summary" id="bt-rb-summary"></div>
       </div>
 
       <!-- Tab: Tournaments -->
@@ -320,7 +349,11 @@
           <div class="form-row">
             <div class="form-group">
               <label>שחקן זוכה</label>
-              <select id="tn-player"><option value="">בחר שחקן...</option></select>
+              <div class="player-ac-wrap" id="tn-player-wrap">
+                <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                <input type="hidden" id="tn-player">
+                <ul class="player-ac-list"></ul>
+              </div>
             </div>
             <div class="form-group">
               <label>סוג טורניר</label>
@@ -347,6 +380,7 @@
             <tbody id="tn-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
           </table>
         </div>
+        <div class="tab-summary" id="bt-tn-summary"></div>
       </div>
 
       <!-- Tab: Bonuses -->
@@ -356,7 +390,11 @@
           <div class="form-row">
             <div class="form-group">
               <label>שחקן</label>
-              <select id="bn-player"><option value="">בחר שחקן...</option></select>
+              <div class="player-ac-wrap" id="bn-player-wrap">
+                <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                <input type="hidden" id="bn-player">
+                <ul class="player-ac-list"></ul>
+              </div>
             </div>
             <div class="form-group">
               <label>כמות צ'יפים</label>
@@ -373,6 +411,7 @@
             <tbody id="bn-table-body"><tr><td colspan="5" class="empty-state">אין רשומות</td></tr></tbody>
           </table>
         </div>
+        <div class="tab-summary" id="bt-bn-summary"></div>
       </div>
 
       <!-- Tab: Referrals -->
@@ -382,11 +421,19 @@
           <div class="form-row">
             <div class="form-group">
               <label>שחקן מביא</label>
-              <select id="ref-from"><option value="">בחר שחקן...</option></select>
+              <div class="player-ac-wrap" id="ref-from-wrap">
+                <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                <input type="hidden" id="ref-from">
+                <ul class="player-ac-list"></ul>
+              </div>
             </div>
             <div class="form-group">
               <label>שחקן מובא</label>
-              <select id="ref-to"><option value="">בחר שחקן...</option></select>
+              <div class="player-ac-wrap" id="ref-to-wrap">
+                <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                <input type="hidden" id="ref-to">
+                <ul class="player-ac-list"></ul>
+              </div>
             </div>
             <div class="form-group">
               <label>סכום (צ'יפים)</label>
@@ -403,6 +450,7 @@
             <tbody id="ref-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
           </table>
         </div>
+        <div class="tab-summary" id="bt-ref-summary"></div>
       </div>
 
       <!-- Tab: Withdrawals -->
@@ -412,15 +460,15 @@
           <div class="form-row">
             <div class="form-group">
               <label>שחקן</label>
-              <select id="wd-player"><option value="">בחר שחקן...</option></select>
+              <div class="player-ac-wrap" id="wd-player-wrap">
+                <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                <input type="hidden" id="wd-player">
+                <ul class="player-ac-list"></ul>
+              </div>
             </div>
             <div class="form-group">
               <label>תאריך</label>
               <input type="date" id="wd-date">
-            </div>
-            <div class="form-group">
-              <label>סכום בכסף (₪)</label>
-              <input type="number" id="wd-ils" placeholder="0" min="0" step="0.01">
             </div>
             <div class="form-group">
               <label>כמות צ'יפים</label>
@@ -437,6 +485,7 @@
             <tbody id="wd-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
           </table>
         </div>
+        <div class="tab-summary" id="bt-wd-summary"></div>
       </div>
 
       <!-- Blue Table Summary (fixed bottom) -->

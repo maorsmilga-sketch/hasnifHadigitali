@@ -30,6 +30,7 @@ let chartMonths     = null;     // null = all, or number of months
 let pinEntry        = '';
 let pinLocked       = false;
 let pinInactiveTimer = null;
+const acPlayerData  = {}; // { hiddenInputId: playerObject } — tracks autocomplete selections
 
 // ============================================================
 // SUPABASE REST HELPERS
@@ -269,6 +270,9 @@ async function loadDashboard() {
   if (profitCard) {
     profitCard.className = 'stat-card ' + (profit >= 0 ? 'positive' : 'negative');
   }
+
+  // Blue table summary for dashboard card
+  refreshBTSummary();
 }
 
 // ============================================================
@@ -330,7 +334,7 @@ async function loadBlueTable() {
   // Refresh players list in case it changed
   try { players = (await dbGet('players', '?order=name.asc')) || []; } catch {}
 
-  populatePlayerDropdowns();
+  initAllPlayerACs();
 
   // Set today's date on withdrawal form if empty
   const wdDate = document.getElementById('wd-date');
@@ -353,22 +357,94 @@ async function loadBlueTable() {
   await refreshBTSummary();
 }
 
-function populatePlayerDropdowns() {
-  const ids = ['rb-player','tn-player','bn-player','ref-from','ref-to','wd-player'];
-  ids.forEach(sid => {
-    const sel = document.getElementById(sid);
-    if (!sel) return;
-    const prev = sel.value;
-    sel.innerHTML = '<option value="">בחר שחקן...</option>';
-    players.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.id;
-      opt.textContent = p.name;
-      opt.dataset.rakeback = p.rakeback_percent;
-      sel.appendChild(opt);
+// ============================================================
+// PLAYER AUTOCOMPLETE WIDGET
+// ============================================================
+function initPlayerAC(wrapId, hiddenId, filterFn, onSelect) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  if (wrap.dataset.acInit) return; // already wired up — listeners stay, list refreshes via global players
+  wrap.dataset.acInit = '1';
+
+  const textInput  = wrap.querySelector('.player-ac-input');
+  const hiddenInput = document.getElementById(hiddenId);
+  const listEl     = wrap.querySelector('.player-ac-list');
+
+  function getList() {
+    return filterFn ? players.filter(filterFn) : [...players];
+  }
+
+  function renderList(list) {
+    if (!list.length) { listEl.style.display = 'none'; return; }
+    listEl.innerHTML = list.map(p => {
+      const nick = escHtml(p.nickname || p.name);
+      const sub  = p.nickname ? `<span class="player-ac-sub">${escHtml(p.name)}</span>` : '';
+      return `<li class="player-ac-item" data-id="${p.id}">${nick}${sub}</li>`;
+    }).join('');
+    listEl.style.display = 'block';
+    listEl.querySelectorAll('.player-ac-item').forEach(li => {
+      li.addEventListener('mousedown', e => {
+        e.preventDefault();
+        const p = getList().find(x => x.id === li.dataset.id);
+        if (!p) return;
+        hiddenInput.value      = p.id;
+        textInput.value        = p.nickname || p.name;
+        acPlayerData[hiddenId] = p;
+        listEl.style.display   = 'none';
+        if (onSelect) onSelect(p);
+      });
     });
-    if (prev) sel.value = prev;
+  }
+
+  textInput.addEventListener('input', () => {
+    const q = textInput.value.trim().toLowerCase();
+    hiddenInput.value = '';
+    delete acPlayerData[hiddenId];
+    if (!q) { listEl.style.display = 'none'; return; }
+    renderList(getList().filter(p =>
+      (p.nickname || '').toLowerCase().includes(q) ||
+      (p.name || '').toLowerCase().includes(q)
+    ));
   });
+
+  textInput.addEventListener('focus', () => {
+    const q = textInput.value.trim().toLowerCase();
+    const all = getList();
+    renderList(q ? all.filter(p =>
+      (p.nickname || '').toLowerCase().includes(q) ||
+      (p.name || '').toLowerCase().includes(q)
+    ) : all);
+  });
+
+  textInput.addEventListener('blur', () => {
+    setTimeout(() => { listEl.style.display = 'none'; }, 150);
+  });
+}
+
+function clearPlayerAC(hiddenId) {
+  const wrap = document.getElementById(hiddenId + '-wrap');
+  if (wrap) {
+    const inp  = wrap.querySelector('.player-ac-input');
+    const list = wrap.querySelector('.player-ac-list');
+    if (inp)  inp.value = '';
+    if (list) list.style.display = 'none';
+  }
+  const hid = document.getElementById(hiddenId);
+  if (hid) hid.value = '';
+  delete acPlayerData[hiddenId];
+}
+
+function initAllPlayerACs() {
+  // rb-player: only players with rakeback_percent > 0
+  initPlayerAC('rb-player-wrap', 'rb-player',
+    p => (p.rakeback_percent || 0) > 0,
+    () => updateRakebackCalc()
+  );
+  initPlayerAC('tn-player-wrap', 'tn-player', null);
+  initPlayerAC('bn-player-wrap', 'bn-player', null);
+  initPlayerAC('ref-from-wrap',  'ref-from',  null);
+  initPlayerAC('ref-to-wrap',    'ref-to',    null);
+  initPlayerAC('wd-player-wrap', 'wd-player', null);
 }
 
 // — Counter —
@@ -391,43 +467,46 @@ async function saveCounter() {
 
 // — Rakeback —
 function updateRakebackCalc() {
-  const sel  = document.getElementById('rb-player');
+  const p    = acPlayerData['rb-player'];
   const rake = parseFloat(document.getElementById('rb-rake')?.value) || 0;
-  const pct  = parseFloat(sel?.options[sel.selectedIndex]?.dataset?.rakeback) || 60;
+  const pct  = parseFloat(p?.rakeback_percent) || 60;
   setText('rb-calc', fmt(rake * pct / 100) + ' צ\'יפים');
 }
 
 async function loadRakebackTable() {
   try {
-    const data = await dbGet('blue_table_rakeback', '?order=created_at.desc&select=*,players(name)');
+    const data = await dbGet('blue_table_rakeback', '?order=created_at.desc&select=*,players(name,nickname)');
     const tbody = document.getElementById('rb-table-body');
     if (!data || !data.length) {
       tbody.innerHTML = '<tr><td colspan="7" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      setText('bt-rb-summary', '');
       return;
     }
     tbody.innerHTML = data.map(r => `
       <tr>
         <td>${fmtDate(r.created_at)}</td>
-        <td>${r.players?.name || '—'}</td>
+        <td>${playerLabel(r.players?.name, r.players?.nickname)}</td>
         <td class="chips-color">${fmt(r.rake_taken)}</td>
         <td>${fmt(r.rakeback_percent)}%</td>
         <td class="chips-color"><strong>${fmt(r.rakeback_amount)}</strong></td>
         <td>${r.created_by || '—'}</td>
         <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_rakeback','${r.id}','loadRakebackTable')">מחק</button></td>
       </tr>`).join('');
+    const total = data.reduce((s, r) => s + n(r.rakeback_amount), 0);
+    setText('bt-rb-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total / 10)}`);
   } catch (e) {
     showNotif('שגיאה בטעינת החזרי גנייה: ' + e.message, 'error');
   }
 }
 
 async function addRakeback() {
-  const sel    = document.getElementById('rb-player');
-  const playerId = sel.value;
-  const rake   = parseFloat(document.getElementById('rb-rake').value);
+  const playerId = document.getElementById('rb-player').value;
+  const rake     = parseFloat(document.getElementById('rb-rake').value);
   if (!playerId) { showNotif('אנא בחר שחקן', 'error'); return; }
   if (!rake || rake <= 0) { showNotif('אנא הזן כמות גנייה תקינה', 'error'); return; }
 
-  const pct    = parseFloat(sel.options[sel.selectedIndex]?.dataset?.rakeback) || 60;
+  const p      = acPlayerData['rb-player'];
+  const pct    = parseFloat(p?.rakeback_percent) || 60;
   const amount = rake * pct / 100;
 
   try {
@@ -438,6 +517,7 @@ async function addRakeback() {
     });
     document.getElementById('rb-rake').value = '';
     setText('rb-calc', '0 צ\'יפים');
+    clearPlayerAC('rb-player');
     showNotif('✅ רשומת החזר גנייה נוספה');
     await loadRakebackTable();
     refreshBTSummary();
@@ -449,21 +529,24 @@ async function addRakeback() {
 // — Tournaments —
 async function loadTournamentsTable() {
   try {
-    const data = await dbGet('blue_table_tournaments', '?order=created_at.desc&select=*,players(name)');
+    const data = await dbGet('blue_table_tournaments', '?order=created_at.desc&select=*,players(name,nickname)');
     const tbody = document.getElementById('tn-table-body');
     if (!data || !data.length) {
       tbody.innerHTML = '<tr><td colspan="6" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      setText('bt-tn-summary', '');
       return;
     }
     tbody.innerHTML = data.map(r => `
       <tr>
         <td>${fmtDate(r.created_at)}</td>
-        <td>${r.players?.name || '—'}</td>
+        <td>${playerLabel(r.players?.name, r.players?.nickname)}</td>
         <td>${r.tournament_type === 'omaha' ? 'אומהה' : 'הולדם'}</td>
         <td class="chips-color"><strong>${fmt(r.prize_chips)}</strong></td>
         <td>${r.created_by || '—'}</td>
         <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_tournaments','${r.id}','loadTournamentsTable')">מחק</button></td>
       </tr>`).join('');
+    const total = data.reduce((s, r) => s + n(r.prize_chips), 0);
+    setText('bt-tn-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total / 10)}`);
   } catch (e) {
     showNotif('שגיאה בטעינת טורנירים: ' + e.message, 'error');
   }
@@ -482,6 +565,7 @@ async function addTournament() {
       prize_chips: prize, created_by: getDisplayName()
     });
     document.getElementById('tn-prize').value = '';
+    clearPlayerAC('tn-player');
     showNotif('✅ רשומת טורניר נוספה');
     await loadTournamentsTable();
     refreshBTSummary();
@@ -493,20 +577,23 @@ async function addTournament() {
 // — Bonuses —
 async function loadBonusesTable() {
   try {
-    const data = await dbGet('blue_table_bonuses', '?order=created_at.desc&select=*,players(name)');
+    const data = await dbGet('blue_table_bonuses', '?order=created_at.desc&select=*,players(name,nickname)');
     const tbody = document.getElementById('bn-table-body');
     if (!data || !data.length) {
       tbody.innerHTML = '<tr><td colspan="5" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      setText('bt-bn-summary', '');
       return;
     }
     tbody.innerHTML = data.map(r => `
       <tr>
         <td>${fmtDate(r.created_at)}</td>
-        <td>${r.players?.name || '—'}</td>
+        <td>${playerLabel(r.players?.name, r.players?.nickname)}</td>
         <td class="chips-color"><strong>${fmt(r.chips_amount)}</strong></td>
         <td>${r.created_by || '—'}</td>
         <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_bonuses','${r.id}','loadBonusesTable')">מחק</button></td>
       </tr>`).join('');
+    const total = data.reduce((s, r) => s + n(r.chips_amount), 0);
+    setText('bt-bn-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total / 10)}`);
   } catch (e) {
     showNotif('שגיאה בטעינת בונוסים: ' + e.message, 'error');
   }
@@ -523,6 +610,7 @@ async function addBonus() {
       player_id: playerId, chips_amount: chips, created_by: getDisplayName()
     });
     document.getElementById('bn-chips').value = '';
+    clearPlayerAC('bn-player');
     showNotif('✅ בונוס נוסף');
     await loadBonusesTable();
     refreshBTSummary();
@@ -539,6 +627,7 @@ async function loadReferralsTable() {
     const tbody = document.getElementById('ref-table-body');
     if (!data || !data.length) {
       tbody.innerHTML = '<tr><td colspan="6" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      setText('bt-ref-summary', '');
       return;
     }
     tbody.innerHTML = data.map(r => {
@@ -547,13 +636,15 @@ async function loadReferralsTable() {
       return `
         <tr>
           <td>${fmtDate(r.created_at)}</td>
-          <td>${from?.name || '—'}</td>
-          <td>${to?.name || '—'}</td>
+          <td>${playerLabel(from?.name, from?.nickname)}</td>
+          <td>${playerLabel(to?.name, to?.nickname)}</td>
           <td class="chips-color"><strong>${fmt(r.chips_amount)}</strong></td>
           <td>${r.created_by || '—'}</td>
           <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_referrals','${r.id}','loadReferralsTable')">מחק</button></td>
         </tr>`;
     }).join('');
+    const total = data.reduce((s, r) => s + n(r.chips_amount), 0);
+    setText('bt-ref-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total / 10)}`);
   } catch (e) {
     showNotif('שגיאה בטעינת חבר מביא חבר: ' + e.message, 'error');
   }
@@ -574,6 +665,8 @@ async function addReferral() {
       chips_amount: chips, created_by: getDisplayName()
     });
     document.getElementById('ref-chips').value = '';
+    clearPlayerAC('ref-from');
+    clearPlayerAC('ref-to');
     showNotif('✅ רשומת חבר מביא חבר נוספה');
     await loadReferralsTable();
     refreshBTSummary();
@@ -585,21 +678,25 @@ async function addReferral() {
 // — Withdrawals —
 async function loadWithdrawalsTable() {
   try {
-    const data = await dbGet('withdrawals', '?order=created_at.desc&select=*,players(name)');
+    const data = await dbGet('withdrawals', '?order=created_at.desc&select=*,players(name,nickname)');
     const tbody = document.getElementById('wd-table-body');
     if (!data || !data.length) {
       tbody.innerHTML = '<tr><td colspan="6" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      setText('bt-wd-summary', '');
       return;
     }
     tbody.innerHTML = data.map(r => `
       <tr>
         <td>${r.withdrawal_date || fmtDate(r.created_at)}</td>
-        <td>${r.players?.name || '—'}</td>
+        <td>${playerLabel(r.players?.name, r.players?.nickname)}</td>
         <td class="positive-color"><strong>₪${fmt(r.amount_ils)}</strong></td>
         <td class="chips-color">${fmt(r.chips_amount)}</td>
         <td>${r.created_by || '—'}</td>
         <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('withdrawals','${r.id}','loadWithdrawalsTable')">מחק</button></td>
       </tr>`).join('');
+    const totalIls   = data.reduce((s, r) => s + n(r.amount_ils), 0);
+    const totalChips = data.reduce((s, r) => s + n(r.chips_amount), 0);
+    setText('bt-wd-summary', `סה"כ: ₪${fmt(totalIls)} | ${fmt(totalChips)} צ'`);
   } catch (e) {
     showNotif('שגיאה בטעינת משיכות: ' + e.message, 'error');
   }
@@ -608,20 +705,20 @@ async function loadWithdrawalsTable() {
 async function addWithdrawal() {
   const playerId = document.getElementById('wd-player').value;
   const date     = document.getElementById('wd-date').value;
-  const ils      = parseFloat(document.getElementById('wd-ils').value);
   const chips    = parseFloat(document.getElementById('wd-chips').value);
-  if (!playerId)        { showNotif('אנא בחר שחקן', 'error');           return; }
-  if (!date)            { showNotif('אנא בחר תאריך', 'error');          return; }
-  if (!ils || ils <= 0) { showNotif('אנא הזן סכום בש"ח תקין', 'error'); return; }
-  if (!chips || chips <= 0){ showNotif('אנא הזן כמות צ\'יפים', 'error'); return; }
+  if (!playerId)           { showNotif('אנא בחר שחקן', 'error');               return; }
+  if (!date)               { showNotif('אנא בחר תאריך', 'error');              return; }
+  if (!chips || chips <= 0){ showNotif('אנא הזן כמות צ\'יפים תקינה', 'error'); return; }
+
+  const ils = chips / 10;
 
   try {
     await dbPost('withdrawals', {
       player_id: playerId, withdrawal_date: date,
       amount_ils: ils, chips_amount: chips, created_by: getDisplayName()
     });
-    document.getElementById('wd-ils').value   = '';
     document.getElementById('wd-chips').value = '';
+    clearPlayerAC('wd-player');
     showNotif('✅ משיכה נוספה');
     await loadWithdrawalsTable();
     refreshBTSummary();
@@ -646,20 +743,41 @@ async function deleteRecord(table, id, reloadFnName) {
 async function refreshBTSummary() {
   try {
     const [rb, tn, bn, ref, wd] = await Promise.all([
-      dbGet('blue_table_rakeback',  '?select=rakeback_amount'),
+      dbGet('blue_table_rakeback',   '?select=rakeback_amount'),
       dbGet('blue_table_tournaments','?select=prize_chips'),
-      dbGet('blue_table_bonuses',   '?select=chips_amount'),
-      dbGet('blue_table_referrals', '?select=chips_amount'),
-      dbGet('withdrawals',          '?select=amount_ils')
+      dbGet('blue_table_bonuses',    '?select=chips_amount'),
+      dbGet('blue_table_referrals',  '?select=chips_amount'),
+      dbGet('withdrawals',           '?select=amount_ils,chips_amount')
     ]);
 
-    const sum = (arr, key) => (arr || []).reduce((s, r) => s + (n(r[key])), 0);
-    const totalChips = sum(rb,'rakeback_amount') + sum(tn,'prize_chips') + sum(bn,'chips_amount') + sum(ref,'chips_amount');
-    const totalWd    = sum(wd,'amount_ils');
+    const sum = (arr, key) => (arr || []).reduce((s, r) => s + n(r[key]), 0);
+    const sumRb    = sum(rb,  'rakeback_amount');
+    const sumTn    = sum(tn,  'prize_chips');
+    const sumBn    = sum(bn,  'chips_amount');
+    const sumRef   = sum(ref, 'chips_amount');
+    const sumWdIls   = sum(wd, 'amount_ils');
+    const sumWdChips = sum(wd, 'chips_amount');
+    const totalChips = sumRb + sumTn + sumBn + sumRef;
 
+    // Global summary bar
     setText('bt-total-chips',       fmt(totalChips) + ' צ\'יפים');
     setText('bt-total-ils',         '₪' + fmt(totalChips / 10));
-    setText('bt-total-withdrawals', '₪' + fmt(totalWd));
+    setText('bt-total-withdrawals', '₪' + fmt(sumWdIls));
+
+    // Per-tab summary rows (only if not already set by load functions)
+    const upd = (id, txt) => { const el = document.getElementById(id); if (el && !el.textContent) el.textContent = txt; };
+    upd('bt-rb-summary',  `סה"כ: ${fmt(sumRb)} צ' | ₪${fmt(sumRb / 10)}`);
+    upd('bt-tn-summary',  `סה"כ: ${fmt(sumTn)} צ' | ₪${fmt(sumTn / 10)}`);
+    upd('bt-bn-summary',  `סה"כ: ${fmt(sumBn)} צ' | ₪${fmt(sumBn / 10)}`);
+    upd('bt-ref-summary', `סה"כ: ${fmt(sumRef)} צ' | ₪${fmt(sumRef / 10)}`);
+    upd('bt-wd-summary',  `סה"כ: ₪${fmt(sumWdIls)} | ${fmt(sumWdChips)} צ'`);
+
+    // Dashboard card
+    setText('dash-rb-sum',  `${fmt(sumRb)} צ'`);
+    setText('dash-tn-sum',  `${fmt(sumTn)} צ'`);
+    setText('dash-bn-sum',  `${fmt(sumBn)} צ'`);
+    setText('dash-ref-sum', `${fmt(sumRef)} צ'`);
+    setText('dash-wd-sum',  `₪${fmt(sumWdIls)}`);
   } catch {}
 }
 
@@ -1371,6 +1489,24 @@ async function closePeriod() {
 
     showNotif('✅ התקופה נסגרה ונשמרה בהיסטוריה!');
     await loadDashboard();
+
+    // 5. Send WhatsApp summary to the other partner
+    try {
+      const phones    = { ido: '972559877777', maor: '972546819166' };
+      const recipient = getCurrentUser() === 'ido' ? phones.maor : phones.ido;
+      const waMsg     = encodeURIComponent(
+        `סיכום תקופה 🎰 הסניף הדיגיטלי\n` +
+        `━━━━━━━━━━━━━━\n` +
+        `📅 תאריך: ${today()}\n` +
+        `💰 רווח כולל: ₪${fmt(profitTotal)}\n` +
+        `👤 רווח לאחד: ₪${fmt(profitHalf)}\n` +
+        `💸 סה"כ משיכות: ₪${fmt(totalWd)}\n` +
+        `📊 סה"כ הוצאות: ${fmt(totalExpenses)} צ' (₪${fmt(totalExpenses / 10)})\n` +
+        `━━━━━━━━━━━━━━\n` +
+        `נסגר ע"י: ${getDisplayName()}`
+      );
+      window.open(`https://wa.me/${recipient}?text=${waMsg}`, '_blank');
+    } catch {}
 
   } catch (e) {
     showNotif('שגיאה בסגירת תקופה: ' + e.message, 'error');
