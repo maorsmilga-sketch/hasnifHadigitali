@@ -1634,9 +1634,12 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   }
 
   .stats-grid { grid-template-columns: 1fr 1fr; }
-  .debt-grid  { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .debt-block { padding: 18px 14px; }
-  .debt-amount { font-size: 38px; }
+  .debt-grid  { grid-template-columns: 1fr; gap: 10px; }
+  .debt-block { padding: 12px 16px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; }
+  .debt-block h3 { font-size: 15px; white-space: nowrap; margin-bottom: 0; flex-shrink: 0; }
+  .debt-amount { font-size: 34px; padding: 0; text-align: right; flex: 1; }
+  .debt-currency { font-size: 18px; }
+  .debt-block .manual-input { flex-shrink: 0; }
   .stat-value { font-size: 20px; }
   .stat-card  { padding: 14px; }
   .debt-amount { font-size: 36px; }
