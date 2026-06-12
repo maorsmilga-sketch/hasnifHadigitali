@@ -28,6 +28,7 @@ CREATE TABLE current_period (
   bit_dorin  numeric DEFAULT 0,
   paybox     numeric DEFAULT 0,
   cashcash   numeric DEFAULT 0,
+  bank_leumi numeric DEFAULT 0,
   debt_ido   numeric DEFAULT 0,
   debt_maor  numeric DEFAULT 0,
   counter    numeric DEFAULT 0,
@@ -105,7 +106,15 @@ CREATE TABLE history (
 );
 ```
 
-### 2. הגדרת RLS (Row Level Security)
+### 2. מיגרציה — בנק לאומי (פרויקטים קיימים)
+
+אם הטבלה `current_period` כבר קיימת ללא עמודת בנק לאומי, הרץ ב-SQL Editor:
+
+```sql
+ALTER TABLE current_period ADD COLUMN IF NOT EXISTS bank_leumi numeric DEFAULT 0;
+```
+
+### 3. הגדרת RLS (Row Level Security)
 
 כדי שה-anon key יוכל לקרוא ולכתוב, בצע אחת מהאפשרויות:
 
@@ -128,7 +137,7 @@ CREATE POLICY "allow_all" ON players FOR ALL TO anon USING (true) WITH CHECK (tr
 -- (ועוד 7 פעמים לכל שאר הטבלאות)
 ```
 
-### 3. עדכון app.js
+### 4. עדכון app.js
 
 פתח את `app.js` ועדכן את שני הקבועים בתחילת הקובץ:
 
@@ -139,7 +148,7 @@ const SUPABASE_ANON_KEY = 'eyJ...your-anon-key...';
 
 הפרטים זמינים ב-Supabase Dashboard ← Settings ← API.
 
-### 4. עדכון סיסמאות
+### 5. עדכון סיסמאות
 
 באותו הקובץ `app.js`, עדכן:
 
@@ -176,7 +185,7 @@ const USERS = {
 
 | מדד | נוסחה |
 |-----|--------|
-| כסף נזיל | Bit מאור + Bit עידו + Bit רוית + Bit דורין + PayBox + CashCash |
+| כסף נזיל | Bit מאור + Bit עידו + Bit רוית + Bit דורין + PayBox + CashCash + בנק לאומי |
 | סה"כ בקופה | כסף נזיל + חוב עידו + חוב מאור |
 | צ'יפים בכסף | Counter ÷ 10 |
 | רווח כללי | (Counter ÷ 10) − סה"כ בקופה |

@@ -154,11 +154,11 @@ async function loadInitialData() {
     // First-time setup: insert the single control row
     const created = await dbPost('current_period', {
       id: 1, bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
-      paybox: 0, cashcash: 0, debt_ido: 0, debt_maor: 0, counter: 0
+      paybox: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0
     });
     currentPeriod = (created && created[0]) ? created[0] : {
       id: 1, bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
-      paybox: 0, cashcash: 0, debt_ido: 0, debt_maor: 0, counter: 0
+      paybox: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0
     };
   }
 
@@ -217,7 +217,7 @@ async function loadDashboard() {
 
   const cp = currentPeriod || {};
 
-  const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash);
+  const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash) + n(cp.bank_leumi);
   const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor);
   const chipsIls = n(cp.counter) / 10;
   const profit   = chipsIls - liquid;   // רווח כללי ללא ניכוי חובות
@@ -260,6 +260,7 @@ async function loadFunds() {
   setVal('bit_dorin',     cp.bit_dorin || '');
   setVal('paybox',        cp.paybox    || '');
   setVal('cashcash',      cp.cashcash  || '');
+  setVal('bank_leumi',    cp.bank_leumi || '');
   setVal('funds-debt_ido',  cp.debt_ido  || '');
   setVal('funds-debt_maor', cp.debt_maor || '');
 
@@ -268,7 +269,7 @@ async function loadFunds() {
 
 function updateFundsSummary() {
   const g = id => parseFloat(document.getElementById(id)?.value) || 0;
-  const liquid = g('bit_maor') + g('bit_ido') + g('bit_ravit') + g('bit_dorin') + g('paybox') + g('cashcash');
+  const liquid = g('bit_maor') + g('bit_ido') + g('bit_ravit') + g('bit_dorin') + g('paybox') + g('cashcash') + g('bank_leumi');
   const total  = liquid + g('funds-debt_ido') + g('funds-debt_maor');
 
   setText('funds-liquid', '₪' + fmt(liquid));
@@ -282,6 +283,7 @@ async function saveFunds() {
       bit_maor: g('bit_maor'),  bit_ido: g('bit_ido'),
       bit_ravit: g('bit_ravit'), bit_dorin: g('bit_dorin'),
       paybox: g('paybox'),       cashcash: g('cashcash'),
+      bank_leumi: g('bank_leumi'),
       updated_at: now()
     };
 
@@ -752,9 +754,8 @@ async function refreshBTSummary() {
     setText('dash-ref-sum', `${fmt(sumRef)} צ'`);
     setText('dash-wd-sum',  `₪${fmt(sumWdIls)}`);
 
-    // Dashboard expenses cards
-    setText('val-expenses-chips', fmt(totalChips));
-    setText('val-expenses-ils',   fmt(totalChips / 10));
+    // Dashboard expenses card
+    setText('val-expenses-ils', fmt(totalChips / 10));
   } catch {}
 }
 
@@ -1422,7 +1423,7 @@ async function closePeriod() {
     const totalWd = sumField(wd, 'amount_ils');
 
     const cp     = currentPeriod;
-    const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash);
+    const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash) + n(cp.bank_leumi);
     const chipsIls    = n(cp.counter) / 10;
     const profitTotal = chipsIls - liquid;
     const profitHalf  = profitTotal / 2;
@@ -1449,7 +1450,7 @@ async function closePeriod() {
     // 3. Reset current_period — debts are intentionally kept
     const resetData = {
       bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
-      paybox: 0, cashcash: 0,
+      paybox: 0, cashcash: 0, bank_leumi: 0,
       counter: 0, updated_at: now()
     };
     await dbPatch('current_period', '?id=eq.1', resetData);
@@ -1546,14 +1547,17 @@ function loadSettlementPage() {
   setText('st-paybox-ido-val',  '₪' + fmt(paybox));
   setText('st-paybox-maor-val', '₪' + fmt(paybox));
 
-  // Profit per partner
-  const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + paybox + n(cp.cashcash);
+  const bankLeumi = n(cp.bank_leumi);
+  setText('st-bank-leumi', '₪' + fmt(bankLeumi));
+
+  // Profit per partner — full liquid includes Leumi
+  const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + paybox + n(cp.cashcash) + bankLeumi;
   const chipsIls   = n(cp.counter) / 10;
   const profitEach = (chipsIls - liquid) / 2;
 
   setText('st-profit-each', '₪' + fmt(profitEach));
 
-  // Team totals
+  // Team totals — Bit + PayBox only (Leumi excluded)
   const ipoExtra  = (settlementUsePaybox && owner === 'ido')  ? paybox : 0;
   const maorExtra = (settlementUsePaybox && owner === 'maor') ? paybox : 0;
   const teamIdo   = bitIdo + bitDorin + ipoExtra;
@@ -1564,35 +1568,59 @@ function loadSettlementPage() {
 
   // Transfer calculation
   const transfer = profitEach - teamIdo;
-  renderSettlementResult(transfer, profitEach);
+  const abs = Math.abs(transfer);
+  let leumiNeeded = 0;
+  let leumiPayer = null;
+  if (abs >= 0.5) {
+    if (transfer > 0 && teamMaor < abs) {
+      leumiNeeded = abs - teamMaor;
+      leumiPayer = 'maor';
+    } else if (transfer < 0 && teamIdo < abs) {
+      leumiNeeded = abs - teamIdo;
+      leumiPayer = 'ido';
+    }
+  }
+  renderSettlementResult(transfer, profitEach, { leumiNeeded, leumiPayer, bankLeumi });
 }
 
-function renderSettlementResult(transfer, profitEach) {
+function renderSettlementResult(transfer, profitEach, leumi = {}) {
   const label  = document.getElementById('st-result-label');
   const amount = document.getElementById('st-result-amount');
   const sub    = document.getElementById('st-result-sub');
   if (!label || !amount || !sub) return;
 
   const abs = Math.abs(transfer);
+  const { leumiNeeded = 0, leumiPayer = null, bankLeumi = 0 } = leumi;
 
+  let subHtml = '';
   if (Math.abs(transfer) < 0.5) {
     label.textContent  = 'אין צורך בהעברות';
     amount.textContent = '✓';
     amount.style.color = 'var(--positive)';
-    sub.textContent    = 'כל שותף ימשוך את יתרתו ישירות';
+    subHtml            = 'כל שותף ימשוך את יתרתו ישירות';
   } else if (transfer > 0) {
     label.textContent  = 'מאור מעביר לעידו';
     amount.textContent = '₪' + fmt(abs);
     amount.style.color = 'var(--accent)';
-    sub.innerHTML      = `מאור מעביר לעידו <strong>₪${fmt(abs)}</strong> דרך ביט<br>` +
+    subHtml            = `מאור מעביר לעידו <strong>₪${fmt(abs)}</strong> דרך ביט<br>` +
                          `מאור ימשוך לעצמו <strong>₪${fmt(profitEach)}</strong> מהביט שלו`;
   } else {
     label.textContent  = 'עידו מעביר למאור';
     amount.textContent = '₪' + fmt(abs);
     amount.style.color = 'var(--warning)';
-    sub.innerHTML      = `עידו מעביר למאור <strong>₪${fmt(abs)}</strong> דרך ביט<br>` +
+    subHtml            = `עידו מעביר למאור <strong>₪${fmt(abs)}</strong> דרך ביט<br>` +
                          `עידו ימשוך לעצמו <strong>₪${fmt(profitEach)}</strong> מהביט שלו`;
   }
+
+  if (leumiNeeded > 0) {
+    const recipient = leumiPayer === 'maor' ? 'עידו' : 'מאור';
+    subHtml += `<br><span style="color:var(--warning)">אין מספיק בביט — יש למשוך <strong>₪${fmt(leumiNeeded)}</strong> מבנק לאומי ולהעביר ל${recipient}</span>`;
+    if (bankLeumi < leumiNeeded) {
+      subHtml += `<br><span style="color:var(--negative)">⚠️ יתרת בנק לאומי (₪${fmt(bankLeumi)}) עשויה שלא לכסות את הסכום הנדרש</span>`;
+    }
+  }
+
+  sub.innerHTML = subHtml;
 }
 
 function setPayboxUsage(useIt) {

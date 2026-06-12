@@ -117,10 +117,6 @@
           <div class="stat-sub">לאחר חובות: <span id="val-profit-maor-net">₪0</span></div>
         </div>
         <div class="stat-card negative">
-          <div class="stat-label">סה"כ הוצאות (צ')</div>
-          <div class="stat-value"><span id="val-expenses-chips">0</span></div>
-        </div>
-        <div class="stat-card negative">
           <div class="stat-label">סה"כ הוצאות (₪)</div>
           <div class="stat-value"><span class="currency">₪</span><span id="val-expenses-ils">0</span></div>
         </div>
@@ -215,6 +211,11 @@
           <div class="fund-tile">
             <div class="fund-tile-label">💰 CashCash</div>
             <input type="number" id="cashcash" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
+            <div class="fund-tile-currency">₪</div>
+          </div>
+          <div class="fund-tile">
+            <div class="fund-tile-label">🏦 בנק לאומי</div>
+            <input type="number" id="bank_leumi" placeholder="0" min="0" step="0.01" oninput="updateFundsSummary()">
             <div class="fund-tile-currency">₪</div>
           </div>
         </div>
@@ -705,6 +706,10 @@
         <div class="settlement-info-row">
           <span>רווח לכל שותף</span>
           <strong id="st-profit-each">₪0</strong>
+        </div>
+        <div class="settlement-info-row" style="margin-top:14px">
+          <span>בנק לאומי (לא נכלל בהעברות)</span>
+          <strong id="st-bank-leumi">₪0</strong>
         </div>
         <div class="settlement-info-row" style="margin-top:14px;align-items:center">
           <span>לכלול יתרת PayBox בחישוב?</span>
