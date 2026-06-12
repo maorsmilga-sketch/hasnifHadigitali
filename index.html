@@ -14,33 +14,8 @@
 <!-- TOAST NOTIFICATION -->
 <div id="notification"></div>
 
-<!-- ===================== LOGIN PAGE ===================== -->
-<div id="login-page">
-  <div class="login-card">
-    <div class="login-logo">
-      <img src="logo1.png" alt="הסניף הדיגיטלי" class="login-logo-img">
-      <p>מערכת ניהול קופה משותפת</p>
-    </div>
-    <div id="login-error" class="login-error">שם משתמש או סיסמא שגויים</div>
-    <div class="form-group">
-      <label>שם משתמש</label>
-      <select id="login-username">
-        <option value="">בחר משתמש...</option>
-        <option value="ido">עידו</option>
-        <option value="maor">מאור</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>סיסמא</label>
-      <input type="password" id="login-password" placeholder="הזן סיסמא"
-             onkeydown="if(event.key==='Enter') doLogin()">
-    </div>
-    <button class="btn btn-primary" onclick="doLogin()">התחבר למערכת</button>
-  </div>
-</div>
-
 <!-- ===================== MAIN APP ===================== -->
-<div id="app" style="display:none">
+<div id="app">
 
   <!-- TOP NAVBAR -->
   <header id="topbar">
@@ -804,7 +779,7 @@
   <div class="pin-box">
     <div class="pin-logo">🔒</div>
     <div class="pin-title">הסניף הדיגיטלי</div>
-    <div class="pin-subtitle">הזן PIN להמשך</div>
+    <div class="pin-subtitle">הזן את קוד הכניסה שלך</div>
     <div class="pin-dots" id="pin-dots">
       <span class="pin-dot" id="pd0"></span>
       <span class="pin-dot" id="pd1"></span>
@@ -812,6 +787,8 @@
       <span class="pin-dot" id="pd3"></span>
       <span class="pin-dot" id="pd4"></span>
       <span class="pin-dot" id="pd5"></span>
+      <span class="pin-dot" id="pd6"></span>
+      <span class="pin-dot" id="pd7"></span>
     </div>
     <div class="pin-error" id="pin-error"></div>
     <div class="pin-keypad">

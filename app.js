@@ -8,15 +8,15 @@
 const SUPABASE_URL      = 'https://nmwoepvgecnwrxzkyzeu.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_9TvfEI2S3K_M95-LBzikvg_r63QVQXc';
 
-const USERS = {
-  ido:  'ido123',   // סיסמת עידו
-  maor: 'maor123'  // סיסמת מאור
-};
-
 const USER_DISPLAY = { ido: 'עידו', maor: 'מאור' };
 
-const PIN_CODE          = '211286';
-const PIN_TIMEOUT_MS    = 10 * 60 * 1000; // 10 minutes
+// Each PIN maps to a user — PIN is the only authentication method
+const PINS = {
+  '21121986': 'ido',
+  '19121987': 'maor'
+};
+const MAX_PIN_LENGTH = 8;
+const PIN_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 // ============================================================
 // STATE
@@ -107,56 +107,29 @@ function showNotif(msg, type = 'success') {
 }
 
 // ============================================================
-// AUTH
+// AUTH — PIN only, no login page
 // ============================================================
-function doLogin() {
-  const username = document.getElementById('login-username').value;
-  const password = document.getElementById('login-password').value;
-  const errEl    = document.getElementById('login-error');
-
-  if (!username || !password) {
-    errEl.style.display = 'block';
-    errEl.textContent   = 'אנא בחר משתמש והזן סיסמא';
-    return;
-  }
-
-  if (USERS[username] && USERS[username] === password) {
-    sessionStorage.setItem('currentUser', username);
-    errEl.style.display = 'none';
-    mountApp();
-    initPinLock(); // start inactivity timer after fresh login (no PIN shown yet)
-  } else {
-    errEl.style.display = 'block';
-    errEl.textContent   = 'שם משתמש או סיסמא שגויים';
-    document.getElementById('login-password').value = '';
-  }
-}
-
-function doLogout() {
-  sessionStorage.removeItem('currentUser');
-  document.getElementById('app').style.display        = 'none';
-  document.getElementById('login-page').style.display = 'flex';
-  document.getElementById('login-password').value     = '';
-  document.getElementById('login-username').value     = '';
-  currentPeriod = null;
-  players       = [];
-}
-
 function getCurrentUser() {
   return sessionStorage.getItem('currentUser');
 }
 
 function getDisplayName() {
-  return USER_DISPLAY[getCurrentUser()] || getCurrentUser() || '—';
+  return USER_DISPLAY[getCurrentUser()] || '—';
+}
+
+function doLogout() {
+  sessionStorage.removeItem('currentUser');
+  currentPeriod = null;
+  players       = [];
+  showPinLock();
 }
 
 // ============================================================
 // APP MOUNT
 // ============================================================
 async function mountApp() {
-  document.getElementById('login-page').style.display = 'none';
-  document.getElementById('app').style.display        = 'flex';
-  document.getElementById('user-badge').textContent   = getDisplayName();
+  document.getElementById('app').style.display      = 'flex';
+  document.getElementById('user-badge').textContent = getDisplayName();
 
   try {
     await loadInitialData();
@@ -1686,10 +1659,10 @@ function hidePinLock() {
 }
 
 function pinPress(digit) {
-  if (pinEntry.length >= PIN_CODE.length) return;
+  if (pinEntry.length >= MAX_PIN_LENGTH) return;
   pinEntry += digit;
   updatePinDots();
-  if (pinEntry.length === PIN_CODE.length) {
+  if (pinEntry.length === MAX_PIN_LENGTH) {
     setTimeout(checkPin, 120); // brief delay so last dot animates
   }
 }
@@ -1701,7 +1674,10 @@ function pinDel() {
 }
 
 function checkPin() {
-  if (pinEntry === PIN_CODE) {
+  const user = PINS[pinEntry];
+  if (user) {
+    sessionStorage.setItem('currentUser', user);
+    document.getElementById('user-badge').textContent = USER_DISPLAY[user] || user;
     hidePinLock();
   } else {
     // Wrong PIN — flash red, clear
@@ -1719,7 +1695,7 @@ function checkPin() {
 }
 
 function updatePinDots() {
-  for (let i = 0; i < PIN_CODE.length; i++) {
+  for (let i = 0; i < MAX_PIN_LENGTH; i++) {
     const dot = document.getElementById('pd' + i);
     if (dot) {
       dot.classList.toggle('filled', i < pinEntry.length);
@@ -1766,13 +1742,7 @@ function initPinLock() {
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-  const user = getCurrentUser();
-  if (user) {
-    mountApp();
-    initPinLock(); // register inactivity + visibility listeners
-    showPinLock(); // show PIN immediately when returning with an active session
-  } else {
-    document.getElementById('login-page').style.display = 'flex';
-    document.getElementById('app').style.display        = 'none';
-  }
+  mountApp();    // always mount the app (PIN screen covers it)
+  initPinLock(); // register inactivity + visibility listeners
+  showPinLock(); // always require PIN on every load
 });
