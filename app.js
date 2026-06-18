@@ -220,7 +220,7 @@ async function loadDashboard() {
   const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash) + n(cp.bank_leumi);
   const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor);
   const chipsIls = n(cp.counter) / 10;
-  const profit   = chipsIls - liquid;   // רווח כללי ללא ניכוי חובות
+  const profit   = total - chipsIls;    // רווח כללי = סה"כ בקופה פחות צ'יפים בכסף
   const half     = profit / 2;
   const idoNet   = half - n(cp.debt_ido);
   const maorNet  = half - n(cp.debt_maor);
@@ -1494,8 +1494,9 @@ async function closePeriod() {
 
     const cp     = currentPeriod;
     const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash) + n(cp.bank_leumi);
+    const total       = liquid + n(cp.debt_ido) + n(cp.debt_maor);
     const chipsIls    = n(cp.counter) / 10;
-    const profitTotal = chipsIls - liquid;
+    const profitTotal = total - chipsIls;
     const profitHalf  = profitTotal / 2;
 
     // 2. Save full snapshot to history
@@ -1620,10 +1621,11 @@ function loadSettlementPage() {
   const bankLeumi = n(cp.bank_leumi);
   setText('st-bank-leumi', '₪' + fmt(bankLeumi));
 
-  // Profit per partner — full liquid includes Leumi
+  // Profit per partner — total in coffers minus chips value
   const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + paybox + n(cp.cashcash) + bankLeumi;
+  const total      = liquid + n(cp.debt_ido) + n(cp.debt_maor);
   const chipsIls   = n(cp.counter) / 10;
-  const profitEach = (chipsIls - liquid) / 2;
+  const profitEach = (total - chipsIls) / 2;
 
   setText('st-profit-each', '₪' + fmt(profitEach));
 
