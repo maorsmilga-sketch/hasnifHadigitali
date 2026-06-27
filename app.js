@@ -119,9 +119,11 @@ function getDisplayName() {
 
 function doLogout() {
   sessionStorage.removeItem('currentUser');
-  currentPeriod = null;
-  players       = [];
-  showPinLock();
+  currentPeriod   = null;
+  players         = [];
+  window._mgmtMounted = false;
+  document.getElementById('app').style.display = 'none';
+  showContactsSection(); // return to contacts tab — no PIN required
 }
 
 // ============================================================
@@ -130,6 +132,7 @@ function doLogout() {
 async function mountApp() {
   document.getElementById('app').style.display      = 'flex';
   document.getElementById('user-badge').textContent = getDisplayName();
+  showManagementSection(); // switch to management tab immediately
 
   try {
     await loadInitialData();
@@ -1760,6 +1763,16 @@ function hidePinLock() {
   pinLocked = false;
   document.getElementById('pin-overlay').style.display = 'none';
   resetInactivityTimer();
+  // After successful auth, handle any pending tab switch
+  if (window._pendingTabSwitch === 'management') {
+    window._pendingTabSwitch = null;
+    if (!window._mgmtMounted) {
+      window._mgmtMounted = true;
+      mountApp();
+    } else {
+      showManagementSection();
+    }
+  }
 }
 
 function pinPress(digit) {
@@ -1846,7 +1859,7 @@ function initPinLock() {
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-  mountApp();    // always mount the app (PIN screen covers it)
+  // Contacts tab is the default landing page — no auto-mount or PIN on load.
+  // Management is accessed via the tab switcher which handles auth.
   initPinLock(); // register inactivity + visibility listeners
-  showPinLock(); // always require PIN on every load
 });

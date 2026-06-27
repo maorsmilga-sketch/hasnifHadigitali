@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אנשי קשר — שליחה בוואטסאפ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#f4f5f7;--panel:#fff;--ink:#1d2430;--muted:#6b7686;
+  --line:#e6e9ee;--ls:#d6dde5;--head:#0f1b2d;
+  --wa:#25d366;--acc:#2563eb;
+  --maor-bg:#ede9fe;--maor-ink:#5b21b6;
+  --ido-bg:#fff1e0;--ido-ink:#b45309;
+  --sh:0 1px 2px rgba(16,24,40,.04),0 8px 24px rgba(16,24,40,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Heebo",system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+
+/* SETUP */
+#setup{position:fixed;inset:0;background:#0f1b2dee;z-index:1000;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px}
+.setup-card{background:#fff;border-radius:18px;max-width:680px;width:100%;padding:36px 40px;box-shadow:0 24px 80px rgba(0,0,0,.35)}
+.setup-card h1{font-size:22px;font-weight:800;margin-bottom:6px}
+.setup-card .sub{color:var(--muted);margin-bottom:28px;font-size:14px}
+.step{display:flex;gap:14px;margin-bottom:22px;align-items:flex-start}
+.step-num{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--acc);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.step-body{flex:1}.step-body b{display:block;margin-bottom:4px;font-weight:700}
+.step-body a{color:var(--acc);text-decoration:none}.step-body a:hover{text-decoration:underline}
+.config-box{background:#f4f6fb;border:1.5px solid var(--ls);border-radius:10px;padding:16px;margin-top:8px;font-family:monospace;font-size:12.5px;line-height:1.8;direction:ltr;text-align:left;white-space:pre}
+.config-box span{color:#b45309;font-weight:700}
+.note-box{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 16px;font-size:13px;color:#92400e;margin-top:24px}
+
+/* IDENTITY BAR */
+#id-bar{background:var(--head);padding:8px 20px;display:flex;align-items:center;gap:10px;direction:rtl}
+#id-bar span{color:#8899bb;font-size:13px}
+.id-btn{background:transparent;border:1.5px solid #2e4070;color:#8899bb;border-radius:8px;padding:5px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.id-btn:hover{border-color:#4a6fa5;color:#c8d8f0}
+.id-btn.active.maor{background:var(--maor-bg);border-color:var(--maor-ink);color:var(--maor-ink)}
+.id-btn.active.ido{background:var(--ido-bg);border-color:var(--ido-ink);color:var(--ido-ink)}
+#sync{margin-right:auto;font-size:12px;display:flex;align-items:center;gap:5px}
+.dot-ok{color:#22c55e}.dot-off{color:#f59e0b}
+
+/* LAYOUT */
+.wrap{max-width:1320px;margin:0 auto;padding:20px 20px 60px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.title h1{font-size:22px;font-weight:800;letter-spacing:-.01em}
+.title p{color:var(--muted);font-size:12.5px;margin-top:3px}
+.stat{display:flex;align-items:baseline;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;box-shadow:var(--sh)}
+.stat b{font-size:20px;font-weight:800}.stat span{color:var(--muted);font-size:12px}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid var(--line);padding-bottom:0}
+.tab{background:none;border:none;font-family:inherit;font-size:14px;font-weight:600;color:var(--muted);padding:8px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;border-radius:8px 8px 0 0;transition:color .15s,border-color .15s}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc)}
+
+/* OWNER FILTER */
+.owners{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--ls);background:var(--panel);border-radius:10px;padding:7px 13px;font-weight:600;font-size:13px;cursor:pointer;transition:all .15s;color:var(--ink)}
+.seg:hover{border-color:#c2cad6}
+.seg .n{font-weight:800;font-variant-numeric:tabular-nums}
+.seg .dot{width:8px;height:8px;border-radius:50%}
+.seg[data-o="מאור"] .dot{background:var(--maor-ink)}
+.seg[data-o="עידו"] .dot{background:var(--ido-ink)}
+.seg.active{border-color:var(--acc);background:#eff4ff;box-shadow:0 0 0 3px rgba(37,99,235,.10)}
+
+/* STATUS FILTER */
+.status-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.status-filters label{font-size:12px;color:var(--muted);font-weight:600;margin-left:4px;white-space:nowrap}
+.stt-seg{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--ls);background:var(--panel);border-radius:8px;padding:5px 10px;font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;color:var(--ink);white-space:nowrap}
+.stt-seg:hover{border-color:#c2cad6;background:#f8fafc}
+.stt-seg.active{border-color:var(--acc);background:#eff4ff;color:var(--acc);font-weight:700}
+.stt-seg .n{font-size:11px;font-weight:700;background:#e2e8f0;padding:1px 5px;border-radius:99px;line-height:1.4}
+.stt-seg.active .n{background:var(--acc);color:#fff}
+
+/* CONTROLS */
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.controls select{font-family:inherit;font-size:14px;border:1px solid var(--ls);background:var(--panel);border-radius:10px;padding:9px 13px;color:var(--ink);outline:none;transition:border-color .15s}
+.controls select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+.export-btn{display:inline-flex;align-items:center;gap:7px;background:#1d4ed8;color:#fff;border:none;border-radius:10px;padding:9px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;white-space:nowrap;margin-right:auto}
+.export-btn:hover{background:#1e40af}
+.export-btn svg{width:15px;height:15px}
+
+/* TABLE */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
+.scroll{overflow:auto;max-height:calc(100vh - 320px)}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px}
+thead th{position:sticky;top:0;z-index:2;background:var(--head);color:#eaf0f7;font-weight:600;font-size:12.5px;text-align:right;white-space:nowrap;padding:11px 13px;border-bottom:1px solid #0a1422}
+tbody td{padding:10px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:hover{background:#f8fafc}
+tbody tr:last-child td{border-bottom:none}
+/* Squeeze index/owner/WA/group/phone cols to minimum content width */
+thead th:nth-child(1),tbody td:nth-child(1),
+thead th:nth-child(3),tbody td:nth-child(3),
+thead th:nth-child(5),tbody td:nth-child(5),
+thead th:nth-child(6),tbody td:nth-child(6),
+thead th:nth-child(7),tbody td:nth-child(7){width:1%;white-space:nowrap}
+.c-idx{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;font-size:12px}
+.c-name{font-weight:600;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle}
+.name-empty{color:#94a3b8;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;border:1px dashed #cbd5e1;border-radius:6px;padding:2px 8px}
+.name-empty:hover{background:#f1f5f9;border-color:#94a3b8}
+.name-input{font-family:inherit;font-size:13px;border:1.5px solid var(--acc);border-radius:7px;padding:3px 8px;width:120px;outline:none}
+.editable-name{cursor:pointer;display:inline-flex;align-items:center;gap:3px;border-radius:5px;padding:1px 3px;transition:background .15s}
+.editable-name:hover{background:#eff4ff}
+.edit-ico{opacity:0;font-size:10px;transition:opacity .15s;flex-shrink:0}
+.editable-name:hover .edit-ico{opacity:1}
+.c-phone{font-variant-numeric:tabular-nums;direction:ltr;text-align:right;white-space:nowrap;font-size:12.5px}
+.copy-phone{display:inline-block;color:var(--ink);cursor:pointer;border-radius:6px;padding:3px 8px;border:1px solid var(--ls);background:var(--bg);transition:background .15s,color .15s,border-color .15s,box-shadow .15s;white-space:nowrap;font-variant-numeric:tabular-nums;user-select:none}
+.copy-phone:hover{background:#e8f0fe;color:var(--acc);border-color:#93c5fd;box-shadow:0 0 0 2px rgba(37,99,235,.10)}
+.copy-phone.copied{background:#dcfce7;color:#15803d;border-color:#86efac}
+
+/* BADGES */
+.owner{display:inline-block;border-radius:999px;padding:2px 10px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.owner.m{background:var(--maor-bg);color:var(--maor-ink)}
+.owner.d{background:var(--ido-bg);color:var(--ido-ink)}
+.stt-cell{cursor:pointer;white-space:nowrap}
+.stt-cell:hover .stt{box-shadow:0 0 0 2px var(--acc)}
+.stt{display:inline-flex;align-items:center;gap:5px;border-radius:7px;padding:3px 10px;font-size:12px;font-weight:600;white-space:nowrap;background:#eef2f7;color:#475569;border:1px solid transparent}
+.stt.sent{background:#e0f2fe;color:#0369a1}
+.stt.joined{background:#dcfce7;color:#15803d}
+.stt.kid{background:#fef9c3;color:#a16207}
+.stt.arab{background:#fef3c7;color:#92400e}
+.stt.prev{background:#e2e8f0;color:#475569}
+.stt.other{background:#f3e8ff;color:#7c3aed}
+.stt.empty{background:transparent;border:1px dashed #cbd5e1;color:#94a3b8}
+.stt-meta{display:block;font-size:10px;color:#94a3b8;margin-top:2px;font-weight:400}
+.chip{display:inline-block;background:#eef1f5;color:#3a4556;border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:500;white-space:nowrap}
+.chip.ohad{background:#e7f6ef;color:#0c6b46}
+.wa-btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;background:var(--wa);color:#04331d;font-weight:700;font-size:13px;padding:7px 12px;border-radius:10px;white-space:nowrap;transition:transform .08s,background .15s}
+.wa-btn:hover{background:#1fc15d}
+.wa-btn:active{transform:translateY(1px)}
+.wa-btn svg{width:15px;height:15px;display:block;flex-shrink:0}
+.wa-none{color:#b6bdc8;font-size:12px}
+.c-msg{min-width:260px;max-width:440px;color:#39424f;font-size:13px;white-space:pre-line}
+.c-msg .clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.c-msg.open .clamp{display:block;-webkit-line-clamp:unset}
+.more{margin-top:3px;background:none;border:none;color:var(--acc);font-family:inherit;font-size:11.5px;cursor:pointer;padding:0}
+
+/* POPUP */
+#popup{position:fixed;z-index:500;background:#fff;border:1px solid var(--ls);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);padding:6px;min-width:180px;display:none}
+.pop-opt{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;padding:8px 12px;font-family:inherit;font-size:13px;font-weight:500;text-align:right;cursor:pointer;border-radius:8px;color:var(--ink)}
+.pop-opt:hover{background:#f1f5f9}
+.pop-sep{height:1px;background:var(--line);margin:4px 0}
+.pop-custom{display:flex;gap:6px;padding:6px 6px 4px}
+.pop-custom input{flex:1;font-family:inherit;font-size:13px;border:1.5px solid var(--ls);border-radius:7px;padding:5px 8px;outline:none;min-width:0}
+.pop-custom input:focus{border-color:var(--acc)}
+.pop-custom button{background:var(--acc);color:#fff;border:none;border-radius:7px;padding:5px 10px;font-family:inherit;font-size:13px;cursor:pointer}
+
+/* SUMMARY */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:4px}
+.sum-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);overflow:hidden}
+.sum-header{font-size:18px;font-weight:800;padding:16px 20px;display:block;text-align:center}
+.sum-header.m{background:var(--maor-bg);color:var(--maor-ink)}
+.sum-header.d{background:var(--ido-bg);color:var(--ido-ink)}
+.sum-total{text-align:center;font-size:28px;font-weight:800;padding:12px 20px 4px;border-bottom:1px solid var(--line)}
+.sum-total span{display:block;font-size:12px;font-weight:400;color:var(--muted);margin-top:2px}
+.sum-row{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line)}
+.sum-row:last-child{border-bottom:none}
+.sum-label{font-size:13px;font-weight:600;min-width:110px;text-align:right}
+.sum-bar-wrap{flex:1;height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden}
+.sum-bar{height:100%;border-radius:4px;background:var(--acc);transition:width .4s ease}
+.sum-bar.nostat{background:#cbd5e1}
+.sum-count{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;min-width:32px;text-align:center}
+.sum-pct{font-size:11px;color:var(--muted);min-width:34px;text-align:left}
+
+/* MESSAGE EDITOR */
+.msg-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 16px;font-size:13px;color:#1e40af;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.msg-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.msg-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column}
+.mc-head{padding:13px 18px;font-size:14px;font-weight:800;border-bottom:1px solid var(--line)}
+.mc-head.blitz{background:#dbeafe;color:#1e40af}
+.mc-head.poker{background:#fce7f3;color:#9d174d}
+.mc-head.bpoker{background:#ede9fe;color:#5b21b6}
+.mc-head.ohad{background:#e7f6ef;color:#0c6b46}
+.mc-hint{padding:8px 16px 4px;font-size:12px;color:var(--muted)}
+.mc-hint code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-family:monospace}
+.mc-ta{margin:6px 14px;border:1.5px solid var(--ls);border-radius:8px;font-family:inherit;font-size:13px;padding:10px 12px;resize:vertical;outline:none;min-height:100px;line-height:1.7;direction:rtl;color:var(--ink)}
+.mc-ta:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(37,99,235,.10)}
+.mc-preview-label{padding:6px 16px 2px;font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.mc-preview{margin:0 14px 8px;background:#f8fafc;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#39424f;white-space:pre-line;border:1px solid var(--line);min-height:36px}
+.mc-actions{display:flex;justify-content:space-between;align-items:center;padding:8px 14px 14px;gap:8px}
+.mc-reset{background:none;border:1px solid var(--ls);border-radius:8px;padding:6px 12px;font-family:inherit;font-size:12px;color:var(--muted);cursor:pointer;transition:background .15s}
+.mc-reset:hover{background:#f1f5f9;color:var(--ink)}
+.mc-save{background:var(--acc);color:#fff;border:none;border-radius:8px;padding:7px 18px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.mc-save:hover{background:#1e40af}
+.mc-save.saved{background:#15803d}
+
+/* DAILY SENT SUMMARY */
+.daily-sent-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);overflow:hidden;margin-top:20px}
+.ds-header{font-size:15px;font-weight:800;padding:14px 20px;border-bottom:1px solid var(--line);color:var(--ink);display:flex;align-items:center;gap:8px}
+.ds-total-line{padding:10px 20px 2px;font-size:13px;color:var(--muted)}
+.ds-total-line strong{color:var(--ink);font-weight:700}
+.daily-scroll{overflow-x:auto}
+.ds-table{border-collapse:collapse;width:100%}
+.ds-table thead th{background:var(--head);color:#eaf0f7;font-weight:600;font-size:12.5px;text-align:right;padding:9px 18px;white-space:nowrap}
+.ds-table tbody tr:hover{background:#f8fafc}
+.ds-table tbody tr:last-child td{border-bottom:none}
+.ds-table td{padding:9px 18px;border-bottom:1px solid var(--line);font-size:13px;white-space:nowrap}
+.ds-date{font-weight:600;color:var(--ink);direction:ltr;text-align:right}
+.ds-total{font-weight:700;text-align:center;color:var(--ink)}
+.ds-maor,.ds-ido{text-align:center}
+.ds-badge{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:2px 10px;border-radius:999px;font-size:12.5px;font-weight:700}
+.ds-badge.maor{background:var(--maor-bg);color:var(--maor-ink)}
+.ds-badge.ido{background:var(--ido-bg);color:var(--ido-ink)}
+.ds-empty{padding:28px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+/* MISC */
+.empty-state{padding:50px 20px;text-align:center;color:var(--muted)}
+footer{margin-top:12px;color:var(--muted);font-size:12px;text-align:center}
+
+@media(max-width:640px){
+  .wrap{padding:12px 8px 40px}
+  .title h1{font-size:17px}
+  #popup{left:8px!important;right:8px!important;width:auto!important}
+  table{min-width:520px}
+  thead th,tbody td{padding:8px 7px}
+  .c-name{max-width:72px}
+  .name-empty{max-width:72px}
+  thead th:nth-child(8),tbody td:nth-child(8){display:none}
+  .wa-btn{padding:6px 9px;font-size:12px;gap:4px}
+  .wa-btn svg{width:13px;height:13px}
+  .chip,.owner,.stt{padding:2px 7px;font-size:11px}
+  .sum-grid,.msg-grid{grid-template-columns:1fr}
+  .export-btn span{display:none}
+}
+@media(max-width:400px){thead th:nth-child(7),tbody td:nth-child(7){display:none}}
+</style>
+</head>
+<body>
+
+<!-- SETUP OVERLAY -->
+<div id="setup">
+  <div class="setup-card">
+    <h1>🔧 הגדרת Firebase — פעם אחת בלבד</h1>
+    <p class="sub">אחרי ההגדרה, מאור ועידו יוכלו לראות ולעדכן נתונים בזמן אמת מכל מכשיר.</p>
+    <div class="step"><div class="step-num">1</div><div class="step-body"><b>פתח את Firebase Console</b>לך ל <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> ← <b>Add project</b> ← שם (למשל <code>poker-contacts</code>) ← בטל Analytics ← <b>Create project</b></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><b>הפעל Realtime Database</b>מהתפריט: <b>Build → Realtime Database → Create Database</b> ← אזור ← <b>Start in test mode → Enable</b></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><b>קבל Config</b>דף הבית ← לחץ <b>&lt;/&gt;</b> ← הזן שם ← <b>Register app</b>. תקבל:<div class="config-box">const firebaseConfig = {
+  apiKey: <span>"AIzaSy..."</span>,
+  authDomain: <span>"poker-contacts.firebaseapp.com"</span>,
+  databaseURL: <span>"https://poker-contacts-default-rtdb.firebaseio.com"</span>,
+  projectId: <span>"poker-contacts"</span>,
+  storageBucket: <span>"poker-contacts.appspot.com"</span>,
+  messagingSenderId: <span>"123456789"</span>,
+  appId: <span>"1:123:web:abc123"</span>
+};</div></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><b>הדבק ב-HTML</b>פתח הקובץ בעורך טקסט ← חפש <code>PASTE_YOUR_API_KEY</code> ← החלף את כל 7 השדות ← שמור ← שלח לעידו ולמאור.</div></div>
+    <div class="note-box">ⓘ <b>בחינם לצמיתות</b> — תוכנית Spark של Firebase, אין צורך בכרטיס אשראי.</div>
+  </div>
+</div>
+
+<!-- IDENTITY BAR -->
+<div id="id-bar" style="display:none">
+  <span style="color:#8899bb">אני:</span>
+  <button class="id-btn maor" data-id="מאור">מאור</button>
+  <button class="id-btn ido" data-id="עידו">עידו</button>
+  <div id="sync" style="margin-right:auto">
+    <span id="sync-dot" class="dot-off">●</span>
+    <span id="sync-txt" style="color:#8899bb;font-size:12px">מתחבר...</span>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+  <div class="wrap">
+    <div class="top">
+      <div class="title">
+        <h1>אנשי קשר — שליחה בוואטסאפ</h1>
+        <p>לחיצה על סטטוס/שם לעריכה · לחיצה על טלפון להעתקה</p>
+      </div>
+      <div class="stat"><b id="vis-count">0</b><span>מוצגים</span></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="table">📋 הטבלה</button>
+      <button class="tab" data-tab="summary">📊 סיכום</button>
+      <button class="tab" data-tab="messages">✏️ הודעות</button>
+    </div>
+
+    <!-- TAB: TABLE -->
+    <div id="tab-table">
+      <div class="owners" id="owners">
+        <div class="seg active" data-o=""><span>הכל</span><span class="n" id="cn-all">0</span></div>
+        <div class="seg" data-o="מאור"><span class="dot"></span><span>מאור</span><span class="n" id="cn-maor">0</span></div>
+        <div class="seg" data-o="עידו"><span class="dot"></span><span>עידו</span><span class="n" id="cn-ido">0</span></div>
+      </div>
+      <div class="status-filters" id="status-filters"><label>סטטוס:</label></div>
+      <div class="controls">
+        <select id="gf"><option value="">כל הקבוצות</option></select>
+
+        <button class="export-btn" id="export-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>
+          <span>ייצוא לאקסל</span>
+        </button>
+      </div>
+      <div class="card">
+        <div class="scroll">
+          <table>
+            <thead><tr>
+              <th>מס׳</th><th>שם</th><th>אחראי</th><th>סטטוס</th>
+              <th>וואטסאפ</th><th>קבוצה</th><th>טלפון</th><th>הודעה</th>
+            </tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <footer id="foot"></footer>
+    </div>
+
+    <!-- TAB: SUMMARY -->
+    <div id="tab-summary" style="display:none"></div>
+
+    <!-- TAB: MESSAGES -->
+    <div id="tab-messages" style="display:none">
+      <div class="msg-grid" id="msg-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS POPUP -->
+<div id="popup">
+  <button class="pop-opt" data-v="נשלח">📤 נשלח</button>
+  <button class="pop-opt" data-v="הצטרף">✅ הצטרף</button>
+  <button class="pop-opt" data-v="ילד">👦 ילד</button>
+  <button class="pop-opt" data-v="ערבי">🌙 ערבי</button>
+  <button class="pop-opt" data-v="נשלח בעבר">📨 נשלח בעבר</button>
+  <div class="pop-sep"></div>
+  <div class="pop-custom">
+    <input id="custom-val" type="text" placeholder="טקסט חופשי…" maxlength="40">
+    <button id="custom-save">שמור</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+// ════════════════════════════════════════════
+//  FIREBASE CONFIG — הדבק כאן את ה-Config
+// ════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyBkDa1HIfs5YYUIR8RCB_EVrkiWVD7HuPY",
+  authDomain:        "contacts-d9642.firebaseapp.com",
+  databaseURL:       "https://contacts-d9642-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "contacts-d9642",
+  storageBucket:     "contacts-d9642.firebasestorage.app",
+  messagingSenderId: "468261470442",
+  appId:             "1:468261470442:web:175585a08ee95c51e91793"
+};
+// ════════════════════════════════════════════
+
+const EMBEDDED = [{"i":"1","n":"שילה","s":"נשלח","o":"מאור","g":"Blitz","p":"0524589972"},{"i":"2","n":"גבי דנה","s":"נשלח","o":"מאור","g":"Blitz","p":"0502050575"},{"i":"3","n":"עמי עוזיאל","s":"נשלח","o":"מאור","g":"Blitz","p":"0502279835"},{"i":"4","n":"","s":"נשלח","o":"מאור","g":"Blitz","p":"0502588212"},{"i":"5","n":"שליו לוי","s":"נשלח","o":"מאור","g":"Blitz","p":"0502727167"},{"i":"6","n":"","s":"נשלח","o":"מאור","g":"Blitz","p":"0502885351"},{"i":"7","n":"שלומי","s":"נשלח","o":"מאור","g":"Blitz","p":"0502898900"},{"i":"8","n":"יגל","s":"נשלח","o":"מאור","g":"Blitz","p":"0502945581"},{"i":"9","n":"אבישי","s":"נשלח","o":"מאור","g":"Blitz","p":"0503034464"},{"i":"10","n":"ניב","s":"נשלח","o":"מאור","g":"Blitz","p":"0503177732"},{"i":"11","n":"חיים","s":"נשלח","o":"מאור","g":"Blitz","p":"0503355610"},{"i":"12","n":"","s":"נשלח","o":"מאור","g":"Blitz, Poker money and pepole","p":"0503822608"},{"i":"13","n":"אלעד","s":"נשלח","o":"מאור","g":"Blitz","p":"0503884545"},{"i":"14","n":"אפרת","s":"נשלח","o":"מאור","g":"Blitz","p":"0504014270"},{"i":"15","n":"שליו","s":"נשלח","o":"מאור","g":"Blitz","p":"0504384022"},{"i":"16","n":"גל","s":"נשלח","o":"מאור","g":"Blitz","p":"0504470569"},{"i":"17","n":"אבינועם","s":"נשלח","o":"מאור","g":"Blitz","p":"0504621927"},{"i":"18","n":"איתמר","s":"נשלח","o":"מאור","g":"Blitz","p":"0504793777"},{"i":"19","n":"רועי","s":"נשלח","o":"מאור","g":"Blitz","p":"0505536699"},{"i":"20","n":"אהרון","s":"נשלח","o":"מאור","g":"Blitz","p":"0505545514"},{"i":"21","n":"עומר","s":"נשלח","o":"מאור","g":"Blitz","p":"0505895946"},{"i":"22","n":"אפללו","s":"נשלח","o":"מאור","g":"Blitz","p":"0506334514"},{"i":"23","n":"אליעד","s":"נשלח","o":"מאור","g":"Blitz","p":"0506689000"},{"i":"24","n":"ליאור","s":"נשלח","o":"מאור","g":"Blitz","p":"0506865059"},{"i":"25","n":"אביחי","s":"נשלח","o":"מאור","g":"Blitz","p":"0507110213"},{"i":"26","n":"ליאל","s":"נשלח","o":"מאור","g":"Blitz","p":"0507221259"},{"i":"27","n":"ארז","s":"נשלח","o":"מאור","g":"Blitz","p":"0507333654"},{"i":"28","n":"דור","s":"נשלח","o":"מאור","g":"Blitz, Poker money and pepole","p":"0507339955"},{"i":"29","n":"איתי","s":"נשלח","o":"מאור","g":"Blitz","p":"0507420898"},{"i":"30","n":"שאול","s":"נשלח","o":"מאור","g":"Blitz","p":"0507540424"},{"i":"31","n":"רן","s":"נשלח","o":"מאור","g":"Blitz","p":"0507869260"},{"i":"32","n":"ליאור","s":"נשלח","o":"מאור","g":"Blitz","p":"0507977212"},{"i":"33","n":"דוד","s":"נשלח","o":"מאור","g":"Blitz","p":"0508233877"},{"i":"34","n":"דניאל","s":"נשלח","o":"מאור","g":"Blitz, Poker money and pepole","p":"0508424270"},{"i":"35","n":"עידו","s":"נשלח","o":"מאור","g":"Blitz","p":"0508644182"},{"i":"36","n":"עומרי","s":"נשלח","o":"מאור","g":"Blitz","p":"0509114030"},{"i":"37","n":"אשר","s":"נשלח","o":"מאור","g":"Blitz","p":"0509151120"},{"i":"38","n":"שלו","s":"נשלח","o":"מאור","g":"Blitz","p":"0509445125"},{"i":"39","n":"אמיר","s":"נשלח","o":"מאור","g":"Blitz","p":"0509876657"},{"i":"40","n":"דניאל","s":"נשלח","o":"מאור","g":"Blitz","p":"0509911963"},{"i":"41","n":"","s":"נשלח","o":"מאור","g":"Blitz","p":"0509945909"},{"i":"42","n":"אלרואי","s":"","o":"מאור","g":"Blitz","p":"0515669070"},{"i":"43","n":"לירן","s":"","o":"מאור","g":"Blitz","p":"0522122702"},{"i":"44","n":"","s":"","o":"מאור","g":"Blitz","p":"0522182088"},{"i":"45","n":"","s":"","o":"מאור","g":"Blitz","p":"0522245389"},{"i":"46","n":"מורן","s":"","o":"מאור","g":"Blitz","p":"0522517665"},{"i":"47","n":"אורי","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0522849703"},{"i":"48","n":"ניקיטה","s":"","o":"מאור","g":"Blitz","p":"0522896695"},{"i":"49","n":"","s":"","o":"מאור","g":"Blitz","p":"0523030460"},{"i":"50","n":"אלמוג","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0523257313"},{"i":"51","n":"נתן","s":"","o":"מאור","g":"Blitz","p":"0523353087"},{"i":"52","n":"אסיה","s":"","o":"מאור","g":"Blitz","p":"0523528737"},{"i":"53","n":"יאיר","s":"","o":"מאור","g":"Blitz","p":"0523796671"},{"i":"54","n":"שחר","s":"","o":"מאור","g":"Blitz","p":"0523981220"},{"i":"55","n":"ברוך","s":"","o":"מאור","g":"Blitz","p":"0524333954"},{"i":"56","n":"עמרם","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0524347959"},{"i":"57","n":"תומר","s":"","o":"מאור","g":"Blitz","p":"0524491016"},{"i":"58","n":"ניר","s":"","o":"מאור","g":"Blitz","p":"0524882836"},{"i":"59","n":"נאור","s":"","o":"מאור","g":"Blitz","p":"0525863661"},{"i":"60","n":"רותם","s":"","o":"מאור","g":"Blitz","p":"0525918507"},{"i":"61","n":"עומר","s":"","o":"מאור","g":"Blitz","p":"0526181003"},{"i":"62","n":"דניאל","s":"","o":"מאור","g":"Blitz","p":"0526333066"},{"i":"63","n":"ג'ואי","s":"","o":"מאור","g":"Blitz","p":"0526441134"},{"i":"64","n":"אורי","s":"","o":"מאור","g":"Blitz","p":"0526553153"},{"i":"65","n":"ירין","s":"","o":"מאור","g":"Blitz","p":"0526647201"},{"i":"66","n":"אופק","s":"","o":"מאור","g":"Blitz","p":"0526991192"},{"i":"67","n":"גיא","s":"","o":"מאור","g":"Blitz","p":"0527702964"},{"i":"68","n":"","s":"","o":"מאור","g":"Blitz","p":"0527713029"},{"i":"69","n":"נאור","s":"","o":"מאור","g":"Blitz","p":"0528186162"},{"i":"70","n":"יפעת","s":"","o":"מאור","g":"Blitz","p":"0528212615"},{"i":"71","n":"","s":"","o":"מאור","g":"Blitz","p":"0528415250"},{"i":"72","n":"גרשון","s":"","o":"מאור","g":"Blitz","p":"0528425575"},{"i":"73","n":"","s":"","o":"מאור","g":"Blitz","p":"0528609422"},{"i":"74","n":"שניאור","s":"","o":"מאור","g":"Blitz","p":"0528806770"},{"i":"75","n":"ראם","s":"","o":"מאור","g":"Blitz","p":"0528899750"},{"i":"76","n":"אולג","s":"","o":"מאור","g":"Blitz","p":"0532239945"},{"i":"77","n":"מאור","s":"","o":"מאור","g":"Blitz","p":"0532259003"},{"i":"78","n":"שחר","s":"","o":"מאור","g":"Blitz","p":"0532284478"},{"i":"79","n":"עדי","s":"","o":"מאור","g":"Blitz","p":"0532290252"},{"i":"80","n":"זוהר","s":"","o":"מאור","g":"Blitz","p":"0532405730"},{"i":"81","n":"ויקו","s":"","o":"מאור","g":"Blitz","p":"0532746290"},{"i":"82","n":"נתנאל","s":"","o":"מאור","g":"Blitz","p":"0533057466"},{"i":"83","n":"","s":"","o":"מאור","g":"Blitz","p":"0533237303"},{"i":"84","n":"שי","s":"","o":"מאור","g":"Blitz","p":"0533345656"},{"i":"85","n":"","s":"","o":"מאור","g":"Blitz","p":"0533347042"},{"i":"86","n":"אלי","s":"","o":"מאור","g":"Blitz","p":"0534376926"},{"i":"87","n":"יוסי","s":"","o":"מאור","g":"Blitz","p":"0534560856"},{"i":"88","n":"עידן","s":"","o":"מאור","g":"Blitz","p":"0535251110"},{"i":"89","n":"עמית","s":"","o":"מאור","g":"Blitz","p":"0535251526"},{"i":"90","n":"אביעד","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0535301118"},{"i":"91","n":"אוריה","s":"","o":"מאור","g":"Blitz","p":"0535307211"},{"i":"92","n":"ניתאי","s":"","o":"מאור","g":"Blitz","p":"0535788810"},{"i":"93","n":"אלי","s":"","o":"מאור","g":"Blitz","p":"0537222276"},{"i":"94","n":"","s":"","o":"מאור","g":"Blitz","p":"0537800148"},{"i":"95","n":"טל","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0538220331"},{"i":"96","n":"ערן","s":"","o":"מאור","g":"Blitz","p":"0538242412"},{"i":"97","n":"אופק","s":"","o":"מאור","g":"Blitz","p":"0539530907"},{"i":"98","n":"איתי","s":"","o":"מאור","g":"Blitz","p":"0539862538"},{"i":"99","n":"עומר","s":"","o":"מאור","g":"Blitz","p":"0542835083"},{"i":"100","n":"יונתן","s":"","o":"מאור","g":"Blitz","p":"0543235677"},{"i":"101","n":"אהרון","s":"","o":"מאור","g":"Blitz","p":"0543746099"},{"i":"102","n":"","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0543891879"},{"i":"103","n":"ליעד","s":"","o":"מאור","g":"Blitz","p":"0543932920"},{"i":"104","n":"יובל","s":"","o":"מאור","g":"Blitz","p":"0544292842"},{"i":"105","n":"מור","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0544434354"},{"i":"106","n":"אורי","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0544614669"},{"i":"107","n":"עופר","s":"","o":"מאור","g":"Blitz","p":"0544757810"},{"i":"108","n":"","s":"","o":"מאור","g":"Blitz","p":"0545011733"},{"i":"109","n":"","s":"","o":"מאור","g":"Blitz","p":"0545244225"},{"i":"110","n":"ניב","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0545410288"},{"i":"111","n":"ליאם","s":"","o":"מאור","g":"Blitz","p":"0545729249"},{"i":"112","n":"","s":"","o":"מאור","g":"Blitz","p":"0545907818"},{"i":"113","n":"","s":"","o":"מאור","g":"Blitz","p":"0546129570"},{"i":"114","n":"יהב","s":"","o":"מאור","g":"Blitz","p":"0546222865"},{"i":"115","n":"","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0546422856"},{"i":"116","n":"איתמר","s":"","o":"מאור","g":"Blitz","p":"0546445386"},{"i":"117","n":"אייל","s":"","o":"מאור","g":"Blitz","p":"0546601177"},{"i":"118","n":"זק","s":"","o":"מאור","g":"Blitz","p":"0546654806"},{"i":"119","n":"חמי","s":"","o":"מאור","g":"Blitz","p":"0546730303"},{"i":"120","n":"","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0546744075"},{"i":"121","n":"אגם","s":"","o":"מאור","g":"Blitz","p":"0547058646"},{"i":"122","n":"דודי","s":"","o":"מאור","g":"Blitz","p":"0547207238"},{"i":"123","n":"","s":"","o":"מאור","g":"Blitz","p":"0547369140"},{"i":"124","n":"יאיר","s":"","o":"מאור","g":"Blitz","p":"0547471075"},{"i":"125","n":"נועם","s":"","o":"מאור","g":"Blitz","p":"0547634480"},{"i":"126","n":"ניקיטה","s":"","o":"מאור","g":"Blitz","p":"0547681905"},{"i":"127","n":"","s":"","o":"מאור","g":"Blitz","p":"0547890811"},{"i":"128","n":"עומר","s":"","o":"מאור","g":"Blitz","p":"0547892329"},{"i":"129","n":"זוהר","s":"","o":"מאור","g":"Blitz","p":"0548053466"},{"i":"130","n":"","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0548123205"},{"i":"131","n":"אבירם","s":"","o":"מאור","g":"Blitz","p":"0548131563"},{"i":"132","n":"עידו","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0548706080"},{"i":"133","n":"נתן","s":"","o":"מאור","g":"Blitz","p":"0548817616"},{"i":"134","n":"עומרי","s":"","o":"מאור","g":"Blitz","p":"0548827674"},{"i":"135","n":"עשת","s":"","o":"מאור","g":"Blitz","p":"0549487962"},{"i":"136","n":"נאור","s":"","o":"מאור","g":"Blitz","p":"0549546976"},{"i":"137","n":"נהוראי","s":"","o":"מאור","g":"Blitz","p":"0549573474"},{"i":"138","n":"אביב","s":"","o":"מאור","g":"Blitz","p":"0549740838"},{"i":"139","n":"מיכאל","s":"","o":"מאור","g":"Blitz","p":"0549886863"},{"i":"140","n":"אסף","s":"","o":"מאור","g":"Blitz","p":"0556621082"},{"i":"141","n":"אביאל","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0556623821"},{"i":"142","n":"ינון","s":"","o":"מאור","g":"Blitz","p":"0556656391"},{"i":"143","n":"","s":"","o":"מאור","g":"Blitz","p":"0557150129"},{"i":"144","n":"עומר","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0558827387"},{"i":"145","n":"אודי","s":"","o":"מאור","g":"Blitz","p":"0558828280"},{"i":"146","n":"מתן","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0584848260"},{"i":"147","n":"תומר","s":"","o":"מאור","g":"Blitz","p":"0585322509"},{"i":"148","n":"איתי","s":"","o":"מאור","g":"Blitz","p":"0586160678"},{"i":"149","n":"קובי","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0587000592"},{"i":"150","n":"שובל","s":"","o":"מאור","g":"Blitz","p":"0587711169"},{"i":"151","n":"דנחא","s":"","o":"מאור","g":"Blitz, Poker money and pepole","p":"0587955920"},{"i":"152","n":"שלומי","s":"נשלח","o":"עידו","g":"Poker money and pepole","p":"0526151863"},{"i":"153","n":"מזל","s":"נשלח","o":"עידו","g":"Poker money and pepole","p":"0502088030"},{"i":"154","n":"שלומי","s":"נשלח","o":"מאור","g":"Poker money and pepole","p":"0502167352"},{"i":"155","n":"שי","s":"נשלח","o":"עידו","g":"Poker money and pepole","p":"0502183133"},{"i":"156","n":"יובל","s":"נשלח","o":"עידו","g":"Poker money and pepole","p":"0502192040"},{"i":"157","n":"שגיא","s":"נשלח","o":"מאור","g":"Poker money and pepole","p":"0502279373"},{"i":"158","n":"מורן","s":"נשלח","o":"עידו","g":"Poker money and pepole","p":"0502331131"},{"i":"159","n":"אחינועם","s":"","o":"עידו","g":"Poker money and pepole","p":"0502358555"},{"i":"160","n":"יפית","s":"","o":"מאור","g":"Poker money and pepole","p":"0502388748"},{"i":"161","n":"ניר","s":"","o":"עידו","g":"Poker money and pepole","p":"0502398111"},{"i":"162","n":"נוי","s":"","o":"עידו","g":"Poker money and pepole","p":"0502438670"},{"i":"163","n":"דר","s":"","o":"מאור","g":"Poker money and pepole","p":"0502523320"},{"i":"164","n":"צביקה","s":"","o":"עידו","g":"Poker money and pepole","p":"0502543583"},{"i":"165","n":"אדיר","s":"","o":"מאור","g":"Poker money and pepole","p":"0502574728"},{"i":"166","n":"אביב","s":"","o":"עידו","g":"Poker money and pepole","p":"0502664901"},{"i":"167","n":"צבי","s":"","o":"עידו","g":"Poker money and pepole","p":"0502705947"},{"i":"168","n":"חן","s":"","o":"מאור","g":"Poker money and pepole","p":"0502758955"},{"i":"169","n":"ינון","s":"","o":"עידו","g":"Poker money and pepole","p":"0502765585"},{"i":"170","n":"משה","s":"","o":"עידו","g":"Poker money and pepole","p":"0502844485"},{"i":"171","n":"משה","s":"","o":"מאור","g":"Poker money and pepole","p":"0502876078"},{"i":"172","n":"אדיר","s":"","o":"עידו","g":"Poker money and pepole","p":"0502907770"},{"i":"173","n":"שקד","s":"","o":"עידו","g":"Poker money and pepole","p":"0502955919"},{"i":"174","n":"ישראל","s":"","o":"מאור","g":"Poker money and pepole","p":"0503018502"},{"i":"175","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0503092778"},{"i":"176","n":"רז","s":"","o":"עידו","g":"Poker money and pepole","p":"0503111194"},{"i":"177","n":"ליאל","s":"","o":"מאור","g":"Poker money and pepole","p":"0503222709"},{"i":"178","n":"נועם","s":"","o":"עידו","g":"Poker money and pepole","p":"0503291782"},{"i":"179","n":"ניב","s":"","o":"מאור","g":"Poker money and pepole","p":"0503308033"},{"i":"180","n":"גיא","s":"","o":"עידו","g":"Poker money and pepole","p":"0503324858"},{"i":"181","n":"שלו","s":"","o":"עידו","g":"Poker money and pepole","p":"0503344596"},{"i":"182","n":"אור","s":"","o":"מאור","g":"Poker money and pepole","p":"0503421450"},{"i":"183","n":"אדיר","s":"","o":"עידו","g":"Poker money and pepole","p":"0503423191"},{"i":"184","n":"קריספין","s":"","o":"עידו","g":"Poker money and pepole","p":"0503458805"},{"i":"185","n":"רביד","s":"","o":"מאור","g":"Poker money and pepole","p":"0503600096"},{"i":"186","n":"הדר","s":"","o":"עידו","g":"Poker money and pepole","p":"0503787553"},{"i":"187","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0503822605"},{"i":"188","n":"ינאי","s":"","o":"מאור","g":"Poker money and pepole","p":"0503929239"},{"i":"189","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0503994765"},{"i":"190","n":"אמיתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0504049125"},{"i":"191","n":"גיא","s":"","o":"מאור","g":"Poker money and pepole","p":"0504080429"},{"i":"192","n":"הראל","s":"","o":"עידו","g":"Poker money and pepole","p":"0504214357"},{"i":"193","n":"גיא","s":"","o":"מאור","g":"Poker money and pepole","p":"0504228855"},{"i":"194","n":"שגיב","s":"","o":"עידו","g":"Poker money and pepole","p":"0504234236"},{"i":"195","n":"יהונתן","s":"","o":"עידו","g":"Poker money and pepole","p":"0504294289"},{"i":"196","n":"אלון","s":"","o":"מאור","g":"Poker money and pepole","p":"0504326440"},{"i":"197","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0504413907"},{"i":"198","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0504430983"},{"i":"199","n":"טל","s":"","o":"מאור","g":"Poker money and pepole","p":"0504455741"},{"i":"200","n":"יהונתן","s":"","o":"עידו","g":"Poker money and pepole","p":"0504495562"},{"i":"201","n":"אושר","s":"","o":"עידו","g":"Poker money and pepole","p":"0504505545"},{"i":"202","n":"ניר","s":"","o":"מאור","g":"Poker money and pepole","p":"0504510682"},{"i":"203","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0504545356"},{"i":"204","n":"הראל","s":"","o":"עידו","g":"Poker money and pepole","p":"0504545992"},{"i":"205","n":"רון","s":"","o":"מאור","g":"Poker money and pepole","p":"0504598494"},{"i":"206","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0504814807"},{"i":"207","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0504821329"},{"i":"208","n":"יהונתן","s":"","o":"עידו","g":"Poker money and pepole","p":"0504824444"},{"i":"209","n":"לירון","s":"","o":"עידו","g":"Poker money and pepole","p":"0504841718"},{"i":"210","n":"אנדריי","s":"","o":"מאור","g":"Poker money and pepole","p":"0504846393"},{"i":"211","n":"אביב","s":"","o":"עידו","g":"Poker money and pepole","p":"0504848415"},{"i":"212","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0504969576"},{"i":"213","n":"רמי","s":"","o":"מאור","g":"Poker money and pepole","p":"0505250821"},{"i":"214","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0505265741"},{"i":"215","n":"עודד","s":"","o":"עידו","g":"Poker money and pepole","p":"0505279219"},{"i":"216","n":"רועי","s":"","o":"מאור","g":"Poker money and pepole","p":"0505555036"},{"i":"217","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0505595519"},{"i":"218","n":"תמיר","s":"","o":"עידו","g":"Poker money and pepole","p":"0505696661"},{"i":"219","n":"פדרו","s":"","o":"מאור","g":"Poker money and pepole","p":"0505706313"},{"i":"220","n":"שלומי","s":"","o":"עידו","g":"Poker money and pepole","p":"0505747739"},{"i":"222","n":"ליאם","s":"","o":"מאור","g":"Poker money and pepole","p":"0505775858"},{"i":"223","n":"עידו","s":"","o":"עידו","g":"Poker money and pepole","p":"0505777027"},{"i":"224","n":"אורי","s":"","o":"עידו","g":"Poker money and pepole","p":"0505794899"},{"i":"225","n":"רני","s":"","o":"מאור","g":"Poker money and pepole","p":"0505799378"},{"i":"226","n":"עמית","s":"","o":"עידו","g":"Poker money and pepole","p":"0505811486"},{"i":"227","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0505817090"},{"i":"228","n":"גור","s":"","o":"מאור","g":"Poker money and pepole","p":"0505828190"},{"i":"229","n":"אלן","s":"","o":"עידו","g":"Poker money and pepole","p":"0505844651"},{"i":"230","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0505862688"},{"i":"231","n":"ירין","s":"","o":"מאור","g":"Poker money and pepole","p":"0505893959"},{"i":"232","n":"תום","s":"","o":"עידו","g":"Poker money and pepole","p":"0505988028"},{"i":"233","n":"אושרי","s":"","o":"עידו","g":"Poker money and pepole","p":"0505996999"},{"i":"234","n":"סיון","s":"","o":"מאור","g":"Poker money and pepole","p":"0506202332"},{"i":"235","n":"גלעד","s":"","o":"עידו","g":"Poker money and pepole","p":"0506337371"},{"i":"236","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0506388406"},{"i":"237","n":"אופק","s":"","o":"עידו","g":"Poker money and pepole","p":"0506422000"},{"i":"238","n":"גיא","s":"","o":"עידו","g":"Poker money and pepole","p":"0506545694"},{"i":"239","n":"הראל","s":"","o":"מאור","g":"Poker money and pepole","p":"0506566553"},{"i":"240","n":"ליאב","s":"","o":"עידו","g":"Poker money and pepole","p":"0506599100"},{"i":"241","n":"אדר","s":"","o":"עידו","g":"Poker money and pepole","p":"0506616263"},{"i":"242","n":"נמרוד","s":"","o":"מאור","g":"Poker money and pepole","p":"0506675711"},{"i":"243","n":"יצחק","s":"","o":"עידו","g":"Poker money and pepole","p":"0506694808"},{"i":"244","n":"אברהם","s":"","o":"עידו","g":"Poker money and pepole","p":"0506704648"},{"i":"245","n":"רודי","s":"","o":"מאור","g":"Poker money and pepole","p":"0506769996"},{"i":"246","n":"אור","s":"","o":"עידו","g":"Poker money and pepole","p":"0506779220"},{"i":"247","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0506805442"},{"i":"248","n":"רז","s":"","o":"עידו","g":"Poker money and pepole","p":"0506809877"},{"i":"249","n":"אילאי","s":"","o":"עידו","g":"Poker money and pepole","p":"0506967996"},{"i":"250","n":"נועם","s":"","o":"מאור","g":"Poker money and pepole","p":"0507070020"},{"i":"251","n":"אילן","s":"","o":"עידו","g":"Poker money and pepole","p":"0507158233"},{"i":"252","n":"ליאם","s":"","o":"עידו","g":"Poker money and pepole","p":"0507233031"},{"i":"253","n":"בר","s":"","o":"מאור","g":"Poker money and pepole","p":"0507253344"},{"i":"254","n":"סער","s":"","o":"עידו","g":"Poker money and pepole","p":"0507296905"},{"i":"255","n":"עידן","s":"","o":"עידו","g":"Poker money and pepole","p":"0507532239"},{"i":"256","n":"נאור","s":"","o":"מאור","g":"Poker money and pepole","p":"0507551166"},{"i":"257","n":"שניר","s":"","o":"עידו","g":"Poker money and pepole","p":"0507606445"},{"i":"258","n":"קובי","s":"","o":"עידו","g":"Poker money and pepole","p":"0507773097"},{"i":"259","n":"איתמר","s":"","o":"מאור","g":"Poker money and pepole","p":"0507780205"},{"i":"260","n":"קובי","s":"","o":"עידו","g":"Poker money and pepole","p":"0507831804"},{"i":"261","n":"גל","s":"","o":"מאור","g":"Poker money and pepole","p":"0507837406"},{"i":"262","n":"אור","s":"","o":"עידו","g":"Poker money and pepole","p":"0507866510"},{"i":"263","n":"רואי","s":"","o":"עידו","g":"Poker money and pepole","p":"0507979458"},{"i":"264","n":"אופיר","s":"","o":"מאור","g":"Poker money and pepole","p":"0507979601"},{"i":"265","n":"אוראל","s":"","o":"עידו","g":"Poker money and pepole","p":"0508100339"},{"i":"266","n":"לירון","s":"","o":"עידו","g":"Poker money and pepole","p":"0508114646"},{"i":"267","n":"ערן","s":"","o":"מאור","g":"Poker money and pepole","p":"0508221071"},{"i":"268","n":"יצחק","s":"","o":"עידו","g":"Poker money and pepole","p":"0508242899"},{"i":"269","n":"אלון","s":"","o":"עידו","g":"Poker money and pepole","p":"0508248727"},{"i":"270","n":"תומר","s":"","o":"מאור","g":"Poker money and pepole","p":"0508321322"},{"i":"271","n":"יובל","s":"","o":"עידו","g":"Poker money and pepole","p":"0508331335"},{"i":"272","n":"נתנאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0508474806"},{"i":"273","n":"ליאם","s":"","o":"מאור","g":"Poker money and pepole","p":"0508533066"},{"i":"274","n":"אלעד","s":"","o":"עידו","g":"Poker money and pepole","p":"0508552522"},{"i":"275","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0508700207"},{"i":"276","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0508926864"},{"i":"277","n":"ליאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0508997506"},{"i":"278","n":"גבע","s":"","o":"מאור","g":"Poker money and pepole","p":"0509020159"},{"i":"279","n":"דולב","s":"","o":"עידו","g":"Poker money and pepole","p":"0509090054"},{"i":"280","n":"אלחי","s":"","o":"עידו","g":"Poker money and pepole","p":"0509144118"},{"i":"281","n":"סתיו","s":"","o":"מאור","g":"Poker money and pepole","p":"0509227500"},{"i":"282","n":"שי","s":"","o":"עידו","g":"Poker money and pepole","p":"0509232242"},{"i":"283","n":"דולב","s":"","o":"עידו","g":"Poker money and pepole","p":"0509237173"},{"i":"284","n":"Nadav","s":"","o":"מאור","g":"Poker money and pepole","p":"0509259993"},{"i":"285","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0509265173"},{"i":"286","n":"רז","s":"","o":"עידו","g":"Poker money and pepole","p":"0509300247"},{"i":"287","n":"אור","s":"","o":"מאור","g":"Poker money and pepole","p":"0509309263"},{"i":"288","n":"עודד","s":"","o":"עידו","g":"Poker money and pepole","p":"0509334669"},{"i":"289","n":"אושר","s":"","o":"מאור","g":"Poker money and pepole","p":"0509377791"},{"i":"290","n":"עופרי","s":"","o":"עידו","g":"Poker money and pepole","p":"0509444212"},{"i":"291","n":"עמית","s":"","o":"עידו","g":"Poker money and pepole","p":"0509482520"},{"i":"292","n":"רועי","s":"","o":"מאור","g":"Poker money and pepole","p":"0509595503"},{"i":"293","n":"עידו","s":"","o":"עידו","g":"Poker money and pepole","p":"0509626349"},{"i":"294","n":"דולב","s":"","o":"עידו","g":"Poker money and pepole","p":"0509766060"},{"i":"295","n":"אלירן","s":"","o":"מאור","g":"Poker money and pepole","p":"0509778848"},{"i":"296","n":"דליה","s":"","o":"עידו","g":"Poker money and pepole","p":"0509829231"},{"i":"297","n":"יואב","s":"","o":"עידו","g":"Poker money and pepole","p":"0515829959"},{"i":"298","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0522038406"},{"i":"299","n":"אלון","s":"","o":"עידו","g":"Poker money and pepole","p":"0522058972"},{"i":"300","n":"רפאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0522156458"},{"i":"301","n":"עדי","s":"","o":"מאור","g":"Poker money and pepole","p":"0522220780"},{"i":"302","n":"יניב","s":"","o":"עידו","g":"Poker money and pepole","p":"0522290173"},{"i":"303","n":"אייל","s":"","o":"מאור","g":"Poker money and pepole","p":"0522594894"},{"i":"304","n":"רון","s":"","o":"עידו","g":"Poker money and pepole","p":"0522621964"},{"i":"305","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0522667612"},{"i":"306","n":"אסף","s":"","o":"מאור","g":"Poker money and pepole","p":"0522717039"},{"i":"307","n":"רביד","s":"","o":"עידו","g":"Poker money and pepole","p":"0522752236"},{"i":"308","n":"אורי","s":"","o":"עידו","g":"Poker money and pepole","p":"0522809272"},{"i":"309","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0522828642"},{"i":"310","n":"אורי","s":"","o":"עידו","g":"Poker money and pepole","p":"0522858558"},{"i":"311","n":"ברק","s":"","o":"עידו","g":"Poker money and pepole","p":"0522893887"},{"i":"312","n":"אמיתי","s":"","o":"מאור","g":"Poker money and pepole","p":"0522906448"},{"i":"313","n":"נהוראי","s":"","o":"עידו","g":"Poker money and pepole","p":"0522961969"},{"i":"314","n":"בר","s":"","o":"עידו","g":"Poker money and pepole","p":"0523020011"},{"i":"315","n":"אורי","s":"","o":"מאור","g":"Poker money and pepole","p":"0523031888"},{"i":"316","n":"שי","s":"","o":"עידו","g":"Poker money and pepole","p":"0523214422"},{"i":"317","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0523343708"},{"i":"318","n":"נתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0523347134"},{"i":"319","n":"אלון","s":"","o":"עידו","g":"Poker money and pepole","p":"0523444398"},{"i":"320","n":"שמעון","s":"","o":"מאור","g":"Poker money and pepole","p":"0523444483"},{"i":"321","n":"יניב","s":"","o":"עידו","g":"Poker money and pepole","p":"0523485703"},{"i":"322","n":"דולב","s":"","o":"עידו","g":"Poker money and pepole","p":"0523491112"},{"i":"323","n":"אושר","s":"","o":"מאור","g":"Poker money and pepole","p":"0523499521"},{"i":"324","n":"יאיר","s":"","o":"עידו","g":"Poker money and pepole","p":"0523530273"},{"i":"325","n":"יהונתן","s":"","o":"עידו","g":"Poker money and pepole","p":"0523622505"},{"i":"326","n":"אופק","s":"","o":"מאור","g":"Poker money and pepole","p":"0523636430"},{"i":"327","n":"ניר","s":"","o":"עידו","g":"Poker money and pepole","p":"0523655571"},{"i":"328","n":"ניצן","s":"","o":"מאור","g":"Poker money and pepole","p":"0523666869"},{"i":"329","n":"עומר","s":"","o":"עידו","g":"Poker money and pepole","p":"0523693435"},{"i":"330","n":"זיו","s":"","o":"עידו","g":"Poker money and pepole","p":"0523853724"},{"i":"331","n":"אלי","s":"","o":"מאור","g":"Poker money and pepole","p":"0523859095"},{"i":"333","n":"סהר","s":"","o":"עידו","g":"Poker money and pepole","p":"0523988075"},{"i":"334","n":"נתנאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0523992724"},{"i":"335","n":"יובל","s":"","o":"מאור","g":"Poker money and pepole","p":"0524200117"},{"i":"336","n":"דביר","s":"","o":"עידו","g":"Poker money and pepole","p":"0524269977"},{"i":"337","n":"יצחק","s":"","o":"עידו","g":"Poker money and pepole","p":"0524283250"},{"i":"338","n":"איתן","s":"","o":"מאור","g":"Poker money and pepole","p":"0524292102"},{"i":"339","n":"אביב","s":"","o":"עידו","g":"Poker money and pepole","p":"0524296561"},{"i":"340","n":"יוסי","s":"","o":"עידו","g":"Poker money and pepole","p":"0524298887"},{"i":"341","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0524356565"},{"i":"342","n":"רועי","s":"","o":"עידו","g":"Poker money and pepole","p":"0524447373"},{"i":"343","n":"יהונתן","s":"","o":"מאור","g":"Poker money and pepole","p":"0524614523"},{"i":"344","n":"שי","s":"","o":"עידו","g":"Poker money and pepole","p":"0524615502"},{"i":"345","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0524636778"},{"i":"346","n":"מרק","s":"","o":"מאור","g":"Poker money and pepole","p":"0524676282"},{"i":"347","n":"יונתן","s":"","o":"עידו","g":"Poker money and pepole","p":"0524770078"},{"i":"348","n":"עדי","s":"","o":"עידו","g":"Poker money and pepole","p":"0524796994"},{"i":"349","n":"יהודה","s":"","o":"מאור","g":"Poker money and pepole","p":"0524854569"},{"i":"350","n":"שלו","s":"","o":"עידו","g":"Poker money and pepole","p":"0525007154"},{"i":"351","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0525256243"},{"i":"352","n":"רם","s":"","o":"מאור","g":"Poker money and pepole","p":"0525262249"},{"i":"353","n":"נועם","s":"","o":"עידו","g":"Poker money and pepole","p":"0525267067"},{"i":"354","n":"מאור","s":"","o":"עידו","g":"Poker money and pepole","p":"0525346436"},{"i":"355","n":"רבקה","s":"","o":"מאור","g":"Poker money and pepole","p":"0525355593"},{"i":"356","n":"ליאב","s":"","o":"עידו","g":"Poker money and pepole","p":"0525393230"},{"i":"357","n":"עילי","s":"","o":"מאור","g":"Poker money and pepole","p":"0525512882"},{"i":"358","n":"יונתן ","s":"","o":"עידו","g":"Poker money and pepole","p":"0525529382"},{"i":"359","n":"יוחאי","s":"","o":"עידו","g":"Poker money and pepole","p":"0525554668"},{"i":"360","n":"דורון","s":"","o":"מאור","g":"Poker money and pepole","p":"0525562625"},{"i":"361","n":"עדי","s":"","o":"עידו","g":"Poker money and pepole","p":"0525585237"},{"i":"362","n":"דביר","s":"","o":"עידו","g":"Poker money and pepole","p":"0525590961"},{"i":"363","n":"אופק","s":"","o":"מאור","g":"Poker money and pepole","p":"0525629905"},{"i":"364","n":"רועי","s":"","o":"עידו","g":"Poker money and pepole","p":"0525695655"},{"i":"365","n":"דניאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0525709003"},{"i":"366","n":"אופיר","s":"","o":"מאור","g":"Poker money and pepole","p":"0525743403"},{"i":"367","n":"חן","s":"","o":"עידו","g":"Poker money and pepole","p":"0525746633"},{"i":"368","n":"ג'ורדן","s":"","o":"עידו","g":"Poker money and pepole","p":"0525832893"},{"i":"369","n":"מיקו","s":"","o":"מאור","g":"Poker money and pepole","p":"0525934520"},{"i":"370","n":"אמיר","s":"","o":"עידו","g":"Poker money and pepole","p":"0525996995"},{"i":"371","n":"שליו","s":"","o":"מאור","g":"Poker money and pepole","p":"0526030994"},{"i":"372","n":"יניר","s":"","o":"עידו","g":"Poker money and pepole","p":"0526078840"},{"i":"373","n":"דור","s":"","o":"עידו","g":"Poker money and pepole","p":"0526133314"},{"i":"374","n":"עדי","s":"","o":"מאור","g":"Poker money and pepole","p":"0526177687"},{"i":"375","n":"יוסף","s":"","o":"עידו","g":"Poker money and pepole","p":"0526225699"},{"i":"376","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0526314989"},{"i":"377","n":"גלית","s":"","o":"מאור","g":"Poker money and pepole","p":"0526409508"},{"i":"378","n":"עופרי","s":"","o":"עידו","g":"Poker money and pepole","p":"0526430177"},{"i":"379","n":"עדי","s":"","o":"עידו","g":"Poker money and pepole","p":"0526455600"},{"i":"380","n":"דור","s":"","o":"מאור","g":"Poker money and pepole","p":"0526487557"},{"i":"381","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0526499943"},{"i":"382","n":"טל","s":"","o":"עידו","g":"Poker money and pepole","p":"0526532009"},{"i":"383","n":"עומר","s":"","o":"מאור","g":"Poker money and pepole","p":"0526541142"},{"i":"384","n":"רותם","s":"","o":"עידו","g":"Poker money and pepole","p":"0526597991"},{"i":"385","n":"רז","s":"","o":"מאור","g":"Poker money and pepole","p":"0526622949"},{"i":"386","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0526645592"},{"i":"387","n":"אלי","s":"","o":"עידו","g":"Poker money and pepole","p":"0526722385"},{"i":"388","n":"ינאי","s":"","o":"מאור","g":"Poker money and pepole","p":"0526756766"},{"i":"390","n":"קובי","s":"","o":"עידו","g":"Poker money and pepole","p":"0526792364"},{"i":"391","n":"אליק","s":"","o":"עידו","g":"Poker money and pepole","p":"0526868664"},{"i":"392","n":"רועי","s":"","o":"מאור","g":"Poker money and pepole","p":"0526897969"},{"i":"393","n":"שלו","s":"","o":"עידו","g":"Poker money and pepole","p":"0526949849"},{"i":"394","n":"יונתן","s":"","o":"עידו","g":"Poker money and pepole","p":"0527009942"},{"i":"395","n":"רואי","s":"","o":"מאור","g":"Poker money and pepole","p":"0527044323"},{"i":"396","n":"אסי","s":"","o":"עידו","g":"Poker money and pepole","p":"0527079207"},{"i":"397","n":"שלמה","s":"","o":"עידו","g":"Poker money and pepole","p":"0527080886"},{"i":"398","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0527089931"},{"i":"399","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0527097278"},{"i":"400","n":"ליאל","s":"","o":"מאור","g":"Poker money and pepole","p":"0527227327"},{"i":"401","n":"מילר","s":"","o":"עידו","g":"Poker money and pepole","p":"0527431007"},{"i":"402","n":"אדיר","s":"","o":"עידו","g":"Poker money and pepole","p":"0527772053"},{"i":"403","n":"יונתן","s":"","o":"מאור","g":"Poker money and pepole","p":"0527812244"},{"i":"404","n":"לירון","s":"","o":"עידו","g":"Poker money and pepole","p":"0527993001"},{"i":"405","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0528183479"},{"i":"406","n":"נדב","s":"","o":"מאור","g":"Poker money and pepole","p":"0528189982"},{"i":"407","n":"יהונתן ","s":"","o":"עידו","g":"Poker money and pepole","p":"0528251211"},{"i":"408","n":"שראל","s":"","o":"עידו","g":"Poker money and pepole","p":"0528343476"},{"i":"409","n":"יובל","s":"","o":"מאור","g":"Poker money and pepole","p":"0528461734"},{"i":"410","n":"עומרי","s":"","o":"עידו","g":"Poker money and pepole","p":"0528495335"},{"i":"411","n":"ארתור","s":"","o":"מאור","g":"Poker money and pepole","p":"0528640209"},{"i":"412","n":"מאור","s":"","o":"עידו","g":"Poker money and pepole","p":"0528678798"},{"i":"413","n":"יהב","s":"","o":"עידו","g":"Poker money and pepole","p":"0528727949"},{"i":"414","n":"אורי","s":"","o":"מאור","g":"Poker money and pepole","p":"0528739186"},{"i":"415","n":"שליו","s":"","o":"עידו","g":"Poker money and pepole","p":"0528742039"},{"i":"416","n":"הדר","s":"","o":"עידו","g":"Poker money and pepole","p":"0528746830"},{"i":"417","n":"עוז","s":"","o":"מאור","g":"Poker money and pepole","p":"0528782630"},{"i":"418","n":"ישראל","s":"","o":"עידו","g":"Poker money and pepole","p":"0528806169"},{"i":"419","n":"אביאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0528814109"},{"i":"420","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0529032665"},{"i":"421","n":"אלי","s":"","o":"עידו","g":"Poker money and pepole","p":"0529207212"},{"i":"422","n":"דודו","s":"","o":"עידו","g":"Poker money and pepole","p":"0529450847"},{"i":"423","n":"יאיר","s":"","o":"מאור","g":"Poker money and pepole","p":"0532202101"},{"i":"424","n":"איתמר","s":"","o":"עידו","g":"Poker money and pepole","p":"0532223475"},{"i":"425","n":"דור","s":"","o":"מאור","g":"Poker money and pepole","p":"0532239904"},{"i":"426","n":"אילאי","s":"","o":"עידו","g":"Poker money and pepole","p":"0532252085"},{"i":"427","n":"ארבל","s":"","o":"עידו","g":"Poker money and pepole","p":"0532262001"},{"i":"428","n":"אביב","s":"","o":"מאור","g":"Poker money and pepole","p":"0532272747"},{"i":"429","n":"אריאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0532340018"},{"i":"430","n":"אילאי","s":"","o":"עידו","g":"Poker money and pepole","p":"0532341207"},{"i":"431","n":"תומר","s":"","o":"מאור","g":"Poker money and pepole","p":"0532391178"},{"i":"432","n":"יואב","s":"","o":"עידו","g":"Poker money and pepole","p":"0532403007"},{"i":"433","n":"אלון","s":"","o":"עידו","g":"Poker money and pepole","p":"0532407894"},{"i":"434","n":"איליי","s":"","o":"מאור","g":"Poker money and pepole","p":"0532414592"},{"i":"435","n":"אושר","s":"","o":"עידו","g":"Poker money and pepole","p":"0532732487"},{"i":"436","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0532752292"},{"i":"437","n":"אדר","s":"","o":"מאור","g":"Poker money and pepole","p":"0532786284"},{"i":"438","n":"אורי","s":"","o":"עידו","g":"Poker money and pepole","p":"0532790047"},{"i":"439","n":"שחר","s":"","o":"מאור","g":"Poker money and pepole","p":"0532848025"},{"i":"440","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0532853029"},{"i":"441","n":"שליו","s":"","o":"עידו","g":"Poker money and pepole","p":"0532865354"},{"i":"442","n":"עומרי","s":"","o":"מאור","g":"Poker money and pepole","p":"0532866792"},{"i":"443","n":"נועם","s":"","o":"עידו","g":"Poker money and pepole","p":"0533202860"},{"i":"444","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0533314843"},{"i":"445","n":"אשל","s":"","o":"מאור","g":"Poker money and pepole","p":"0533330660"},{"i":"446","n":"תומר","s":"","o":"עידו","g":"Poker money and pepole","p":"0533352426"},{"i":"447","n":"יובל","s":"","o":"עידו","g":"Poker money and pepole","p":"0533380563"},{"i":"448","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0533385201"},{"i":"449","n":"סהר","s":"","o":"עידו","g":"Poker money and pepole","p":"0533385412"},{"i":"450","n":"אבישי","s":"","o":"עידו","g":"Poker money and pepole","p":"0533389839"},{"i":"451","n":"אוראל","s":"","o":"מאור","g":"Poker money and pepole","p":"0534240130"},{"i":"452","n":"אופק","s":"","o":"עידו","g":"Poker money and pepole","p":"0534303149"},{"i":"453","n":"נועם","s":"","o":"מאור","g":"Poker money and pepole","p":"0534320169"},{"i":"454","n":"עומר","s":"","o":"עידו","g":"Poker money and pepole","p":"0534441234"},{"i":"455","n":"אושר","s":"","o":"עידו","g":"Poker money and pepole","p":"0535236184"},{"i":"456","n":"אופק","s":"","o":"מאור","g":"Poker money and pepole","p":"0535236526"},{"i":"457","n":"ניב","s":"","o":"עידו","g":"Poker money and pepole","p":"0535261263"},{"i":"458","n":"רפאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0535263279"},{"i":"459","n":"ניב","s":"","o":"מאור","g":"Poker money and pepole","p":"0535269810"},{"i":"460","n":"נהוראי","s":"","o":"עידו","g":"Poker money and pepole","p":"0535272661"},{"i":"461","n":"דניאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0535787887"},{"i":"462","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0535929173"},{"i":"463","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0536226813"},{"i":"464","n":"אריאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0536271249"},{"i":"465","n":"מתן","s":"","o":"מאור","g":"Poker money and pepole","p":"0536271854"},{"i":"466","n":"יואב","s":"","o":"עידו","g":"Poker money and pepole","p":"0536672553"},{"i":"467","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0537131971"},{"i":"468","n":"אור","s":"","o":"עידו","g":"Poker money and pepole","p":"0537132141"},{"i":"469","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0537174558"},{"i":"470","n":"יונתן","s":"","o":"מאור","g":"Poker money and pepole","p":"0537201178"},{"i":"471","n":"ליאם","s":"","o":"עידו","g":"Poker money and pepole","p":"0537252275"},{"i":"472","n":"אביחי","s":"","o":"עידו","g":"Poker money and pepole","p":"0537254208"},{"i":"473","n":"יהלי","s":"","o":"מאור","g":"Poker money and pepole","p":"0537262058"},{"i":"474","n":"אורן","s":"","o":"עידו","g":"Poker money and pepole","p":"0537611111"},{"i":"475","n":"ליאור","s":"","o":"עידו","g":"Poker money and pepole","p":"0538201239"},{"i":"476","n":"לירון","s":"","o":"מאור","g":"Poker money and pepole","p":"0538248645"},{"i":"477","n":"רז","s":"","o":"עידו","g":"Poker money and pepole","p":"0538292835"},{"i":"478","n":"רואי","s":"","o":"עידו","g":"Poker money and pepole","p":"0538298355"},{"i":"479","n":"אופק","s":"","o":"מאור","g":"Poker money and pepole","p":"0538322920"},{"i":"480","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0539233997"},{"i":"481","n":"נועם","s":"","o":"מאור","g":"Poker money and pepole","p":"0539261123"},{"i":"482","n":"גלעד","s":"","o":"עידו","g":"Poker money and pepole","p":"0539263993"},{"i":"483","n":"איתן","s":"","o":"עידו","g":"Poker money and pepole","p":"0539354471"},{"i":"484","n":"אורי","s":"","o":"מאור","g":"Poker money and pepole","p":"0539866040"},{"i":"485","n":"אופק","s":"","o":"עידו","g":"Poker money and pepole","p":"0542002304"},{"i":"486","n":"יוסי","s":"","o":"עידו","g":"Poker money and pepole","p":"0542013961"},{"i":"487","n":"ערן","s":"","o":"מאור","g":"Poker money and pepole","p":"0542065227"},{"i":"488","n":"איתמר","s":"","o":"עידו","g":"Poker money and pepole","p":"0542123692"},{"i":"489","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0542135599"},{"i":"490","n":"שרון","s":"","o":"מאור","g":"Poker money and pepole","p":"0542208408"},{"i":"491","n":"עידו","s":"","o":"עידו","g":"Poker money and pepole","p":"0542229597"},{"i":"492","n":"אליעד","s":"","o":"מאור","g":"Poker money and pepole","p":"0542248231"},{"i":"493","n":"גל","s":"","o":"עידו","g":"Poker money and pepole","p":"0542252632"},{"i":"494","n":"זיו","s":"","o":"עידו","g":"Poker money and pepole","p":"0542328328"},{"i":"495","n":"עומר","s":"","o":"מאור","g":"Poker money and pepole","p":"0542340793"},{"i":"496","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0542350294"},{"i":"497","n":"הוד","s":"","o":"עידו","g":"Poker money and pepole","p":"0542418084"},{"i":"499","n":"טל","s":"","o":"מאור","g":"Poker money and pepole","p":"0542540999"},{"i":"500","n":"עומר","s":"","o":"עידו","g":"Poker money and pepole","p":"0542564432"},{"i":"501","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0542611901"},{"i":"502","n":"עומר","s":"","o":"מאור","g":"Poker money and pepole","p":"0542651619"},{"i":"503","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0542655869"},{"i":"504","n":"ישי","s":"","o":"עידו","g":"Poker money and pepole","p":"0542853929"},{"i":"505","n":"אייל","s":"","o":"מאור","g":"Poker money and pepole","p":"0542896228"},{"i":"506","n":"שליו","s":"","o":"עידו","g":"Poker money and pepole","p":"0542918418"},{"i":"507","n":"רום","s":"","o":"מאור","g":"Poker money and pepole","p":"0542964054"},{"i":"508","n":"אלכסנדר","s":"","o":"עידו","g":"Poker money and pepole","p":"0543073106"},{"i":"509","n":"דור","s":"","o":"עידו","g":"Poker money and pepole","p":"0543091007"},{"i":"510","n":"יניב","s":"","o":"מאור","g":"Poker money and pepole","p":"0543136088"},{"i":"511","n":"רוי","s":"","o":"עידו","g":"Poker money and pepole","p":"0543166223"},{"i":"512","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0543210759"},{"i":"513","n":"אלכס","s":"","o":"מאור","g":"Poker money and pepole","p":"0543325833"},{"i":"514","n":"אור","s":"","o":"עידו","g":"Poker money and pepole","p":"0543341030"},{"i":"515","n":"הדר","s":"","o":"עידו","g":"Poker money and pepole","p":"0543388782"},{"i":"516","n":"אלעד","s":"","o":"מאור","g":"Poker money and pepole","p":"0543453688"},{"i":"517","n":"נטע","s":"","o":"עידו","g":"Poker money and pepole","p":"0543454462"},{"i":"518","n":"עמית","s":"","o":"עידו","g":"Poker money and pepole","p":"0543476066"},{"i":"519","n":"אלעד","s":"","o":"מאור","g":"Poker money and pepole","p":"0543536064"},{"i":"520","n":"אלחי","s":"","o":"עידו","g":"Poker money and pepole","p":"0543540319"},{"i":"521","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0543543232"},{"i":"522","n":"יהודה","s":"","o":"עידו","g":"Poker money and pepole","p":"0543551818"},{"i":"523","n":"יובל","s":"","o":"עידו","g":"Poker money and pepole","p":"0543905999"},{"i":"524","n":"ליאור","s":"","o":"מאור","g":"Poker money and pepole","p":"0543917178"},{"i":"525","n":"שחר","s":"","o":"עידו","g":"Poker money and pepole","p":"0543944574"},{"i":"526","n":"אלרן","s":"","o":"עידו","g":"Poker money and pepole","p":"0543975910"},{"i":"527","n":"אפיק","s":"","o":"מאור","g":"Poker money and pepole","p":"0544270870"},{"i":"528","n":"אופק","s":"","o":"עידו","g":"Poker money and pepole","p":"0544295089"},{"i":"529","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0544307777"},{"i":"530","n":"נועם","s":"","o":"מאור","g":"Poker money and pepole","p":"0544336408"},{"i":"531","n":"רועי","s":"","o":"עידו","g":"Poker money and pepole","p":"0544446561"},{"i":"532","n":"איילון","s":"","o":"עידו","g":"Poker money and pepole","p":"0544467104"},{"i":"533","n":"שון","s":"","o":"מאור","g":"Poker money and pepole","p":"0544483188"},{"i":"534","n":"איתמר","s":"","o":"עידו","g":"Poker money and pepole","p":"0544484448"},{"i":"535","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0544494797"},{"i":"536","n":"יהונתן","s":"","o":"עידו","g":"Poker money and pepole","p":"0544534144"},{"i":"537","n":"ליעד","s":"","o":"עידו","g":"Poker money and pepole","p":"0544540425"},{"i":"538","n":"דניס","s":"","o":"מאור","g":"Poker money and pepole","p":"0544567984"},{"i":"539","n":"סולי","s":"","o":"עידו","g":"Poker money and pepole","p":"0544645029"},{"i":"540","n":"אייל","s":"","o":"עידו","g":"Poker money and pepole","p":"0544736462"},{"i":"541","n":"יואל","s":"","o":"מאור","g":"Poker money and pepole","p":"0544807424"},{"i":"542","n":"שליו","s":"","o":"עידו","g":"Poker money and pepole","p":"0544933667"},{"i":"543","n":"רון","s":"","o":"עידו","g":"Poker money and pepole","p":"0544959521"},{"i":"544","n":"אופק","s":"","o":"מאור","g":"Poker money and pepole","p":"0544980272"},{"i":"545","n":"איליי","s":"","o":"עידו","g":"Poker money and pepole","p":"0544997070"},{"i":"546","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0545209460"},{"i":"547","n":"יוסי","s":"","o":"מאור","g":"Poker money and pepole","p":"0545210240"},{"i":"548","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0545250417"},{"i":"549","n":"ישי","s":"","o":"מאור","g":"Poker money and pepole","p":"0545318934"},{"i":"550","n":"בוריס","s":"","o":"עידו","g":"Poker money and pepole","p":"0545339152"},{"i":"551","n":"אושרי","s":"","o":"עידו","g":"Poker money and pepole","p":"0545433394"},{"i":"552","n":"עדן","s":"","o":"מאור","g":"Poker money and pepole","p":"0545447957"},{"i":"553","n":"שי","s":"","o":"עידו","g":"Poker money and pepole","p":"0545498581"},{"i":"554","n":"מעין","s":"","o":"עידו","g":"Poker money and pepole","p":"0545504199"},{"i":"555","n":"דניאל","s":"","o":"מאור","g":"Poker money and pepole","p":"0545507519"},{"i":"556","n":"סלבה","s":"","o":"עידו","g":"Poker money and pepole","p":"0545519324"},{"i":"557","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0545556397"},{"i":"558","n":"רועי","s":"","o":"מאור","g":"Poker money and pepole","p":"0545624765"},{"i":"559","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0545630888"},{"i":"560","n":"רועי","s":"","o":"עידו","g":"Poker money and pepole","p":"0545661448"},{"i":"561","n":"יובל","s":"","o":"מאור","g":"Poker money and pepole","p":"0545699003"},{"i":"562","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0545701079"},{"i":"563","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0545726050"},{"i":"564","n":"גיא","s":"","o":"עידו","g":"Poker money and pepole","p":"0545733333"},{"i":"565","n":"עמית","s":"","o":"עידו","g":"Poker money and pepole","p":"0545740775"},{"i":"566","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0545770039"},{"i":"568","n":"לאון","s":"","o":"עידו","g":"Poker money and pepole","p":"0545824014"},{"i":"569","n":"אמיר","s":"","o":"עידו","g":"Poker money and pepole","p":"0545882600"},{"i":"570","n":"ינון","s":"","o":"מאור","g":"Poker money and pepole","p":"0545978767"},{"i":"571","n":"עמוס","s":"","o":"עידו","g":"Poker money and pepole","p":"0546004565"},{"i":"572","n":"אריאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0546020300"},{"i":"573","n":"אלינור","s":"","o":"מאור","g":"Poker money and pepole","p":"0546104464"},{"i":"574","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0546109493"},{"i":"575","n":"אנדריי","s":"","o":"מאור","g":"Poker money and pepole","p":"0546146623"},{"i":"576","n":"שחר","s":"","o":"עידו","g":"Poker money and pepole","p":"0546163303"},{"i":"577","n":"דודו","s":"","o":"עידו","g":"Poker money and pepole","p":"0546174334"},{"i":"578","n":"יניב","s":"","o":"מאור","g":"Poker money and pepole","p":"0546227000"},{"i":"579","n":"עידו","s":"","o":"עידו","g":"Poker money and pepole","p":"0546264360"},{"i":"580","n":"גיל","s":"","o":"עידו","g":"Poker money and pepole","p":"0546306446"},{"i":"581","n":"ירין","s":"","o":"מאור","g":"Poker money and pepole","p":"0546347142"},{"i":"582","n":"נריה","s":"","o":"עידו","g":"Poker money and pepole","p":"0546350097"},{"i":"583","n":"עידו","s":"","o":"עידו","g":"Poker money and pepole","p":"0546379752"},{"i":"584","n":"-אביתר","s":"","o":"מאור","g":"Poker money and pepole","p":"0546383008"},{"i":"585","n":"גדי","s":"","o":"עידו","g":"Poker money and pepole","p":"0546442636"},{"i":"586","n":"עציוני","s":"","o":"עידו","g":"Poker money and pepole","p":"0546455803"},{"i":"587","n":"גיל","s":"","o":"מאור","g":"Poker money and pepole","p":"0546458581"},{"i":"588","n":"ינאי","s":"","o":"עידו","g":"Poker money and pepole","p":"0546524099"},{"i":"589","n":"גיא","s":"","o":"מאור","g":"Poker money and pepole","p":"0546620511"},{"i":"590","n":"עדיאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0546675272"},{"i":"591","n":"אסף","s":"","o":"עידו","g":"Poker money and pepole","p":"0546682443"},{"i":"592","n":"אור","s":"","o":"מאור","g":"Poker money and pepole","p":"0546808592"},{"i":"593","n":"יובל","s":"","o":"עידו","g":"Poker money and pepole","p":"0546833523"},{"i":"594","n":"נוי","s":"","o":"עידו","g":"Poker money and pepole","p":"0546834901"},{"i":"596","n":"יוגב","s":"","o":"מאור","g":"Poker money and pepole","p":"0546900622"},{"i":"597","n":"אבירם","s":"","o":"עידו","g":"Poker money and pepole","p":"0546930677"},{"i":"598","n":"אורי","s":"","o":"עידו","g":"Poker money and pepole","p":"0546996022"},{"i":"599","n":"מעיין","s":"","o":"מאור","g":"Poker money and pepole","p":"0546997933"},{"i":"600","n":"סהר","s":"","o":"עידו","g":"Poker money and pepole","p":"0547011110"},{"i":"601","n":"טל","s":"","o":"עידו","g":"Poker money and pepole","p":"0547052808"},{"i":"602","n":"איתי","s":"","o":"מאור","g":"Poker money and pepole","p":"0547080012"},{"i":"603","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0547088568"},{"i":"604","n":"אוראל","s":"","o":"מאור","g":"Poker money and pepole","p":"0547174842"},{"i":"605","n":"ינאי","s":"","o":"עידו","g":"Poker money and pepole","p":"0547217313"},{"i":"606","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0547275522"},{"i":"607","n":"בר","s":"","o":"מאור","g":"Poker money and pepole","p":"0547585053"},{"i":"608","n":"יניב","s":"","o":"עידו","g":"Poker money and pepole","p":"0547615458"},{"i":"609","n":"עידן","s":"","o":"עידו","g":"Poker money and pepole","p":"0547618249"},{"i":"610","n":"שי","s":"","o":"מאור","g":"Poker money and pepole","p":"0547646930"},{"i":"611","n":"תומר","s":"","o":"עידו","g":"Poker money and pepole","p":"0547657188"},{"i":"612","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0547703102"},{"i":"613","n":"רן","s":"","o":"מאור","g":"Poker money and pepole","p":"0547723344"},{"i":"614","n":"פסו","s":"","o":"עידו","g":"Poker money and pepole","p":"0547730588"},{"i":"615","n":"אוריאן","s":"","o":"עידו","g":"Poker money and pepole","p":"0547731541"},{"i":"616","n":"גיני","s":"","o":"מאור","g":"Poker money and pepole","p":"0547757406"},{"i":"617","n":"עמירם","s":"","o":"עידו","g":"Poker money and pepole","p":"0547801961"},{"i":"618","n":"נאור","s":"","o":"מאור","g":"Poker money and pepole","p":"0547833762"},{"i":"619","n":"רועי","s":"","o":"עידו","g":"Poker money and pepole","p":"0547939806"},{"i":"620","n":"ישראל","s":"","o":"עידו","g":"Poker money and pepole","p":"0548032879"},{"i":"621","n":"ים","s":"","o":"מאור","g":"Poker money and pepole","p":"0548068685"},{"i":"622","n":"יחיאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0548077390"},{"i":"623","n":"עידן","s":"","o":"עידו","g":"Poker money and pepole","p":"0548117616"},{"i":"624","n":"יעקב","s":"","o":"מאור","g":"Poker money and pepole","p":"0548191248"},{"i":"625","n":"אלון","s":"","o":"עידו","g":"Poker money and pepole","p":"0548214484"},{"i":"626","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0548301496"},{"i":"627","n":"טל","s":"","o":"מאור","g":"Poker money and pepole","p":"0548343653"},{"i":"628","n":"יהודה","s":"","o":"עידו","g":"Poker money and pepole","p":"0548358775"},{"i":"629","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0548642036"},{"i":"630","n":"אלמוג","s":"","o":"מאור","g":"Poker money and pepole","p":"0548833740"},{"i":"631","n":"נועם","s":"","o":"עידו","g":"Poker money and pepole","p":"0549284901"},{"i":"632","n":"יואב","s":"","o":"מאור","g":"Poker money and pepole","p":"0549403463"},{"i":"633","n":"רוי","s":"","o":"עידו","g":"Poker money and pepole","p":"0549427776"},{"i":"634","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0549442334"},{"i":"635","n":"רז","s":"","o":"מאור","g":"Poker money and pepole","p":"0549444204"},{"i":"636","n":"שלו","s":"","o":"עידו","g":"Poker money and pepole","p":"0549449502"},{"i":"637","n":"נועה","s":"","o":"עידו","g":"Poker money and pepole","p":"0549461856"},{"i":"638","n":"תומר","s":"","o":"מאור","g":"Poker money and pepole","p":"0549486972"},{"i":"639","n":"אמרי","s":"","o":"עידו","g":"Poker money and pepole","p":"0549499583"},{"i":"640","n":"דניאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0549529655"},{"i":"641","n":"עילאי","s":"","o":"מאור","g":"Poker money and pepole","p":"0549553369"},{"i":"642","n":"משה","s":"","o":"עידו","g":"Poker money and pepole","p":"0549609330"},{"i":"643","n":"שחר","s":"","o":"עידו","g":"Poker money and pepole","p":"0549700270"},{"i":"644","n":"מיכאל","s":"","o":"מאור","g":"Poker money and pepole","p":"0549703490"},{"i":"645","n":"נחום","s":"","o":"עידו","g":"Poker money and pepole","p":"0549719005"},{"i":"646","n":"יונתן","s":"","o":"מאור","g":"Poker money and pepole","p":"0549749655"},{"i":"647","n":"ניב","s":"","o":"עידו","g":"Poker money and pepole","p":"0549834883"},{"i":"648","n":"צור","s":"","o":"עידו","g":"Poker money and pepole","p":"0549881183"},{"i":"649","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0549916212"},{"i":"650","n":"הראל","s":"","o":"עידו","g":"Poker money and pepole","p":"0549938100"},{"i":"651","n":"עידו","s":"","o":"עידו","g":"Poker money and pepole","p":"0549968711"},{"i":"652","n":"סוטלימן","s":"","o":"מאור","g":"Poker money and pepole","p":"0549982698"},{"i":"653","n":"עומר","s":"","o":"עידו","g":"Poker money and pepole","p":"0549984432"},{"i":"654","n":"אוראל","s":"","o":"עידו","g":"Poker money and pepole","p":"0549989161"},{"i":"655","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0552407009"},{"i":"656","n":"מורדי","s":"","o":"עידו","g":"Poker money and pepole","p":"0552454766"},{"i":"657","n":"שילה","s":"","o":"מאור","g":"Poker money and pepole","p":"0552483057"},{"i":"658","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0552492482"},{"i":"659","n":"איבי","s":"","o":"עידו","g":"Poker money and pepole","p":"0552735951"},{"i":"660","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0555520288"},{"i":"661","n":"טוב","s":"","o":"עידו","g":"Poker money and pepole","p":"0555534566"},{"i":"662","n":"ניתאי","s":"","o":"עידו","g":"Poker money and pepole","p":"0555562002"},{"i":"663","n":"נועם","s":"","o":"מאור","g":"Poker money and pepole","p":"0555562625"},{"i":"664","n":"יאן","s":"","o":"עידו","g":"Poker money and pepole","p":"0556608543"},{"i":"665","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0556612899"},{"i":"666","n":"לידור","s":"","o":"מאור","g":"Poker money and pepole","p":"0556624419"},{"i":"667","n":"יאיר","s":"","o":"עידו","g":"Poker money and pepole","p":"0556624845"},{"i":"668","n":"אשר","s":"","o":"עידו","g":"Poker money and pepole","p":"0556641050"},{"i":"669","n":"טרבלסי","s":"","o":"מאור","g":"Poker money and pepole","p":"0556645243"},{"i":"670","n":"אסף","s":"","o":"עידו","g":"Poker money and pepole","p":"0556645247"},{"i":"671","n":"עומר","s":"","o":"מאור","g":"Poker money and pepole","p":"0556649419"},{"i":"672","n":"דוד","s":"","o":"עידו","g":"Poker money and pepole","p":"0556658938"},{"i":"673","n":"רועי","s":"","o":"עידו","g":"Poker money and pepole","p":"0556696717"},{"i":"674","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0556833858"},{"i":"675","n":"הוד","s":"","o":"עידו","g":"Poker money and pepole","p":"0556866076"},{"i":"676","n":"אראל","s":"","o":"עידו","g":"Poker money and pepole","p":"0556882197"},{"i":"677","n":"גיא","s":"","o":"מאור","g":"Poker money and pepole","p":"0558829971"},{"i":"678","n":"נאור","s":"","o":"עידו","g":"Poker money and pepole","p":"0558831711"},{"i":"679","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0558832711"},{"i":"680","n":"אמיר","s":"","o":"מאור","g":"Poker money and pepole","p":"0558834660"},{"i":"681","n":"נווה","s":"","o":"עידו","g":"Poker money and pepole","p":"0558835378"},{"i":"682","n":"שירן","s":"","o":"עידו","g":"Poker money and pepole","p":"0558859997"},{"i":"683","n":"דור","s":"","o":"מאור","g":"Poker money and pepole","p":"0558861211"},{"i":"684","n":"נועם","s":"","o":"עידו","g":"Poker money and pepole","p":"0558869830"},{"i":"685","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0558875446"},{"i":"686","n":"עומר","s":"","o":"עידו","g":"Poker money and pepole","p":"0559255258"},{"i":"687","n":"דניאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0559535552"},{"i":"688","n":"רפאל","s":"","o":"מאור","g":"Poker money and pepole","p":"0559840911"},{"i":"689","n":"מאור","s":"","o":"עידו","g":"Poker money and pepole","p":"0559873222"},{"i":"690","n":"יואב","s":"","o":"עידו","g":"Poker money and pepole","p":"0584003979"},{"i":"691","n":"אלעד","s":"","o":"מאור","g":"Poker money and pepole","p":"0584119912"},{"i":"692","n":"יואב","s":"","o":"עידו","g":"Poker money and pepole","p":"0584171004"},{"i":"693","n":"נבו","s":"","o":"עידו","g":"Poker money and pepole","p":"0584212102"},{"i":"694","n":"רועי","s":"","o":"מאור","g":"Poker money and pepole","p":"0584301393"},{"i":"695","n":"לוטם","s":"","o":"עידו","g":"Poker money and pepole","p":"0584332134"},{"i":"696","n":"נועם","s":"","o":"עידו","g":"Poker money and pepole","p":"0584339965"},{"i":"697","n":"דור","s":"","o":"מאור","g":"Poker money and pepole","p":"0584388884"},{"i":"698","n":"דן","s":"","o":"עידו","g":"Poker money and pepole","p":"0584396918"},{"i":"699","n":"נועם","s":"","o":"מאור","g":"Poker money and pepole","p":"0584414253"},{"i":"700","n":"מלאכי","s":"","o":"עידו","g":"Poker money and pepole","p":"0584470846"},{"i":"701","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0584484849"},{"i":"702","n":"עומר","s":"","o":"מאור","g":"Poker money and pepole","p":"0584614947"},{"i":"703","n":"עידו","s":"","o":"עידו","g":"Poker money and pepole","p":"0584675000"},{"i":"704","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0584701818"},{"i":"705","n":"דניאל","s":"","o":"מאור","g":"Poker money and pepole","p":"0584741842"},{"i":"706","n":"משה","s":"","o":"עידו","g":"Poker money and pepole","p":"0584823220"},{"i":"707","n":"יובל","s":"","o":"עידו","g":"Poker money and pepole","p":"0584858576"},{"i":"708","n":"אריאל","s":"","o":"מאור","g":"Poker money and pepole","p":"0584886088"},{"i":"709","n":"גולדשטיין","s":"","o":"עידו","g":"Poker money and pepole","p":"0585221206"},{"i":"710","n":"ניצן","s":"","o":"עידו","g":"Poker money and pepole","p":"0585250304"},{"i":"711","n":"איתי","s":"","o":"מאור","g":"Poker money and pepole","p":"0585297148"},{"i":"712","n":"ניב","s":"","o":"עידו","g":"Poker money and pepole","p":"0585454400"},{"i":"713","n":"אורי","s":"","o":"מאור","g":"Poker money and pepole","p":"0585454466"},{"i":"714","n":"אביאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0585858285"},{"i":"716","n":"חן","s":"","o":"עידו","g":"Poker money and pepole","p":"0586065193"},{"i":"717","n":"סער","s":"","o":"מאור","g":"Poker money and pepole","p":"0586161412"},{"i":"718","n":"יקיר","s":"","o":"עידו","g":"Poker money and pepole","p":"0586272620"},{"i":"719","n":"רז","s":"","o":"עידו","g":"Poker money and pepole","p":"0586272898"},{"i":"720","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0586275665"},{"i":"721","n":"אורי","s":"","o":"עידו","g":"Poker money and pepole","p":"0586277492"},{"i":"722","n":"אריאל","s":"","o":"עידו","g":"Poker money and pepole","p":"0586313517"},{"i":"724","n":"יגל","s":"","o":"מאור","g":"Poker money and pepole","p":"0586488167"},{"i":"725","n":"עדן","s":"","o":"עידו","g":"Poker money and pepole","p":"0586555398"},{"i":"726","n":"תמיר","s":"","o":"עידו","g":"Poker money and pepole","p":"0586636556"},{"i":"727","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0586663831"},{"i":"728","n":"ראם","s":"","o":"עידו","g":"Poker money and pepole","p":"0586668111"},{"i":"729","n":"אייל","s":"","o":"מאור","g":"Poker money and pepole","p":"0586767888"},{"i":"730","n":"סופי","s":"","o":"עידו","g":"Poker money and pepole","p":"0586878766"},{"i":"731","n":"איתי","s":"","o":"עידו","g":"Poker money and pepole","p":"0587104911"},{"i":"732","n":"אריאל","s":"","o":"מאור","g":"Poker money and pepole","p":"0587144199"},{"i":"733","n":"","s":"","o":"עידו","g":"Poker money and pepole","p":"0587207220"},{"i":"734","n":"יובל","s":"","o":"עידו","g":"Poker money and pepole","p":"0587240707"},{"i":"735","n":"נאור","s":"","o":"מאור","g":"Poker money and pepole","p":"0587243322"},{"i":"736","n":"איתמר","s":"","o":"עידו","g":"Poker money and pepole","p":"0587500055"},{"i":"737","n":"אחיה","s":"","o":"עידו","g":"Poker money and pepole","p":"0587670305"},{"i":"738","n":"כרמל","s":"","o":"מאור","g":"Poker money and pepole","p":"0587804156"},{"i":"739","n":"עומר","s":"","o":"עידו","g":"Poker money and pepole","p":"0587874948"},{"i":"740","n":"","s":"","o":"מאור","g":"Poker money and pepole","p":"0587970984"},{"i":"741","n":"עדן עשוש","s":"","o":"מאור","g":"אלפון אוהד","p":"0544243004"},{"i":"742","n":"עמית סאסי","s":"","o":"מאור","g":"אלפון אוהד","p":"0506550363"},{"i":"743","n":"יוסף אליאב (קליפטו)","s":"","o":"מאור","g":"אלפון אוהד","p":"0527002437"},{"i":"744","n":"שמעון מסטיריג","s":"","o":"מאור","g":"אלפון אוהד","p":"0542971410"},{"i":"745","n":"רפי גבריאלוב","s":"","o":"מאור","g":"אלפון אוהד","p":"0509256223"},{"i":"746","n":"עומר יצחק","s":"","o":"מאור","g":"אלפון אוהד","p":"0545546304"},{"i":"747","n":"אהרלה וסרמן","s":"","o":"מאור","g":"אלפון אוהד","p":"0543187544"},{"i":"748","n":"מני דנינו","s":"","o":"מאור","g":"אלפון אוהד","p":"0525955072"},{"i":"749","n":"יוסי רוסטמוב","s":"","o":"מאור","g":"אלפון אוהד","p":"0543905436"},{"i":"750","n":"אלכס טפליצקי","s":"","o":"מאור","g":"אלפון אוהד","p":"0587814825"},{"i":"751","n":"אלעד בלהנס","s":"","o":"מאור","g":"אלפון אוהד","p":"0504058275"},{"i":"752","n":"שלמה סימני","s":"","o":"מאור","g":"אלפון אוהד","p":"0537255845"},{"i":"753","n":"שלומי ויצמן","s":"","o":"מאור","g":"אלפון אוהד","p":"0549571518"}];
+const LINE2 = 'אני מחפש להגדיל את הקבוצה שלנו, אנחנו משחקים הולדם ואומהה באונליין ועל סכומים קטנים... חברי לגמרי. זה לא קלאב או משהו, אין רייק או איזשהי עמלה.';
+
+// Default message templates — {שם} מוחלף בשם בזמן ריצה
+const DEFAULT_TEMPLATES = {
+  blitz:       `מה קורה {שם}? הראל מהבליץ אמר לי שאולי זה יעניין אותך\n${LINE2}`,
+  poker:       `מה קורה {שם}? הראל מפוקר כסף ואנשים אמר לי שאולי זה יעניין אותך\n${LINE2}`,
+  blitz_poker: `מה קורה {שם}? הראל מפוקר כסף ואנשים אמר לי שאולי זה יעניין אותך\n${LINE2}`,
+  ohad:        `מה קורה {שם}? אוהד אמר לי שאולי זה יעניין אותך\n${LINE2}`,
+};
+
+// מאוחסן גלובלית — מתעדכן מ-Firebase
+let msgTemplates = {};
+
+function groupKey(group) {
+  if (group === 'Blitz') return 'blitz';
+  if (group === 'Poker money and pepole') return 'poker';
+  if (group === 'Blitz, Poker money and pepole') return 'blitz_poker';
+  if (group === 'אלפון אוהד') return 'ohad';
+  return null;
+}
+
+function buildMsg(name, group) {
+  const key = groupKey(group);
+  if (!key) return '';
+  const tpl = (msgTemplates[key] !== undefined ? msgTemplates[key] : DEFAULT_TEMPLATES[key]) || '';
+  const n = (name || '').trim();
+  let msg = tpl.replace(/{שם}/g, n);
+  if (!n) msg = msg.replace(/\s+\?/, '?'); // clean "מה קורה ?" → "מה קורה?"
+  return msg;
+}
+
+function intlPhone(raw) {
+  const d = (raw||'').replace(/\D/g,'');
+  if (!d) return '';
+  if (d.startsWith('972')) return d;
+  if (d.startsWith('0')) return '972'+d.slice(1);
+  return '972'+d;
+}
+function waUrl(phone, msg) {
+  const p = intlPhone(phone); if (!p) return '';
+  return 'https://wa.me/'+p+(msg?'?text='+encodeURIComponent(msg):'');
+}
+function esc(s){return(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function timeAgo(ts){
+  if(!ts) return '';
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60) return 'עכשיו';
+  if(s<3600) return Math.floor(s/60)+'ד׳';
+  if(s<86400) return Math.floor(s/3600)+'ש׳';
+  return Math.floor(s/86400)+' ימים';
+}
+
+const CONFIGURED = !Object.values(FIREBASE_CONFIG).some(v => typeof v==='string' && v.startsWith('PASTE_'));
+
+if (!CONFIGURED) {
+  // setup overlay stays visible
+} else {
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('id-bar').style.display = 'flex';
+  document.getElementById('app').style.display = 'block';
+  startApp();
+}
+
+function startApp() {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const db = firebase.database();
+  const contactsRef  = db.ref('contacts');
+  const templatesRef = db.ref('templates');
+
+  // Identity
+  let identity = localStorage.getItem('whoami') || '';
+  function applyIdentity() {
+    document.querySelectorAll('.id-btn').forEach(b => b.classList.toggle('active', b.dataset.id === identity));
+  }
+  applyIdentity();
+  document.querySelectorAll('.id-btn').forEach(b => b.addEventListener('click', () => {
+    identity = b.dataset.id; localStorage.setItem('whoami', identity); applyIdentity();
+  }));
+
+  // Sync indicator
+  db.ref('.info/connected').on('value', s => {
+    const ok = s.val();
+    document.getElementById('sync-dot').className = ok ? 'dot-ok' : 'dot-off';
+    document.getElementById('sync-txt').textContent = ok ? 'מסונכרן' : 'לא מחובר';
+    document.getElementById('sync-txt').style.color = ok ? '#22c55e' : '#f59e0b';
+  });
+
+  // State
+  let fbData = {}, ownerSel = '', statusSel = '';
+
+  // Seed contacts (first time)
+  contactsRef.once('value').then(snap => {
+    if (!snap.exists()) {
+      const seed = {};
+      EMBEDDED.forEach(r => { if (r.s) seed[r.i] = { status: r.s }; });
+      if (Object.keys(seed).length) contactsRef.set(seed);
+    }
+  });
+
+  // Group filter populate
+  const gf = document.getElementById('gf');
+  [...new Set(EMBEDDED.map(r=>r.g).filter(Boolean))].sort().forEach(g => {
+    const o = document.createElement('option'); o.value=g; o.textContent=g; gf.appendChild(o);
+  });
+
+  // Static counts
+  document.getElementById('cn-all').textContent  = EMBEDDED.length.toLocaleString('he-IL');
+  document.getElementById('cn-maor').textContent = EMBEDDED.filter(r=>r.o==='מאור').length.toLocaleString('he-IL');
+  document.getElementById('cn-ido').textContent  = EMBEDDED.filter(r=>r.o==='עידו').length.toLocaleString('he-IL');
+
+  // Firebase listeners
+  contactsRef.on('value', snap => {
+    fbData = snap.val() || {};
+    render();
+    if (document.getElementById('tab-messages').style.display !== 'none') renderMsgEditor();
+  });
+
+  templatesRef.on('value', snap => {
+    msgTemplates = snap.val() || {};
+    render(); // re-render table with new templates
+    if (document.getElementById('tab-messages').style.display !== 'none') renderMsgEditor();
+  });
+
+  // Merged data
+  function merged() {
+    return EMBEDDED.map(r => {
+      const ov = fbData[r.i] || {};
+      const name   = ov.name   !== undefined ? ov.name   : r.n;
+      const status = ov.status !== undefined ? ov.status : r.s;
+      return { ...r, name, status, msg: buildMsg(name, r.g), _ov: ov };
+    });
+  }
+
+  function getFilteredRows() {
+    return merged().filter(r => {
+      if (ownerSel && r.o !== ownerSel) return false;
+      if (statusSel === 'ללא סטטוס' && r.status) return false;
+      if (statusSel && statusSel !== 'ללא סטטוס' && r.status !== statusSel) return false;
+      if (gf.value && r.g !== gf.value) return false;
+
+      return true;
+    });
+  }
+
+  // Status filter chips
+  const PRESET_ORDER = ['נשלח','הצטרף','ילד','ערבי','נשלח בעבר'];
+  function renderStatusFilters() {
+    const subset = ownerSel ? merged().filter(r => r.o === ownerSel) : merged();
+    const counts = {};
+    subset.forEach(r => { const s = r.status || 'ללא סטטוס'; counts[s] = (counts[s]||0)+1; });
+    const keys = [
+      ...PRESET_ORDER.filter(k => counts[k]),
+      ...Object.keys(counts).filter(k => !PRESET_ORDER.includes(k) && k !== 'ללא סטטוס').sort(),
+      ...(counts['ללא סטטוס'] ? ['ללא סטטוס'] : [])
+    ];
+    const container = document.getElementById('status-filters');
+    container.innerHTML =
+      `<label>סטטוס:</label>` +
+      `<div class="stt-seg ${!statusSel?'active':''}" data-s="">הכל <span class="n">${subset.length}</span></div>` +
+      keys.map(k => `<div class="stt-seg ${statusSel===k?'active':''}" data-s="${esc(k)}">${esc(k)} <span class="n">${counts[k]}</span></div>`).join('');
+    container.querySelectorAll('.stt-seg').forEach(el => el.addEventListener('click', () => {
+      statusSel = el.dataset.s; render();
+    }));
+  }
+
+  // Status badge
+  const STT_CLS = {'נשלח':'sent','הצטרף':'joined','ילד':'kid','ערבי':'arab','נשלח בעבר':'prev'};
+  function sttBadge(status, ov) {
+    const cls = STT_CLS[status] || (status ? 'other' : 'empty');
+    const label = status || 'ללא סטטוס';
+    let meta = '';
+    if (ov && ov.by && ov.at) meta = `<span class="stt-meta">עודכן ע"י ${esc(ov.by)} · ${timeAgo(ov.at)}</span>`;
+    return `<span class="stt ${cls}">${esc(label)}</span>${meta}`;
+  }
+
+  const WA_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M.06 24l1.69-6.16A11.87 11.87 0 0 1 .16 11.9C.16 5.34 5.5.02 12.06.02a11.82 11.82 0 0 1 8.41 3.49 11.78 11.78 0 0 1 3.48 8.41c0 6.56-5.34 11.9-11.9 11.9a11.9 11.9 0 0 1-5.69-1.45L.06 24zm6.6-3.8c1.68.99 3.28 1.59 5.4 1.59 5.45 0 9.89-4.43 9.89-9.88a9.82 9.82 0 0 0-2.9-6.99 9.82 9.82 0 0 0-6.99-2.9c-5.46 0-9.89 4.43-9.89 9.88 0 2.23.65 3.9 1.75 5.65l-.99 3.62 3.73-.97zm10.95-5.18c-.07-.12-.27-.2-.56-.34-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.66.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.53.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.66-1.6-.91-2.18-.24-.58-.48-.5-.66-.5l-.56-.01c-.2 0-.52.07-.79.37-.27.3-1.04 1.01-1.04 2.46 0 1.45 1.06 2.85 1.21 3.05.15.2 2.09 3.19 5.06 4.47.71.31 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2-1.41.25-.69.25-1.28.17-1.41z"/></svg>';
+
+  function rowHTML(r) {
+    const url = waUrl(r.p, r.msg);
+    const wa = url ? `<a class="wa-btn" href="${url}" target="_blank" rel="noopener">${WA_SVG}שלח</a>` : '<span class="wa-none">—</span>';
+    const nameCell = r.name
+      ? `<span class="c-name editable-name" data-idx="${esc(r.i)}" data-name="${esc(r.name)}" title="לחץ לעריכת שם">${esc(r.name)}<span class="edit-ico">✏️</span></span>`
+      : `<span class="name-empty" data-idx="${esc(r.i)}">✏️ הזן שם</span>`;
+    const gcls = r.g === 'אלפון אוהד' ? 'chip ohad' : 'chip';
+    const msg = r.msg
+      ? `<div class="c-msg"><div class="clamp">${esc(r.msg)}</div><button class="more">הצג הכל</button></div>`
+      : '<span class="wa-none">—</span>';
+    return `<tr>
+      <td class="c-idx">${esc(r.i)}</td>
+      <td>${nameCell}</td>
+      <td><span class="owner ${r.o==='מאור'?'m':'d'}">${esc(r.o)}</span></td>
+      <td class="stt-cell" data-idx="${esc(r.i)}">${sttBadge(r.status, r._ov)}</td>
+      <td>${wa}</td>
+      <td><span class="${gcls}">${esc(r.g)}</span></td>
+      <td class="c-phone"><span class="copy-phone" data-p="${esc(r.p)}">${esc(r.p)}</span></td>
+      <td>${msg}</td>
+    </tr>`;
+  }
+
+  function render() {
+    renderStatusFilters();
+    const rows = getFilteredRows();
+    document.getElementById('vis-count').textContent = rows.length.toLocaleString('he-IL');
+    document.getElementById('tbody').innerHTML = rows.length
+      ? rows.map(rowHTML).join('')
+      : '<tr><td colspan="8"><div class="empty-state">לא נמצאו תוצאות</div></td></tr>';
+    const m = EMBEDDED.filter(r=>r.o==='מאור').length, e = EMBEDDED.filter(r=>r.o==='עידו').length;
+    document.getElementById('foot').textContent = `חלוקה: מאור ${m.toLocaleString('he-IL')} · עידו ${e.toLocaleString('he-IL')} · סה״כ ${EMBEDDED.length.toLocaleString('he-IL')}`;
+  }
+
+  // Summary tab
+  function renderSummary() {
+    const all = merged();
+
+    // ── Owner status cards (unchanged) ──
+    function ownerStats(owner) {
+      const rows = all.filter(r => r.o === owner);
+      const counts = {};
+      rows.forEach(r => { const s = r.status || 'ללא סטטוס'; counts[s] = (counts[s]||0)+1; });
+      return { total: rows.length, counts };
+    }
+    function ownerCard(owner, stats) {
+      const cls = owner === 'מאור' ? 'm' : 'd';
+      const keys = [
+        ...PRESET_ORDER.filter(k => stats.counts[k]),
+        ...Object.keys(stats.counts).filter(k => !PRESET_ORDER.includes(k) && k !== 'ללא סטטוס').sort(),
+        ...(stats.counts['ללא סטטוס'] ? ['ללא סטטוס'] : [])
+      ];
+      const rows = keys.map(k => {
+        const pct = Math.round(stats.counts[k] / stats.total * 100);
+        return `<div class="sum-row">
+          <span class="sum-label">${esc(k)}</span>
+          <div class="sum-bar-wrap"><div class="sum-bar${k==='ללא סטטוס'?' nostat':''}" style="width:${pct}%"></div></div>
+          <span class="sum-count">${stats.counts[k]}</span>
+          <span class="sum-pct">${pct}%</span>
+        </div>`;
+      }).join('');
+      return `<div class="sum-card">
+        <span class="sum-header ${cls}">${owner}</span>
+        <div class="sum-total">${stats.total.toLocaleString('he-IL')}<span>אנשי קשר</span></div>
+        ${rows}
+      </div>`;
+    }
+
+    // ── Daily Sent Summary ──
+    function tsToISODate(ts) {
+      const d = new Date(ts);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function isoToDisplay(iso) {
+      const [y, m, d] = iso.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    // Only count 'נשלח' records that were explicitly set via the UI (have _ov.at)
+    const sentRecords = all.filter(r => r.status === 'נשלח' && r._ov && r._ov.at);
+    const byDate = {};
+    sentRecords.forEach(r => {
+      const key = tsToISODate(r._ov.at);
+      if (!byDate[key]) byDate[key] = { maor: 0, ido: 0 };
+      if (r._ov.by === 'מאור') byDate[key].maor++;
+      else if (r._ov.by === 'עידו') byDate[key].ido++;
+    });
+
+    // Sort dates newest-first (ISO strings sort lexicographically)
+    const sortedDates = Object.keys(byDate).sort().reverse();
+
+    let dailyBody = '';
+    if (sortedDates.length === 0) {
+      dailyBody = '<div class="ds-empty">אין נתוני שליחה עם תאריך מוגדר</div>';
+    } else {
+      const rows = sortedDates.map(iso => {
+        const d = byDate[iso];
+        const total = d.maor + d.ido;
+        return `<tr>
+          <td class="ds-date">${esc(isoToDisplay(iso))}</td>
+          <td class="ds-total">${total}</td>
+          <td class="ds-maor"><span class="ds-badge maor">${d.maor}</span></td>
+          <td class="ds-ido"><span class="ds-badge ido">${d.ido}</span></td>
+        </tr>`;
+      }).join('');
+      dailyBody = `
+        <div class="ds-total-line">סה"כ נשלח (עם תאריך): <strong>${sentRecords.length}</strong></div>
+        <div class="daily-scroll">
+          <table class="ds-table">
+            <thead><tr><th>תאריך</th><th>סה"כ</th><th>מאור</th><th>עידו</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+
+    document.getElementById('tab-summary').innerHTML = `
+      <div class="sum-grid">
+        ${ownerCard('מאור', ownerStats('מאור'))}
+        ${ownerCard('עידו', ownerStats('עידו'))}
+      </div>
+      <div class="daily-sent-card">
+        <div class="ds-header">📤 סיכום שליחות יומי</div>
+        ${dailyBody}
+      </div>`;
+  }
+
+  // Message editor tab
+  const MSG_GROUPS = [
+    { key: 'blitz',       label: 'Blitz',                          cls: 'blitz'  },
+    { key: 'poker',       label: 'Poker money and pepole',         cls: 'poker'  },
+    { key: 'blitz_poker', label: 'Blitz, Poker money and pepole',  cls: 'bpoker' },
+    { key: 'ohad',        label: 'אלפון אוהד',                     cls: 'ohad'   },
+  ];
+  const SAMPLE_NAME = 'ישראל';
+
+  function renderMsgEditor() {
+    const grid = document.getElementById('msg-grid');
+    grid.innerHTML = MSG_GROUPS.map(g => {
+      const tpl = msgTemplates[g.key] !== undefined ? msgTemplates[g.key] : DEFAULT_TEMPLATES[g.key];
+      const preview = tpl.replace(/{שם}/g, SAMPLE_NAME);
+      return `<div class="msg-card">
+        <div class="mc-head ${g.cls}">${esc(g.label)}</div>
+        <div class="mc-hint">כתוב <code>{שם}</code> (עם הסוגריים) בכל מקום שתרצה שיופיע שם הנמען — התצוגה המקדימה מדגימה עם השם "ישראל"</div>
+        <textarea class="mc-ta" data-key="${g.key}" rows="5">${esc(tpl)}</textarea>
+        <div class="mc-preview-label">תצוגה מקדימה</div>
+        <div class="mc-preview">${esc(preview)}</div>
+        <div class="mc-actions">
+          <button class="mc-reset" data-key="${g.key}">↺ ברירת מחדל</button>
+          <button class="mc-save" data-key="${g.key}">💾 שמור</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Live preview update
+    grid.querySelectorAll('.mc-ta').forEach(ta => {
+      const card = ta.closest('.msg-card');
+      const prev = card.querySelector('.mc-preview');
+      ta.addEventListener('input', () => {
+        prev.textContent = ta.value.replace(/{שם}/g, SAMPLE_NAME);
+      });
+    });
+
+    // Reset to default
+    grid.querySelectorAll('.mc-reset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.key;
+        const ta = grid.querySelector(`.mc-ta[data-key="${key}"]`);
+        ta.value = DEFAULT_TEMPLATES[key];
+        ta.dispatchEvent(new Event('input'));
+      });
+    });
+
+    // Save to Firebase
+    grid.querySelectorAll('.mc-save').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.key;
+        const ta = grid.querySelector(`.mc-ta[data-key="${key}"]`);
+        templatesRef.child(key).set(ta.value);
+        btn.textContent = '✓ נשמר';
+        btn.classList.add('saved');
+        setTimeout(() => { btn.textContent = '💾 שמור'; btn.classList.remove('saved'); }, 2000);
+      });
+    });
+  }
+
+  // Export to Excel
+  document.getElementById('export-btn').addEventListener('click', () => {
+    const rows = getFilteredRows();
+    const wsData = [['מס׳','שם','אחראי','סטטוס','קבוצה','טלפון','הודעה']];
+    rows.forEach(r => wsData.push([r.i, r.name, r.o, r.status||'', r.g, r.p, r.msg]));
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [{wch:6},{wch:20},{wch:10},{wch:15},{wch:26},{wch:15},{wch:65}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'אנשי קשר');
+    const d = new Date();
+    XLSX.writeFile(wb, `contacts_${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}.xlsx`);
+  });
+
+  // Save to Firebase
+  function saveField(idx, field, value) {
+    const update = { [field]: value };
+    if (identity) { update.by = identity; update.at = Date.now(); }
+    contactsRef.child(idx).update(update);
+  }
+
+  // Popup
+  let popTarget = null;
+  const popup = document.getElementById('popup');
+  function openPopup(cell) {
+    popTarget = cell.dataset.idx;
+    document.getElementById('custom-val').value = '';
+    popup.style.display = 'block';
+    const rect = cell.getBoundingClientRect();
+    let top = rect.bottom + 4 + window.scrollY;
+    let left = rect.right - popup.offsetWidth + window.scrollX;
+    if (top + 260 > window.innerHeight + window.scrollY) top = rect.top - 260 + window.scrollY;
+    popup.style.top = top + 'px';
+    popup.style.left = Math.max(8, left) + 'px';
+  }
+  function closePopup() { popup.style.display = 'none'; popTarget = null; }
+
+  document.getElementById('tbody').addEventListener('click', e => {
+    const cp = e.target.closest('.copy-phone');
+    if (cp) {
+      navigator.clipboard.writeText(cp.dataset.p).then(() => {
+        cp.classList.add('copied'); const orig = cp.textContent; cp.textContent = '✓ הועתק';
+        setTimeout(() => { cp.classList.remove('copied'); cp.textContent = orig; }, 1500);
+      }); return;
+    }
+    const sc = e.target.closest('.stt-cell');
+    if (sc) { openPopup(sc); return; }
+    if (e.target.classList.contains('more')) {
+      const d = e.target.closest('.c-msg');
+      d.classList.toggle('open');
+      e.target.textContent = d.classList.contains('open') ? 'הצג פחות' : 'הצג הכל'; return;
+    }
+    // edit existing name
+    const en = e.target.closest('.editable-name');
+    if (en) {
+      const idx = en.dataset.idx;
+      const currentName = en.dataset.name || '';
+      const inp = document.createElement('input');
+      inp.className = 'name-input'; inp.type = 'text'; inp.value = currentName; inp.maxLength = 40;
+      en.replaceWith(inp); inp.focus(); inp.select();
+      function saveEditedName() { saveField(idx, 'name', inp.value.trim()); }
+      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { saveEditedName(); inp.blur(); } if (ev.key === 'Escape') inp.blur(); });
+      inp.addEventListener('blur', saveEditedName);
+      return;
+    }
+    // add new name (empty cell)
+    const ne = e.target.closest('.name-empty');
+    if (ne) {
+      const idx = ne.dataset.idx;
+      const inp = document.createElement('input');
+      inp.className = 'name-input'; inp.type = 'text'; inp.placeholder = 'הזן שם…'; inp.maxLength = 40;
+      ne.replaceWith(inp); inp.focus();
+      function saveName() { saveField(idx, 'name', inp.value.trim()); }
+      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { saveName(); inp.blur(); } });
+      inp.addEventListener('blur', saveName);
+    }
+  });
+
+  document.querySelectorAll('.pop-opt').forEach(btn => btn.addEventListener('click', () => {
+    if (popTarget) saveField(popTarget, 'status', btn.dataset.v); closePopup();
+  }));
+  document.getElementById('custom-save').addEventListener('click', () => {
+    const v = document.getElementById('custom-val').value.trim();
+    if (v && popTarget) saveField(popTarget, 'status', v); closePopup();
+  });
+  document.getElementById('custom-val').addEventListener('keydown', ev => {
+    if (ev.key === 'Enter') document.getElementById('custom-save').click();
+  });
+  document.addEventListener('click', e => {
+    if (!popup.contains(e.target) && !e.target.closest('.stt-cell')) closePopup();
+  });
+
+  document.getElementById('owners').addEventListener('click', e => {
+    const s = e.target.closest('.seg'); if (!s) return;
+    ownerSel = s.getAttribute('data-o');
+    document.querySelectorAll('.seg').forEach(x => x.classList.toggle('active', x === s));
+    statusSel = ''; render();
+  });
+
+  gf.addEventListener('change', render);
+
+  // Tab switching
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
+    const tab = t.dataset.tab;
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+    document.getElementById('tab-table').style.display    = tab === 'table'    ? 'block' : 'none';
+    document.getElementById('tab-summary').style.display  = tab === 'summary'  ? 'block' : 'none';
+    document.getElementById('tab-messages').style.display = tab === 'messages' ? 'block' : 'none';
+    if (tab === 'summary')  renderSummary();
+    if (tab === 'messages') renderMsgEditor();
+  }));
+}
+</script>
+</body>
+</html>

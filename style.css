@@ -1824,3 +1824,81 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 @media (max-width: 900px) and (min-width: 769px) {
   .funds-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ===================================================
+   GLOBAL 2-TAB NAV
+   =================================================== */
+#global-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 300;
+  height: 44px;
+  background: #0d0d1a;
+  display: flex;
+  direction: rtl;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.g-tab {
+  flex: 1;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.38);
+  font-family: "Heebo", system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  padding-bottom: 2px;
+}
+
+.g-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.g-tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ===================================================
+   CONTACTS IFRAME SECTION
+   =================================================== */
+#contacts-section {
+  display: block;
+  width: 100%;
+}
+
+#contacts-frame {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 44px);
+  border: none;
+  background: #f4f5f7;
+}
+
+/* ===================================================
+   MANAGEMENT SECTION — offset for global nav
+   The management topbar is position:fixed, so we push
+   it down by the global nav height (44px).
+   =================================================== */
+#management-section #topbar {
+  top: 44px;
+}
+
+#management-section #main-content {
+  padding-top: calc(44px + 60px + 28px);
+}
+
+@media (max-width: 768px) {
+  #management-section #main-content {
+    padding-top: calc(44px + 60px + 16px);
+  }
+}
