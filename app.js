@@ -1548,10 +1548,15 @@ function confirmClosePeriod() {
   document.getElementById('confirm-title').textContent = '⚠️ סגירת תקופה';
   document.getElementById('confirm-msg').innerHTML =
     'פעולה זו תשמור את נתוני התקופה הנוכחית בהיסטוריה ותאפס את כל הנתונים.<br>' +
-    '<strong style="color:var(--negative)">פעולה זו בלתי הפיכה!</strong>';
+    '<strong style="color:var(--negative)">פעולה זו בלתי הפיכה!</strong><br><br>' +
+    '<label for="close-period-start-date">תאריך תחילת התקופה</label><br>' +
+    `<input type="date" id="close-period-start-date" max="${yesterday()}">`;
   document.getElementById('confirm-ok').onclick = () => {
+    const dateVal = document.getElementById('close-period-start-date')?.value;
+    if (!dateVal)          { showNotif('אנא הזן תאריך תחילת תקופה', 'error');        return; }
+    if (dateVal >= today()){ showNotif('התאריך חייב להיות קטן מהיום הנוכחי', 'error'); return; }
     closeConfirm();
-    closePeriod();
+    closePeriod(dateVal);
   };
   document.getElementById('confirm-overlay').style.display = 'flex';
 }
@@ -1560,7 +1565,7 @@ function closeConfirm() {
   document.getElementById('confirm-overlay').style.display = 'none';
 }
 
-async function closePeriod() {
+async function closePeriod(periodStart) {
   showNotif('⏳ מבצע סגירת תקופה...', 'info');
   try {
     // 1. Fetch full detail from all blue tables (with player names)
@@ -1638,6 +1643,7 @@ async function closePeriod() {
 
     // 2. Save full snapshot to history
     await dbPost('history', {
+      period_start:          periodStart || null,
       period_end:            today(),
       total_expenses_chips:  totalExpenses,
       total_withdrawals_ils: totalWd,
@@ -1849,6 +1855,11 @@ function setPayboxUsage(useIt) {
 function n(v)   { return parseFloat(v) || 0; }
 function now()  { return new Date().toISOString(); }
 function today(){ return new Date().toISOString().split('T')[0]; }
+function yesterday() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().split('T')[0];
+}
 
 function fmt(num) {
   const v = parseFloat(num) || 0;
