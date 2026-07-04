@@ -561,7 +561,7 @@ async function loadBonusesTable() {
     const data = await dbGet('blue_table_bonuses', '?order=created_at.desc&select=*,players(name,nickname)');
     const tbody = document.getElementById('bn-table-body');
     if (!data || !data.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
       setText('bt-bn-summary', '');
       return;
     }
@@ -570,6 +570,7 @@ async function loadBonusesTable() {
         <td>${fmtDate(r.created_at)}</td>
         <td>${playerLabel(r.players?.name, r.players?.nickname)}</td>
         <td class="chips-color"><strong>${fmt(r.chips_amount)}</strong></td>
+        <td>${escHtml(r.note || '—')}</td>
         <td>${r.created_by || '—'}</td>
         <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_bonuses','${r.id}','loadBonusesTable')">מחק</button></td>
       </tr>`).join('');
@@ -583,14 +584,16 @@ async function loadBonusesTable() {
 async function addBonus() {
   const playerId = document.getElementById('bn-player').value;
   const chips    = parseFloat(document.getElementById('bn-chips').value);
+  const note     = document.getElementById('bn-note').value.trim();
   if (!playerId) { showNotif('אנא בחר שחקן', 'error'); return; }
   if (!chips || chips <= 0) { showNotif('אנא הזן כמות תקינה', 'error'); return; }
 
   try {
     await dbPost('blue_table_bonuses', {
-      player_id: playerId, chips_amount: chips, created_by: getDisplayName()
+      player_id: playerId, chips_amount: chips, note: note || null, created_by: getDisplayName()
     });
     document.getElementById('bn-chips').value = '';
+    document.getElementById('bn-note').value = '';
     clearPlayerAC('bn-player');
     showNotif('✅ בונוס נוסף');
     await loadBonusesTable();
@@ -1250,8 +1253,8 @@ function openPeriodDetail(r) {
 
   // Bonuses
   const bnHtml = miniTable(
-    ['שחקן','צ\'יפים','₪'],
-    (r.detail_bonuses || []).map(x => [x.player, fmt(x.chips), `₪${fmt(x.ils)}`])
+    ['שחקן','צ\'יפים','₪','הערה'],
+    (r.detail_bonuses || []).map(x => [x.player, fmt(x.chips), `₪${fmt(x.ils)}`, x.note || '—'])
   );
 
   // Referrals
@@ -1321,7 +1324,8 @@ async function openPlayerStats(playerId, playerName) {
         totals.tournament_chips += n(x.prize_chips);
       });
       (h.detail_bonuses || []).filter(x => matchName(x.player)).forEach(x => {
-        rows.push({ date, category: '🎁 בונוס', detail: `${fmt(x.chips)} צ' (₪${fmt(x.ils)})` });
+        const noteTxt = x.note ? ` — ${x.note}` : '';
+        rows.push({ date, category: '🎁 בונוס', detail: `${fmt(x.chips)} צ' (₪${fmt(x.ils)})${noteTxt}` });
         totals.bonus_chips += n(x.chips);
       });
       (h.detail_referrals || []).filter(x => matchName(x.referring) || matchName(x.referred)).forEach(x => {
@@ -1690,6 +1694,7 @@ async function closePeriod(periodStart) {
       player:      playerLabel(r.players),
       chips:       n(r.chips_amount),
       ils:         n(r.chips_amount) / 10,
+      note:        r.note || '',
       date: r.created_at?.slice(0,10)
     }));
 

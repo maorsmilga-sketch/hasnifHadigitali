@@ -403,15 +403,19 @@
                 <label>כמות צ'יפים</label>
                 <input type="number" id="bn-chips" placeholder="0" min="0">
               </div>
+              <div class="form-group">
+                <label>הערה</label>
+                <input type="text" id="bn-note" placeholder="הערה חופשית...">
+              </div>
             </div>
             <button class="btn btn-primary" onclick="addBonus()">➕ הוסף רשומה</button>
           </div>
           <div class="table-container">
             <table>
               <thead>
-                <tr><th>תאריך</th><th>שחקן</th><th>צ'יפים</th><th>הוזן ע"י</th><th>פעולות</th></tr>
+                <tr><th>תאריך</th><th>שחקן</th><th>צ'יפים</th><th>הערה</th><th>הוזן ע"י</th><th>פעולות</th></tr>
               </thead>
-              <tbody id="bn-table-body"><tr><td colspan="5" class="empty-state">אין רשומות</td></tr></tbody>
+              <tbody id="bn-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
             </table>
           </div>
           <div class="tab-summary" id="bt-bn-summary"></div>
