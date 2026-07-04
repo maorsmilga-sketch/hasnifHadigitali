@@ -27,6 +27,7 @@ let profitChart     = null;
 let historyData     = [];
 let chartMode       = 'person'; // 'person' | 'total'
 let chartMonths     = null;     // null = all, or number of months
+let chartYear       = null;     // null = no year filter, or a calendar year (e.g. 2026)
 let pinEntry        = '';
 let pinLocked       = false;
 let pinInactiveTimer = null;
@@ -928,6 +929,7 @@ async function loadHistory() {
     const data = await dbGet('history', '?order=period_end.desc');
     historyData = data || [];
     renderHistoryTable(historyData);
+    renderYearFilterButtons();
     renderProfitChart();
   } catch (e) {
     showNotif('שגיאה בטעינת היסטוריה: ' + e.message, 'error');
@@ -973,10 +975,33 @@ function setChartMode(mode) {
 
 function setChartFilter(months) {
   chartMonths = months;
+  chartYear   = null;
   ['3','6','12','all'].forEach(k => {
     const el = document.getElementById('chart-filter-' + k);
     if (el) el.classList.toggle('active', k === (months === null ? 'all' : String(months)));
   });
+  document.querySelectorAll('#chart-year-group .chart-toggle-btn').forEach(b => b.classList.remove('active'));
+  renderProfitChart();
+}
+
+function renderYearFilterButtons() {
+  const container = document.getElementById('chart-year-group');
+  if (!container) return;
+  const years = [...new Set(
+    historyData.map(r => r.period_end && new Date(r.period_end).getFullYear()).filter(Boolean)
+  )].sort((a, b) => a - b);
+  container.innerHTML = years.map(y =>
+    `<button class="chart-toggle-btn${chartYear === y ? ' active' : ''}" onclick="setChartYear(${y})">${y}</button>`
+  ).join('');
+}
+
+function setChartYear(year) {
+  chartYear   = year;
+  chartMonths = null;
+  document.querySelectorAll('#chart-year-group .chart-toggle-btn').forEach(b =>
+    b.classList.toggle('active', b.textContent.trim() === String(year))
+  );
+  ['3','6','12','all'].forEach(k => document.getElementById('chart-filter-' + k)?.classList.remove('active'));
   renderProfitChart();
 }
 
@@ -990,8 +1015,10 @@ function renderProfitChart() {
   // Sort ascending by date
   let sorted = [...historyData].sort((a, b) => new Date(a.period_end) - new Date(b.period_end));
 
-  // Apply month filter
-  if (chartMonths !== null) {
+  // Apply year or month filter (mutually exclusive)
+  if (chartYear !== null) {
+    sorted = sorted.filter(r => r.period_end && new Date(r.period_end).getFullYear() === chartYear);
+  } else if (chartMonths !== null) {
     const cutoff = new Date();
     cutoff.setMonth(cutoff.getMonth() - chartMonths);
     sorted = sorted.filter(r => new Date(r.period_end) >= cutoff);
@@ -1032,7 +1059,7 @@ function renderProfitChart() {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { labels: { color: '#9090b0', font: { family: 'Heebo', size: 12 } } },
+        legend: { display: false },
         tooltip: {
           callbacks: {
             label: c => '₪' + fmt(c.raw)
