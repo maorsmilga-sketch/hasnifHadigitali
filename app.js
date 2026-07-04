@@ -293,10 +293,21 @@ async function saveFunds() {
 
     await dbPatch('current_period', '?id=eq.1', data);
     Object.assign(currentPeriod, data);
-    showNotif('✅ כספים בחוץ נשמרו');
+    showNotif('✅ כספים נשמרו');
   } catch (e) {
     showNotif('שגיאה בשמירה: ' + e.message, 'error');
   }
+}
+
+let fundsSaveTimer = null;
+function onFundsInput() {
+  updateFundsSummary();
+  clearTimeout(fundsSaveTimer);
+  fundsSaveTimer = setTimeout(saveFunds, 700);
+}
+function onFundsBlur() {
+  clearTimeout(fundsSaveTimer);
+  saveFunds();
 }
 
 // ============================================================
@@ -444,6 +455,17 @@ async function saveCounter() {
   } catch (e) {
     showNotif('שגיאה: ' + e.message, 'error');
   }
+}
+
+let counterSaveTimer = null;
+function onCounterInput() {
+  updateCounterDisplay();
+  clearTimeout(counterSaveTimer);
+  counterSaveTimer = setTimeout(saveCounter, 700);
+}
+function onCounterBlur() {
+  clearTimeout(counterSaveTimer);
+  saveCounter();
 }
 
 // — Rakeback —
