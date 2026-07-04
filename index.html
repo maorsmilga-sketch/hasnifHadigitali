@@ -840,6 +840,11 @@
         <h3>📜 10 פעולות אחרונות — חובות</h3>
         <button class="detail-modal-close" onclick="closeDebtLog()">✕</button>
       </div>
+      <div class="chart-toggle-group" id="debt-log-filter" style="margin:0 20px 12px">
+        <button class="chart-toggle-btn active" data-person="all"  onclick="setDebtLogFilter(null)">הכל</button>
+        <button class="chart-toggle-btn"        data-person="ido"  onclick="setDebtLogFilter('ido')">עידו</button>
+        <button class="chart-toggle-btn"        data-person="maor" onclick="setDebtLogFilter('maor')">מאור</button>
+      </div>
       <div class="detail-modal-body" id="debt-log-body">
       </div>
     </div>

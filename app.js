@@ -931,13 +931,31 @@ async function _updateDebt(person, newVal) {
 }
 
 // — Debt log —
+let debtLogFilter = null; // null = all, 'ido', 'maor'
+
 async function openDebtLog() {
-  const body = document.getElementById('debt-log-body');
+  debtLogFilter = null;
   document.getElementById('debt-log-overlay').style.display = 'flex';
+  await loadDebtLogData();
+}
+
+function setDebtLogFilter(person) {
+  debtLogFilter = person;
+  document.querySelectorAll('#debt-log-filter .chart-toggle-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.person === (person || 'all'))
+  );
+  loadDebtLogData();
+}
+
+async function loadDebtLogData() {
+  const body = document.getElementById('debt-log-body');
   body.innerHTML = '<div class="pd-empty">טוען נתונים...</div>';
 
   try {
-    const data = await dbGet('debt_log', '?order=created_at.desc&limit=10');
+    const query = debtLogFilter
+      ? `?person=eq.${debtLogFilter}&order=created_at.desc&limit=10`
+      : '?order=created_at.desc&limit=10';
+    const data = await dbGet('debt_log', query);
     if (!data || !data.length) {
       body.innerHTML = '<p class="pd-empty">אין פעולות</p>';
       return;
@@ -946,7 +964,7 @@ async function openDebtLog() {
       <thead><tr><th>תאריך</th><th>שם</th><th>סכום</th><th>הוזן ע"י</th></tr></thead>
       <tbody>${data.map(r => {
         const amt   = n(r.amount);
-        const color = amt >= 0 ? 'positive-color' : 'negative-color';
+        const color = amt >= 0 ? 'negative-color' : 'positive-color';
         const sign  = amt >= 0 ? '+' : '';
         return `<tr>
           <td>${fmtDate(r.created_at)}</td>
