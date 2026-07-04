@@ -204,7 +204,6 @@ body {
   background: rgba(255,255,255,0.03) !important;
   color: var(--text-muted) !important;
   cursor: not-allowed;
-  border-style: dashed !important;
 }
 
 /* ===== BUTTONS ===== */
@@ -1069,13 +1068,15 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 
 /* ===== FUNDS TILES ===== */
 .funds-section-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
@@ -1083,19 +1084,23 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 .funds-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .fund-tile {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px 12px 10px;
+  padding: 14px 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   position: relative;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.fund-tile:hover {
+  border-color: var(--border-light);
 }
 
 .fund-tile:focus-within {
@@ -1104,19 +1109,18 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 }
 
 .fund-tile-readonly {
-  opacity: 0.7;
+  opacity: 0.85;
   background: rgba(255,255,255,0.02);
 }
 
 .fund-tile-label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .fund-tile input {
@@ -1126,10 +1130,10 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   border: none;
   border-bottom: 1px solid var(--border-light);
   border-radius: 0;
-  padding: 4px 0;
+  padding: 6px 0;
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: clamp(13px, 2.5vw, 18px);
+  font-size: clamp(16px, 3vw, 21px);
   font-weight: 700;
   outline: none;
   direction: ltr;
@@ -1137,6 +1141,7 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   box-shadow: none !important;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: border-color 0.2s;
 }
 
 .fund-tile input:focus {
@@ -1149,11 +1154,12 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   border-bottom-color: transparent;
   background: transparent !important;
   pointer-events: none;
+  font-weight: 700;
 }
 
 .fund-tile-currency {
-  font-size: 11px;
-  color: var(--text-muted);
+  font-size: 12px;
+  color: var(--text-secondary);
   text-align: left;
 }
 
@@ -1570,23 +1576,22 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 .paybox-owner-toggle {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 4px;
+  gap: 6px;
+  margin-top: 6px;
 }
 
 .paybox-owner-label {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-muted);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 
 .paybox-owner-btn {
-  font-size: 10px;
+  font-size: 11px;
   font-family: var(--font);
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 4px 11px;
   border-radius: 20px;
   border: 1px solid var(--border-light);
   background: transparent;
