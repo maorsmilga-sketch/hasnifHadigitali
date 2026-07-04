@@ -862,6 +862,7 @@ async function manualDebt(person, sign) {
 
 async function _updateDebt(person, newVal) {
   const field = `debt_${person}`;
+  const delta = newVal - n(currentPeriod[field]);
   try {
     await dbPatch('current_period', '?id=eq.1', { [field]: newVal, updated_at: now() });
     currentPeriod[field] = newVal;
@@ -872,9 +873,51 @@ async function _updateDebt(person, newVal) {
     if (fundsEl) fundsEl.value = newVal;
 
     showNotif(`✅ חוב ${person === 'ido' ? 'עידו' : 'מאור'} עודכן → ₪${fmt(newVal)}`);
+
+    if (delta !== 0) {
+      try {
+        await dbPost('debt_log', { person, amount: delta, created_by: getDisplayName() });
+      } catch {}
+    }
   } catch (e) {
     showNotif('שגיאה בעדכון חוב: ' + e.message, 'error');
   }
+}
+
+// — Debt log —
+async function openDebtLog() {
+  const body = document.getElementById('debt-log-body');
+  document.getElementById('debt-log-overlay').style.display = 'flex';
+  body.innerHTML = '<div class="pd-empty">טוען נתונים...</div>';
+
+  try {
+    const data = await dbGet('debt_log', '?order=created_at.desc&limit=10');
+    if (!data || !data.length) {
+      body.innerHTML = '<p class="pd-empty">אין פעולות</p>';
+      return;
+    }
+    body.innerHTML = `<div class="table-container"><table>
+      <thead><tr><th>תאריך</th><th>שם</th><th>סכום</th><th>הוזן ע"י</th></tr></thead>
+      <tbody>${data.map(r => {
+        const amt   = n(r.amount);
+        const color = amt >= 0 ? 'positive-color' : 'negative-color';
+        const sign  = amt >= 0 ? '+' : '';
+        return `<tr>
+          <td>${fmtDate(r.created_at)}</td>
+          <td>${r.person === 'ido' ? 'עידו' : 'מאור'}</td>
+          <td class="${color}"><strong>${sign}₪${fmt(amt)}</strong></td>
+          <td>${r.created_by || '—'}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
+  } catch (e) {
+    body.innerHTML = `<p class="pd-empty">שגיאה בטעינת הנתונים: ${e.message}</p>`;
+  }
+}
+
+function closeDebtLog(e) {
+  if (e && e.target !== document.getElementById('debt-log-overlay')) return;
+  document.getElementById('debt-log-overlay').style.display = 'none';
 }
 
 // ============================================================

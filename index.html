@@ -558,6 +558,8 @@
           <p>עדכון חובות עידו ומאור לקופה</p>
         </div>
 
+        <button class="btn btn-secondary" style="margin-bottom:20px" onclick="openDebtLog()">📜 10 פעולות אחרונות</button>
+
         <div class="debt-grid">
           <!-- Ido -->
           <div class="debt-block">
@@ -800,6 +802,18 @@
         <button class="detail-modal-close" onclick="closePeriodDetail()">✕</button>
       </div>
       <div class="detail-modal-body" id="pd-body">
+      </div>
+    </div>
+  </div>
+
+  <!-- DEBT LOG MODAL -->
+  <div id="debt-log-overlay" class="confirm-overlay" style="display:none" onclick="closeDebtLog(event)">
+    <div class="detail-modal" onclick="event.stopPropagation()">
+      <div class="detail-modal-header">
+        <h3>📜 10 פעולות אחרונות — חובות</h3>
+        <button class="detail-modal-close" onclick="closeDebtLog()">✕</button>
+      </div>
+      <div class="detail-modal-body" id="debt-log-body">
       </div>
     </div>
   </div>
