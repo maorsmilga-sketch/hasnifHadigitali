@@ -329,7 +329,8 @@ async function loadBlueTable() {
     loadTournamentsTable(),
     loadBonusesTable(),
     loadReferralsTable(),
-    loadWithdrawalsTable()
+    loadWithdrawalsTable(),
+    loadExpensesTable()
   ]);
 
   await refreshBTSummary();
@@ -705,6 +706,73 @@ async function addWithdrawal() {
   }
 }
 
+// — General Expenses —
+const EXPENSE_CATEGORIES = { subscription: 'מנוי אפליקציה', event: 'אירוע', other: 'אחר' };
+
+function expenseCategoryLabel(r) {
+  const label = EXPENSE_CATEGORIES[r.category] || r.category || '—';
+  return r.category === 'other' && r.other_description ? `${label}: ${r.other_description}` : label;
+}
+
+function toggleExpenseOther() {
+  const isOther = document.getElementById('exp-category').value === 'other';
+  document.getElementById('exp-other-wrap').style.display = isOther ? '' : 'none';
+}
+
+async function loadExpensesTable() {
+  try {
+    const data = await dbGet('blue_table_expenses', '?order=created_at.desc');
+    const tbody = document.getElementById('exp-table-body');
+    if (!data || !data.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      setText('bt-exp-summary', '');
+      return;
+    }
+    tbody.innerHTML = data.map(r => `
+      <tr>
+        <td>${fmtDate(r.created_at)}</td>
+        <td>${escHtml(r.description || '—')}</td>
+        <td>${escHtml(expenseCategoryLabel(r))}</td>
+        <td class="negative-color"><strong>₪${fmt(r.amount_ils)}</strong></td>
+        <td>${r.created_by || '—'}</td>
+        <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_expenses','${r.id}','loadExpensesTable')">מחק</button></td>
+      </tr>`).join('');
+    const total = data.reduce((s, r) => s + n(r.amount_ils), 0);
+    setText('bt-exp-summary', `סה"כ: ₪${fmt(total)}`);
+  } catch (e) {
+    showNotif('שגיאה בטעינת הוצאות: ' + e.message, 'error');
+  }
+}
+
+async function addExpense() {
+  const desc     = document.getElementById('exp-desc').value.trim();
+  const amount   = parseFloat(document.getElementById('exp-amount').value);
+  const category = document.getElementById('exp-category').value;
+  const otherDesc = document.getElementById('exp-other-desc').value.trim();
+
+  if (!desc)                 { showNotif('אנא הזן תיאור', 'error');          return; }
+  if (!amount || amount <= 0){ showNotif('אנא הזן סכום תקין', 'error');       return; }
+  if (category === 'other' && !otherDesc) { showNotif('אנא פרט את סוג ההוצאה', 'error'); return; }
+
+  try {
+    await dbPost('blue_table_expenses', {
+      description: desc, amount_ils: amount, category,
+      other_description: category === 'other' ? otherDesc : null,
+      created_by: getDisplayName()
+    });
+    document.getElementById('exp-desc').value = '';
+    document.getElementById('exp-amount').value = '';
+    document.getElementById('exp-other-desc').value = '';
+    document.getElementById('exp-category').value = 'subscription';
+    toggleExpenseOther();
+    showNotif('✅ הוצאה נוספה');
+    await loadExpensesTable();
+    refreshBTSummary();
+  } catch (e) {
+    showNotif('שגיאה: ' + e.message, 'error');
+  }
+}
+
 // — Generic delete —
 async function deleteRecord(table, id, reloadFnName) {
   try {
@@ -720,12 +788,13 @@ async function deleteRecord(table, id, reloadFnName) {
 // — Blue Table summary —
 async function refreshBTSummary() {
   try {
-    const [rb, tn, bn, ref, wd] = await Promise.all([
+    const [rb, tn, bn, ref, wd, exp] = await Promise.all([
       dbGet('blue_table_rakeback',   '?select=rakeback_amount'),
       dbGet('blue_table_tournaments','?select=prize_chips'),
       dbGet('blue_table_bonuses',    '?select=chips_amount'),
       dbGet('blue_table_referrals',  '?select=chips_amount'),
-      dbGet('withdrawals',           '?select=amount_ils,chips_amount')
+      dbGet('withdrawals',           '?select=amount_ils,chips_amount'),
+      dbGet('blue_table_expenses',   '?select=amount_ils')
     ]);
 
     const sum = (arr, key) => (arr || []).reduce((s, r) => s + n(r[key]), 0);
@@ -735,6 +804,7 @@ async function refreshBTSummary() {
     const sumRef   = sum(ref, 'chips_amount');
     const sumWdIls   = sum(wd, 'amount_ils');
     const sumWdChips = sum(wd, 'chips_amount');
+    const sumExp     = sum(exp, 'amount_ils');
     const totalChips = sumRb + sumTn + sumBn + sumRef;
 
     // Global summary bar
@@ -749,6 +819,8 @@ async function refreshBTSummary() {
     upd('bt-bn-summary',  `סה"כ: ${fmt(sumBn)} צ' | ₪${fmt(sumBn / 10)}`);
     upd('bt-ref-summary', `סה"כ: ${fmt(sumRef)} צ' | ₪${fmt(sumRef / 10)}`);
     upd('bt-wd-summary',  `סה"כ: ₪${fmt(sumWdIls)} | ${fmt(sumWdChips)} צ'`);
+    upd('bt-exp-summary', `סה"כ: ₪${fmt(sumExp)}`);
+    setText('bt-exp-total', '₪' + fmt(sumExp));
 
     // Dashboard card
     setText('dash-rb-sum',  `${fmt(sumRb)} צ'`);
@@ -756,6 +828,7 @@ async function refreshBTSummary() {
     setText('dash-bn-sum',  `${fmt(sumBn)} צ'`);
     setText('dash-ref-sum', `${fmt(sumRef)} צ'`);
     setText('dash-wd-sum',  `₪${fmt(sumWdIls)}`);
+    setText('dash-exp-sum', `₪${fmt(sumExp)}`);
 
     // Dashboard expenses card
     setText('val-expenses-ils', fmt(totalChips / 10));
@@ -1021,6 +1094,7 @@ function openPeriodDetail(r) {
     <div class="pd-stat-item"><span>רווח לאחד</span><strong class="${n(r.profit_total)>=0?'positive-color':'negative-color'}">₪${fmt(n(r.profit_total)/2)}</strong></div>
     <div class="pd-stat-item"><span>הוצאות</span><strong>₪${fmt(n(r.total_expenses_chips)/10)}</strong></div>
     <div class="pd-stat-item"><span>משיכות</span><strong>₪${fmt(r.total_withdrawals_ils)}</strong></div>
+    <div class="pd-stat-item"><span>הוצאות כלליות</span><strong>₪${fmt(n(r.total_general_expenses_ils))}</strong></div>
   </div>`;
 
   // Withdrawals
@@ -1053,6 +1127,12 @@ function openPeriodDetail(r) {
     (r.detail_referrals || []).map(x => [x.referring, x.referred, fmt(x.chips)])
   );
 
+  // General expenses
+  const expHtml = miniTable(
+    ['תיאור','מהות','סכום (₪)'],
+    (r.detail_expenses || []).map(x => [x.description || '—', expenseCategoryLabel(x), `₪${fmt(x.amount_ils)}`])
+  );
+
   body.innerHTML =
     summaryHtml +
     (counterHtml ? `<div class="pd-section">${counterHtml}</div>` : '') +
@@ -1060,7 +1140,8 @@ function openPeriodDetail(r) {
     section('💸','החזר גנייה',     rbHtml)  +
     section('🏆','טורנירים',       tnHtml)  +
     section('🎁','בונוס צ\'יפים',  bnHtml)  +
-    section('🤝','חבר מביא חבר',  refHtml);
+    section('🤝','חבר מביא חבר',  refHtml) +
+    section('🧾','הוצאות כלליות', expHtml);
 
   document.getElementById('period-detail-overlay').style.display = 'flex';
 }
@@ -1440,12 +1521,13 @@ async function closePeriod() {
   showNotif('⏳ מבצע סגירת תקופה...', 'info');
   try {
     // 1. Fetch full detail from all blue tables (with player names)
-    const [rb, tn, bn, ref, wd] = await Promise.all([
+    const [rb, tn, bn, ref, wd, exp] = await Promise.all([
       dbGet('blue_table_rakeback',   '?select=*,players(name,nickname)&order=created_at.asc'),
       dbGet('blue_table_tournaments','?select=*,players(name,nickname)&order=created_at.asc'),
       dbGet('blue_table_bonuses',    '?select=*,players(name,nickname)&order=created_at.asc'),
       dbGet('blue_table_referrals',  '?select=id,chips_amount,created_at,referring_player_id,referred_player_id'),
-      dbGet('withdrawals',           '?select=*,players(name,nickname)&order=created_at.asc')
+      dbGet('withdrawals',           '?select=*,players(name,nickname)&order=created_at.asc'),
+      dbGet('blue_table_expenses',   '?order=created_at.asc')
     ]);
 
     const sumField    = (arr, key) => (arr || []).reduce((s, r) => s + n(r[key]), 0);
@@ -1491,9 +1573,18 @@ async function closePeriod() {
       date: r.created_at?.slice(0,10)
     }));
 
+    const detailExpenses = (exp || []).map(r => ({
+      description: r.description,
+      category: r.category,
+      other_description: r.other_description || '',
+      amount_ils: n(r.amount_ils),
+      date: r.created_at?.slice(0,10)
+    }));
+
     const totalExpenses = sumField(rb,'rakeback_amount') + sumField(tn,'prize_chips') +
                           sumField(bn,'chips_amount')    + sumField(ref,'chips_amount');
     const totalWd = sumField(wd, 'amount_ils');
+    const totalGeneralExpenses = sumField(exp, 'amount_ils');
 
     const cp     = currentPeriod;
     const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash) + n(cp.bank_leumi);
@@ -1507,6 +1598,7 @@ async function closePeriod() {
       period_end:            today(),
       total_expenses_chips:  totalExpenses,
       total_withdrawals_ils: totalWd,
+      total_general_expenses_ils: totalGeneralExpenses,
       profit_total:          profitTotal,
       profit_ido:            profitHalf,
       profit_maor:           profitHalf,
@@ -1518,7 +1610,8 @@ async function closePeriod() {
       detail_tournaments:    detailTournaments,
       detail_bonuses:        detailBonuses,
       detail_referrals:      detailReferrals,
-      detail_withdrawals:    detailWithdrawals
+      detail_withdrawals:    detailWithdrawals,
+      detail_expenses:       detailExpenses
     });
 
     // 3. Reset current_period — debts are intentionally kept
@@ -1536,7 +1629,8 @@ async function closePeriod() {
       dbDelete('blue_table_tournaments','?id=not.is.null'),
       dbDelete('blue_table_bonuses',    '?id=not.is.null'),
       dbDelete('blue_table_referrals',  '?id=not.is.null'),
-      dbDelete('withdrawals',           '?id=not.is.null')
+      dbDelete('withdrawals',           '?id=not.is.null'),
+      dbDelete('blue_table_expenses',   '?id=not.is.null')
     ]);
 
     showNotif('✅ התקופה נסגרה ונשמרה בהיסטוריה!');
@@ -1554,6 +1648,7 @@ async function closePeriod() {
         `👤 רווח לאחד: ₪${fmt(profitHalf)}\n` +
         `💸 סה"כ משיכות: ₪${fmt(totalWd)}\n` +
         `📊 סה"כ הוצאות: ${fmt(totalExpenses)} צ' (₪${fmt(totalExpenses / 10)})\n` +
+        `🧾 הוצאות כלליות: ₪${fmt(totalGeneralExpenses)}\n` +
         `━━━━━━━━━━━━━━\n` +
         `נסגר ע"י: ${getDisplayName()}`
       );
