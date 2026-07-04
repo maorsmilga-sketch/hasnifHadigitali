@@ -222,7 +222,7 @@ async function loadDashboard() {
   const cp = currentPeriod || {};
 
   const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash) + n(cp.bank_leumi);
-  const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor);
+  const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
   const chipsIls = n(cp.counter) / 10;
   const profit   = total - chipsIls;    // רווח כללי = סה"כ בקופה פחות צ'יפים בכסף
   const half     = profit / 2;
@@ -274,7 +274,7 @@ async function loadFunds() {
 function updateFundsSummary() {
   const g = id => parseFloat(document.getElementById(id)?.value) || 0;
   const liquid = g('bit_maor') + g('bit_ido') + g('bit_ravit') + g('bit_dorin') + g('paybox') + g('cashcash') + g('bank_leumi');
-  const total  = liquid + g('funds-debt_ido') + g('funds-debt_maor');
+  const total  = liquid + g('funds-debt_ido') + g('funds-debt_maor') + otherPlayersDebtTotal();
 
   setText('funds-liquid', '₪' + fmt(liquid));
   setText('funds-total',  '₪' + fmt(total));
@@ -425,6 +425,7 @@ function initAllPlayerACs() {
   initPlayerAC('ref-from-wrap',  'ref-from',  null);
   initPlayerAC('ref-to-wrap',    'ref-to',    null);
   initPlayerAC('wd-player-wrap', 'wd-player', null);
+  initPlayerAC('pd-player-wrap', 'pd-player', null);
 }
 
 // — Counter —
@@ -843,6 +844,50 @@ async function loadDebts() {
   const cp = currentPeriod || {};
   setText('debt-ido-display',  fmt(n(cp.debt_ido)));
   setText('debt-maor-display', fmt(n(cp.debt_maor)));
+
+  try { players = (await dbGet('players', '?order=name.asc')) || []; } catch {}
+  initAllPlayerACs();
+  renderOtherPlayerDebts();
+}
+
+function otherPlayersDebtTotal() {
+  return (players || []).reduce((s, p) => s + (n(p.debt) > 0 ? n(p.debt) : 0), 0);
+}
+
+function renderOtherPlayerDebts() {
+  const container = document.getElementById('other-debts-grid');
+  if (!container) return;
+  const withDebt = (players || []).filter(p => n(p.debt) > 0);
+  container.innerHTML = withDebt.map(p => `
+    <div class="debt-block">
+      <h3>⚖️ חוב ${escHtml(p.nickname || p.name)}</h3>
+      <div class="debt-amount">
+        <span class="debt-currency">₪</span>${fmt(p.debt)}
+      </div>
+    </div>`).join('');
+}
+
+async function manualPlayerDebt(sign) {
+  const playerId = document.getElementById('pd-player').value;
+  const inputEl  = document.getElementById('pd-player-amount');
+  const amount   = parseFloat(inputEl.value);
+  if (!playerId)              { showNotif('אנא בחר שחקן', 'error');        return; }
+  if (!amount || amount <= 0) { showNotif('אנא הזן סכום תקין', 'error');    return; }
+
+  const p = players.find(pl => pl.id === playerId);
+  if (!p) return;
+  const newVal = Math.max(0, n(p.debt) + sign * amount);
+
+  try {
+    await dbPatch('players', `?id=eq.${playerId}`, { debt: newVal });
+    p.debt = newVal;
+    inputEl.value = '';
+    clearPlayerAC('pd-player');
+    showNotif(`✅ חוב ${p.nickname || p.name} עודכן → ₪${fmt(newVal)}`);
+    renderOtherPlayerDebts();
+  } catch (e) {
+    showNotif('שגיאה בעדכון חוב: ' + e.message, 'error');
+  }
 }
 
 async function quickDebt(person, amount) {
@@ -1663,7 +1708,7 @@ async function closePeriod(periodStart) {
 
     const cp     = currentPeriod;
     const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash) + n(cp.bank_leumi);
-    const total       = liquid + n(cp.debt_ido) + n(cp.debt_maor);
+    const total       = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
     const chipsIls    = n(cp.counter) / 10;
     const profitTotal = total - chipsIls;
     const profitHalf  = profitTotal / 2;
@@ -1797,7 +1842,7 @@ function loadSettlementPage() {
 
   // Profit per partner — total in coffers minus chips value
   const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + paybox + n(cp.cashcash) + bankLeumi;
-  const total      = liquid + n(cp.debt_ido) + n(cp.debt_maor);
+  const total      = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
   const chipsIls   = n(cp.counter) / 10;
   const profitEach = (total - chipsIls) / 2;
 
