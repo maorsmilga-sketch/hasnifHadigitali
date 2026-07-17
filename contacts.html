@@ -208,6 +208,13 @@ thead th:nth-child(7),tbody td:nth-child(7){width:1%;white-space:nowrap}
 .ds-badge.maor{background:var(--maor-bg);color:var(--maor-ink)}
 .ds-badge.ido{background:var(--ido-bg);color:var(--ido-ink)}
 .ds-empty{padding:24px 16px;text-align:center;color:var(--muted);font-size:13px}
+.ds-person-toggle{display:flex;gap:8px;padding:12px 16px 4px}
+.ds-person-btn{flex:1;border:1px solid var(--ls);background:var(--panel);border-radius:10px;padding:8px 12px;font-family:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;transition:all .15s}
+.ds-person-btn:hover{border-color:#c2cad6}
+.ds-person-btn.active.maor{background:var(--maor-bg);border-color:var(--maor-ink);color:var(--maor-ink)}
+.ds-person-btn.active.ido{background:var(--ido-bg);border-color:var(--ido-ink);color:var(--ido-ink)}
+.ds-table-2col thead th:first-child{width:70%}
+.ds-table-2col thead th:nth-child(2){width:30%}
 
 /* MISC */
 .empty-state{padding:50px 20px;text-align:center;color:var(--muted)}
@@ -425,6 +432,7 @@ function startApp() {
   const db = firebase.database();
   const contactsRef  = db.ref('contacts');
   const templatesRef = db.ref('templates');
+  const sentLogRef   = db.ref('sentLog');
 
   // Identity
   let identity = localStorage.getItem('whoami') || '';
@@ -446,6 +454,7 @@ function startApp() {
 
   // State
   let fbData = {}, ownerSel = 'מאור', statusSel = 'ללא סטטוס';
+  let sentLog = {}, dailyPersonSel = 'מאור';
 
   // Seed contacts (first time)
   contactsRef.once('value').then(snap => {
@@ -478,6 +487,11 @@ function startApp() {
     msgTemplates = snap.val() || {};
     render(); // re-render table with new templates
     if (document.getElementById('tab-messages').style.display !== 'none') renderMsgEditor();
+  });
+
+  sentLogRef.on('value', snap => {
+    sentLog = snap.val() || {};
+    if (document.getElementById('tab-summary').style.display !== 'none') renderSummary();
   });
 
   // Merged data
@@ -611,37 +625,39 @@ function startApp() {
       return `${d}/${m}/${y}`;
     }
 
-    // Only count 'נשלח' records that were explicitly set via the UI (have _ov.at)
-    const sentRecords = all.filter(r => r.status === 'נשלח' && r._ov && r._ov.at);
-    const byDate = {};
-    sentRecords.forEach(r => {
-      const key = tsToISODate(r._ov.at);
-      if (!byDate[key]) byDate[key] = { maor: 0, ido: 0 };
-      if (r._ov.by === 'מאור') byDate[key].maor++;
-      else if (r._ov.by === 'עידו') byDate[key].ido++;
+    // Count status changes to 'נשלח' from the append-only log, per day per person
+    const byDate = {};   // { iso: { 'מאור': n, 'עידו': n } }
+    let grandTotal = 0;
+    Object.values(sentLog).forEach(e => {
+      if (!e || !e.at || (e.by !== 'מאור' && e.by !== 'עידו')) return;
+      const iso = tsToISODate(e.at);
+      if (!byDate[iso]) byDate[iso] = { 'מאור': 0, 'עידו': 0 };
+      byDate[iso][e.by]++;
+      if (e.by === dailyPersonSel) grandTotal++;
     });
 
-    // Sort dates newest-first (ISO strings sort lexicographically)
-    const sortedDates = Object.keys(byDate).sort().reverse();
+    const sortedDates = Object.keys(byDate)
+      .filter(iso => byDate[iso][dailyPersonSel] > 0)
+      .sort().reverse();
 
-    let dailyBody = '';
+    const cls = dailyPersonSel === 'מאור' ? 'maor' : 'ido';
+    const toggle = `<div class="ds-person-toggle">
+      <button class="ds-person-btn maor ${dailyPersonSel==='מאור'?'active':''}" data-p="מאור">מאור</button>
+      <button class="ds-person-btn ido ${dailyPersonSel==='עידו'?'active':''}" data-p="עידו">עידו</button>
+    </div>`;
+
+    let dailyBody;
     if (sortedDates.length === 0) {
-      dailyBody = '<div class="ds-empty">אין נתוני שליחה עם תאריך מוגדר</div>';
+      dailyBody = toggle + `<div class="ds-empty">אין שינויי סטטוס ל״נשלח״ עבור ${esc(dailyPersonSel)}</div>`;
     } else {
-      const rows = sortedDates.map(iso => {
-        const d = byDate[iso];
-        const total = d.maor + d.ido;
-        return `<tr>
+      const rows = sortedDates.map(iso => `<tr>
           <td class="ds-date">${esc(isoToDisplay(iso))}</td>
-          <td class="ds-total">${total}</td>
-          <td class="ds-maor"><span class="ds-badge maor">${d.maor}</span></td>
-          <td class="ds-ido"><span class="ds-badge ido">${d.ido}</span></td>
-        </tr>`;
-      }).join('');
-      dailyBody = `
-        <div class="ds-total-line">סה"כ נשלח (עם תאריך): <strong>${sentRecords.length}</strong></div>
-        <table class="ds-table">
-          <thead><tr><th>תאריך</th><th>סה"כ</th><th>מאור</th><th>עידו</th></tr></thead>
+          <td class="ds-total"><span class="ds-badge ${cls}">${byDate[iso][dailyPersonSel]}</span></td>
+        </tr>`).join('');
+      dailyBody = toggle +
+        `<div class="ds-total-line">סה"כ נשלח (${esc(dailyPersonSel)}): <strong>${grandTotal}</strong></div>
+        <table class="ds-table ds-table-2col">
+          <thead><tr><th>תאריך</th><th>נשלח</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>`;
     }
@@ -730,9 +746,19 @@ function startApp() {
   });
 
   // Save to Firebase
+  function currentStatusOf(idx) {
+    const ov = fbData[idx];
+    if (ov && ov.status !== undefined) return ov.status;
+    const emb = EMBEDDED.find(r => String(r.i) === String(idx));
+    return emb ? (emb.s || '') : '';
+  }
   function saveField(idx, field, value) {
     const update = { [field]: value };
     if (identity) { update.by = identity; update.at = Date.now(); }
+    // Append-only log for status changes to 'נשלח' (skip no-op re-selection)
+    if (field === 'status' && value === 'נשלח' && identity && currentStatusOf(idx) !== 'נשלח') {
+      sentLogRef.push({ i: idx, by: identity, at: Date.now() });
+    }
     contactsRef.child(idx).update(update);
   }
 
@@ -815,6 +841,14 @@ function startApp() {
   });
 
   gf.addEventListener('change', render);
+
+  // Daily summary person toggle (delegated — #tab-summary persists across re-renders)
+  document.getElementById('tab-summary').addEventListener('click', e => {
+    const btn = e.target.closest('.ds-person-btn');
+    if (!btn) return;
+    dailyPersonSel = btn.dataset.p;
+    renderSummary();
+  });
 
   // Tab switching
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => {
