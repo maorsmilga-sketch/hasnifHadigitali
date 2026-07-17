@@ -1049,7 +1049,6 @@ function renderHistoryTable(data) {
       <td>
         <div class="action-row">
           <button class="btn btn-secondary btn-xs" onclick='openPeriodDetail(${JSON.stringify(r).replace(/'/g,"&#39;")})'>פרטים</button>
-          <button class="btn btn-danger btn-xs" onclick="deleteHistory('${r.id}')">מחק</button>
         </div>
       </td>
     </tr>`;
