@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -669,13 +671,22 @@
           <div class="chart-summary">
             סכום מצטבר בתקופה: <strong id="chart-cumulative">₪0</strong>
           </div>
-          <div class="chart-container">
+        
+  <div class="chart-container">
             <canvas id="profit-chart"></canvas>
           </div>
         </div>
 
-      </div>
+        <!-- Export to Excel -->
+        <div class="card" style="text-align:center">
+          <div class="card-title" style="margin-bottom:14px">📥 ייצוא נתונים</div>
+          <p style="color:var(--text-secondary);font-size:13px;line-height:1.7;margin-bottom:18px">
+            הורדת קובץ אקסל הכולל סיכום של כל התקופות + פירוט מלא (החזרי גנייה, טורנירים, בונוסים, משיכות והוצאות).
+          </p>
+          <button class="btn btn-success" onclick="exportHistoryToExcel()">📥 הורד היסטוריה לאקסל</button>
+        </div>
 
+      </div>
       <!-- ===== PAGE 6: PLAYERS ===== -->
       <div id="page-players" class="page">
         <div class="page-header">

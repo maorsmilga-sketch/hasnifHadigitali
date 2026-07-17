@@ -2129,3 +2129,113 @@ document.addEventListener('DOMContentLoaded', () => {
   // Management is accessed via the tab switcher which handles auth.
   initPinLock(); // register inactivity + visibility listeners
 });
+// ------------------------------------------------------------
+// EXPORT HISTORY → EXCEL (.xlsx)
+// ------------------------------------------------------------
+function exportHistoryToExcel() {
+  if (typeof XLSX === 'undefined') {
+    showNotif('ספריית האקסל לא נטענה — נסה לרענן את הדף', 'error');
+    return;
+  }
+  if (!historyData || !historyData.length) {
+    showNotif('אין נתוני היסטוריה לייצוא', 'error');
+    return;
+  }
+
+  const catLabel = { subscription: 'מנוי אפליקציה', event: 'אירוע', other: 'אחר' };
+
+  // מיון עולה לפי תאריך סגירה
+  const rows = [...historyData].sort((a, b) => new Date(a.period_end) - new Date(b.period_end));
+
+  // --- גיליון 1: סיכום תקופות (כולל שדות שלא מוצגים בטבלה) ---
+  const summary = rows.map(r => ({
+    'תאריך פתיחה': r.period_start || '',
+    'תאריך סגירה': r.period_end || '',
+    'סוג רשומה': r.entry_type === 'manual_import' ? 'ייבוא ידני' : 'רגיל',
+    "הוצאות טבלה (צ'יפים)": n(r.total_expenses_chips),
+    'הוצאות טבלה (₪)': n(r.total_expenses_chips) / 10,
+    'הוצאות כלליות (₪)': n(r.total_general_expenses_ils),
+    'משיכות (₪)': n(r.total_withdrawals_ils),
+    'רווח כללי (₪)': n(r.profit_total),
+    'רווח לאחד (₪)': n(r.profit_total) / 2,
+    'רווח עידו (₪)': n(r.profit_ido),
+    'רווח מאור (₪)': n(r.profit_maor),
+    "ספירת צ'יפים": n(r.counter_snapshot),
+    'נסגר ע"י': r.closed_by || '',
+    'הערות': r.notes || ''
+  }));
+
+  const wb = XLSX.utils.book_new();
+  const wsSummary = XLSX.utils.json_to_sheet(summary);
+  styleSheet(wsSummary, summary);
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'סיכום תקופות');
+
+  // --- גיליונות פירוט: שיטוח הנתונים מכל התקופות (מתויג לפי תקופה) ---
+  const rakeback = [], tournaments = [], bonuses = [], referrals = [], withdrawals = [], expenses = [];
+
+  rows.forEach(r => {
+    const pe = r.period_end || '';
+    (r.detail_rakeback || []).forEach(d => rakeback.push({
+      'תקופה': pe, 'שחקן': d.player, "גנייה (צ'יפים)": n(d.rakeback_chips),
+      'החזר (₪)': n(d.rakeback_ils), 'תאריך': d.date || ''
+    }));
+    (r.detail_tournaments || []).forEach(d => tournaments.push({
+      'תקופה': pe, 'שחקן': d.player, "פרס (צ'יפים)": n(d.prize_chips),
+      'פרס (₪)': n(d.prize_ils), 'תאריך': d.date || ''
+    }));
+    (r.detail_bonuses || []).forEach(d => bonuses.push({
+      'תקופה': pe, 'שחקן': d.player, "צ'יפים": n(d.chips),
+      '₪': n(d.ils), 'הערה': d.note || '', 'תאריך': d.date || ''
+    }));
+    (r.detail_referrals || []).forEach(d => referrals.push({
+      'תקופה': pe, 'מביא': d.referring, 'מובא': d.referred,
+      "צ'יפים": n(d.chips), 'תאריך': d.date || ''
+    }));
+    (r.detail_withdrawals || []).forEach(d => withdrawals.push({
+      'תקופה': pe, 'שחקן': d.player, 'סכום (₪)': n(d.amount_ils),
+      'אמצעי': d.method || '', 'תאריך': d.date || ''
+    }));
+    (r.detail_expenses || []).forEach(d => expenses.push({
+      'תקופה': pe, 'תיאור': d.description || '',
+      'מהות': catLabel[d.category] || d.category || '',
+      'פירוט אחר': d.other_description || '',
+      'סכום (₪)': n(d.amount_ils), 'תאריך': d.date || ''
+    }));
+  });
+
+  const addSheet = (data, name) => {
+    if (!data.length) return; // דילוג על גיליונות ריקים
+    const ws = XLSX.utils.json_to_sheet(data);
+    styleSheet(ws, data);
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  };
+  addSheet(rakeback, 'החזרי גנייה');
+  addSheet(tournaments, 'טורנירים');
+  addSheet(bonuses, 'בונוסים');
+  addSheet(referrals, 'חבר מביא חבר');
+  addSheet(withdrawals, 'משיכות');
+  addSheet(expenses, 'הוצאות');
+
+  try {
+    XLSX.writeFile(wb, `היסטוריה_הסניף_הדיגיטלי_${today()}.xlsx`);
+    showNotif('✅ קובץ האקסל הורד');
+  } catch (e) {
+    showNotif('שגיאה בייצוא: ' + e.message, 'error');
+  }
+}
+
+// RTL + רוחב עמודות אוטומטי לגיליון מיוצא
+function styleSheet(ws, data) {
+  ws['!views'] = [{ RTL: true }];
+  if (data && data.length) {
+    const keys = Object.keys(data[0]);
+    ws['!cols'] = keys.map(k => {
+      let max = k.length;
+      data.forEach(row => {
+        const v = row[k] == null ? '' : String(row[k]);
+        if (v.length > max) max = v.length;
+      });
+      return { wch: Math.min(Math.max(max + 2, 8), 40) };
+    });
+  }
+}
