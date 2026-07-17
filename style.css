@@ -1492,32 +1492,6 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   margin-bottom: 28px;
 }
 
-.pin-dots {
-  display: flex;
-  gap: 14px;
-  margin-bottom: 10px;
-  direction: ltr;
-}
-
-.pin-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid var(--border-light);
-  background: transparent;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.pin-dot.filled {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-
-.pin-dot.error {
-  background: var(--negative);
-  border-color: var(--negative);
-}
-
 .pin-error {
   height: 18px;
   font-size: 12px;
@@ -1527,49 +1501,68 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   font-weight: 600;
 }
 
-.pin-keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+.pattern-wrap {
+  position: relative;
   width: 100%;
   max-width: 280px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  touch-action: none;
+  user-select: none;
   direction: ltr;
 }
 
-.pin-key {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  width: 72px;
-  height: 72px;
-  font-size: 24px;
-  font-weight: 700;
-  font-family: var(--font);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: background 0.12s, transform 0.08s;
-  justify-self: center;
+.pattern-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pattern-svg line {
+  stroke: var(--accent);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.pattern-svg.error line {
+  stroke: var(--negative);
+}
+
+.pattern-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
+}
+
+.pattern-node {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.pin-key:active {
+.pattern-node-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--border-light);
+  transition: background 0.12s, border-color 0.12s, transform 0.12s;
+}
+
+.pattern-node.active .pattern-node-dot {
   background: var(--accent);
-  color: #fff;
-  transform: scale(0.92);
+  border-color: var(--accent);
+  transform: scale(1.3);
 }
 
-.pin-key-empty {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.pin-key-del {
-  font-size: 20px;
-  background: transparent;
-  border-color: transparent;
-  color: var(--text-muted);
+.pattern-node.error .pattern-node-dot {
+  background: var(--negative);
+  border-color: var(--negative);
 }
 
 /* ===== PAYBOX OWNER TOGGLE ===== */

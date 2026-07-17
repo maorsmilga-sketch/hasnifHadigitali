@@ -10,12 +10,13 @@ const SUPABASE_ANON_KEY = 'sb_publishable_9TvfEI2S3K_M95-LBzikvg_r63QVQXc';
 
 const USER_DISPLAY = { ido: 'עידו', maor: 'מאור' };
 
-// Each PIN maps to a user — PIN is the only authentication method
-const PINS = {
-  '21121986': 'ido',
-  '19121987': 'maor'
+// Each pattern (sequence of 3x3 grid node indices, 0-8 reading order) maps to a user
+// — a drawn pattern is the only authentication method
+const PATTERNS = {
+  ido:  [0, 3, 6, 7, 8],
+  maor: [4, 5, 7, 8]
 };
-const MAX_PIN_LENGTH = 8;
+const MIN_PATTERN_LENGTH = 4;
 const PIN_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
 
 // ============================================================
@@ -28,8 +29,9 @@ let historyData     = [];
 let chartMode       = 'person'; // 'person' | 'total'
 let chartMonths     = null;     // null = all, or number of months
 let chartYear       = null;     // null = no year filter, or a calendar year (e.g. 2026)
-let pinEntry        = '';
-let pinLocked       = false;
+let patternEntry     = [];
+let patternDragging  = false;
+let pinLocked        = false;
 let pinInactiveTimer = null;
 const acPlayerData  = {}; // { hiddenInputId: playerObject } — tracks autocomplete selections
 
@@ -2015,12 +2017,12 @@ function playerLabel(name, nickname) {
 }
 
 // ============================================================
-// PIN LOCK
+// PIN LOCK (pattern-based)
 // ============================================================
 function showPinLock() {
-  pinEntry  = '';
+  patternEntry = [];
   pinLocked = true;
-  updatePinDots();
+  clearPatternVisual();
   clearPinError();
   document.getElementById('pin-overlay').style.display = 'flex';
 }
@@ -2041,50 +2043,112 @@ function hidePinLock() {
   }
 }
 
-function pinPress(digit) {
-  if (pinEntry.length >= MAX_PIN_LENGTH) return;
-  pinEntry += digit;
-  updatePinDots();
-  if (pinEntry.length === MAX_PIN_LENGTH) {
-    setTimeout(checkPin, 120); // brief delay so last dot animates
+function patternNodeCenters() {
+  const wrapRect = document.getElementById('pattern-wrap').getBoundingClientRect();
+  const nodes = document.querySelectorAll('.pattern-node');
+  return Array.from(nodes).map(el => {
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2 - wrapRect.left, y: r.top + r.height / 2 - wrapRect.top };
+  });
+}
+
+function markNodeActive(idx) {
+  const node = document.querySelector(`.pattern-node[data-idx="${idx}"]`);
+  if (node) node.classList.add('active');
+}
+
+function clearPatternVisual() {
+  document.querySelectorAll('.pattern-node').forEach(n => n.classList.remove('active', 'error'));
+  const svg = document.getElementById('pattern-svg');
+  if (svg) { svg.innerHTML = ''; svg.classList.remove('error'); }
+}
+
+function drawPatternLines(centers, livePoint) {
+  const svg = document.getElementById('pattern-svg');
+  if (!svg) return;
+  let html = '';
+  for (let i = 1; i < patternEntry.length; i++) {
+    const a = centers[patternEntry[i - 1]], b = centers[patternEntry[i]];
+    html += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>`;
   }
-}
-
-function pinDel() {
-  pinEntry = pinEntry.slice(0, -1);
-  updatePinDots();
-  clearPinError();
-}
-
-function checkPin() {
-  const user = PINS[pinEntry];
-  if (user) {
-    sessionStorage.setItem('currentUser', user);
-    document.getElementById('user-badge').textContent = USER_DISPLAY[user] || user;
-    hidePinLock();
-  } else {
-    // Wrong PIN — flash red, clear
-    document.querySelectorAll('.pin-dot').forEach(d => {
-      d.classList.remove('filled');
-      d.classList.add('error');
-    });
-    document.getElementById('pin-error').textContent = 'קוד שגוי, נסה שוב';
-    setTimeout(() => {
-      pinEntry = '';
-      updatePinDots();
-      document.querySelectorAll('.pin-dot').forEach(d => d.classList.remove('error'));
-    }, 700);
+  if (patternDragging && patternEntry.length && livePoint) {
+    const a = centers[patternEntry[patternEntry.length - 1]];
+    html += `<line x1="${a.x}" y1="${a.y}" x2="${livePoint.x}" y2="${livePoint.y}"/>`;
   }
+  svg.innerHTML = html;
 }
 
-function updatePinDots() {
-  for (let i = 0; i < MAX_PIN_LENGTH; i++) {
-    const dot = document.getElementById('pd' + i);
-    if (dot) {
-      dot.classList.toggle('filled', i < pinEntry.length);
-      dot.classList.remove('error');
+function checkPattern() {
+  if (patternEntry.length >= MIN_PATTERN_LENGTH) {
+    const match = Object.keys(PATTERNS).find(user =>
+      PATTERNS[user].length === patternEntry.length &&
+      PATTERNS[user].every((v, i) => v === patternEntry[i])
+    );
+    if (match) {
+      sessionStorage.setItem('currentUser', match);
+      document.getElementById('user-badge').textContent = USER_DISPLAY[match] || match;
+      hidePinLock();
+      return;
     }
   }
+  // Wrong pattern — flash red, clear
+  document.querySelectorAll('.pattern-node.active').forEach(n => n.classList.add('error'));
+  document.getElementById('pattern-svg')?.classList.add('error');
+  document.getElementById('pin-error').textContent = 'תבנית שגויה, נסה שוב';
+  setTimeout(() => {
+    patternEntry = [];
+    clearPatternVisual();
+  }, 700);
+}
+
+function initPatternLock() {
+  const wrap = document.getElementById('pattern-wrap');
+  if (!wrap || wrap.dataset.acInit) return;
+  wrap.dataset.acInit = '1';
+
+  let centers = [];
+  let wrapRect = null;
+
+  function pointFromEvent(e) {
+    return { x: e.clientX - wrapRect.left, y: e.clientY - wrapRect.top };
+  }
+
+  function nearestNode(pt) {
+    let best = -1, bestDist = 26;
+    centers.forEach((c, i) => {
+      const d = Math.hypot(c.x - pt.x, c.y - pt.y);
+      if (d < bestDist) { bestDist = d; best = i; }
+    });
+    return best;
+  }
+
+  function handleMove(e) {
+    if (!patternDragging) return;
+    const pt = pointFromEvent(e);
+    const idx = nearestNode(pt);
+    if (idx >= 0 && !patternEntry.includes(idx)) {
+      patternEntry.push(idx);
+      markNodeActive(idx);
+    }
+    drawPatternLines(centers, pt);
+  }
+
+  wrap.addEventListener('pointerdown', e => {
+    wrap.setPointerCapture(e.pointerId);
+    wrapRect = wrap.getBoundingClientRect();
+    centers = patternNodeCenters();
+    patternDragging = true;
+    patternEntry = [];
+    clearPatternVisual();
+    handleMove(e);
+  });
+  wrap.addEventListener('pointermove', handleMove);
+  wrap.addEventListener('pointerup', () => {
+    if (!patternDragging) return;
+    patternDragging = false;
+    checkPattern();
+  });
+  wrap.addEventListener('pointercancel', () => { patternDragging = false; });
 }
 
 function clearPinError() {
@@ -2100,6 +2164,8 @@ function resetInactivityTimer() {
 }
 
 function initPinLock() {
+  initPatternLock();
+
   // Reset timer on any user interaction
   ['click','touchstart','keydown','scroll'].forEach(evt =>
     document.addEventListener(evt, resetInactivityTimer, { passive: true })

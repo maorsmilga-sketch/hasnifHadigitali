@@ -880,31 +880,21 @@
   <div class="pin-box">
     <div class="pin-logo">🔒</div>
     <div class="pin-title">הסניף הדיגיטלי</div>
-    <div class="pin-subtitle">הזן את קוד הכניסה שלך</div>
-    <div class="pin-dots" id="pin-dots">
-      <span class="pin-dot" id="pd0"></span>
-      <span class="pin-dot" id="pd1"></span>
-      <span class="pin-dot" id="pd2"></span>
-      <span class="pin-dot" id="pd3"></span>
-      <span class="pin-dot" id="pd4"></span>
-      <span class="pin-dot" id="pd5"></span>
-      <span class="pin-dot" id="pd6"></span>
-      <span class="pin-dot" id="pd7"></span>
-    </div>
+    <div class="pin-subtitle">צייר את התבנית שלך</div>
     <div class="pin-error" id="pin-error"></div>
-    <div class="pin-keypad">
-      <button class="pin-key" onclick="pinPress('1')">1</button>
-      <button class="pin-key" onclick="pinPress('2')">2</button>
-      <button class="pin-key" onclick="pinPress('3')">3</button>
-      <button class="pin-key" onclick="pinPress('4')">4</button>
-      <button class="pin-key" onclick="pinPress('5')">5</button>
-      <button class="pin-key" onclick="pinPress('6')">6</button>
-      <button class="pin-key" onclick="pinPress('7')">7</button>
-      <button class="pin-key" onclick="pinPress('8')">8</button>
-      <button class="pin-key" onclick="pinPress('9')">9</button>
-      <button class="pin-key pin-key-empty"></button>
-      <button class="pin-key" onclick="pinPress('0')">0</button>
-      <button class="pin-key pin-key-del" onclick="pinDel()">⌫</button>
+    <div class="pattern-wrap" id="pattern-wrap">
+      <svg class="pattern-svg" id="pattern-svg"></svg>
+      <div class="pattern-grid" id="pattern-grid">
+        <div class="pattern-node" data-idx="0"><span class="pattern-node-dot"></span></div>
+        <div class="pattern-node" data-idx="1"><span class="pattern-node-dot"></span></div>
+        <div class="pattern-node" data-idx="2"><span class="pattern-node-dot"></span></div>
+        <div class="pattern-node" data-idx="3"><span class="pattern-node-dot"></span></div>
+        <div class="pattern-node" data-idx="4"><span class="pattern-node-dot"></span></div>
+        <div class="pattern-node" data-idx="5"><span class="pattern-node-dot"></span></div>
+        <div class="pattern-node" data-idx="6"><span class="pattern-node-dot"></span></div>
+        <div class="pattern-node" data-idx="7"><span class="pattern-node-dot"></span></div>
+        <div class="pattern-node" data-idx="8"><span class="pattern-node-dot"></span></div>
+      </div>
     </div>
   </div>
 </div>
