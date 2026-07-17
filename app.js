@@ -13,7 +13,7 @@ const USER_DISPLAY = { ido: 'עידו', maor: 'מאור' };
 // Each pattern (sequence of 3x3 grid node indices, 0-8 reading order) maps to a user
 // — a drawn pattern is the only authentication method
 const PATTERNS = {
-  ido:  [0, 3, 6, 7, 8],
+  ido:  [2, 5, 8, 7, 6],
   maor: [4, 5, 7, 8]
 };
 const MIN_PATTERN_LENGTH = 4;
