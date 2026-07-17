@@ -394,7 +394,10 @@ function intlPhone(raw) {
 }
 function waUrl(phone, msg) {
   const p = intlPhone(phone); if (!p) return '';
-  return 'https://wa.me/'+p+(msg?'?text='+encodeURIComponent(msg):'');
+  const text = msg ? '&text=' + encodeURIComponent(msg) : '';
+  const fallback = encodeURIComponent('https://wa.me/' + p + (msg ? '?text=' + encodeURIComponent(msg) : ''));
+  return 'intent://api.whatsapp.com/send?phone=' + p + text +
+    '#Intent;scheme=https;package=com.whatsapp.w4b;S.browser_fallback_url=' + fallback + ';end';
 }
 function esc(s){return(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function timeAgo(ts){
