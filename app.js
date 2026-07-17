@@ -852,10 +852,10 @@ async function refreshBTSummary() {
     setText('bt-exp-total', '₪' + fmt(sumExp));
 
     // Dashboard card
-    setText('dash-rb-sum',  `${fmt(sumRb)} צ'`);
-    setText('dash-tn-sum',  `${fmt(sumTn)} צ'`);
-    setText('dash-bn-sum',  `${fmt(sumBn)} צ'`);
-    setText('dash-ref-sum', `${fmt(sumRef)} צ'`);
+    setText('dash-rb-sum',  `₪${fmt(sumRb / 10)}`);
+    setText('dash-tn-sum',  `₪${fmt(sumTn / 10)}`);
+    setText('dash-bn-sum',  `₪${fmt(sumBn / 10)}`);
+    setText('dash-ref-sum', `₪${fmt(sumRef / 10)}`);
     setText('dash-wd-sum',  `₪${fmt(sumWdIls)}`);
     setText('dash-exp-sum', `₪${fmt(sumExp)}`);
 

@@ -285,8 +285,8 @@ footer{margin-top:12px;color:var(--muted);font-size:12px;text-align:center}
     <!-- TAB: TABLE -->
     <div id="tab-table">
       <div class="owners" id="owners">
-        <div class="seg active" data-o=""><span>הכל</span><span class="n" id="cn-all">0</span></div>
-        <div class="seg" data-o="מאור"><span class="dot"></span><span>מאור</span><span class="n" id="cn-maor">0</span></div>
+        <div class="seg" data-o=""><span>הכל</span><span class="n" id="cn-all">0</span></div>
+        <div class="seg active" data-o="מאור"><span class="dot"></span><span>מאור</span><span class="n" id="cn-maor">0</span></div>
         <div class="seg" data-o="עידו"><span class="dot"></span><span>עידו</span><span class="n" id="cn-ido">0</span></div>
       </div>
       <div class="status-filters" id="status-filters"><label>סטטוס:</label></div>
@@ -445,7 +445,7 @@ function startApp() {
   });
 
   // State
-  let fbData = {}, ownerSel = '', statusSel = '';
+  let fbData = {}, ownerSel = 'מאור', statusSel = 'ללא סטטוס';
 
   // Seed contacts (first time)
   contactsRef.once('value').then(snap => {

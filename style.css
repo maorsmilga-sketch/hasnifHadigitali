@@ -1505,19 +1505,28 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   position: relative;
   width: 100%;
   max-width: 280px;
-  aspect-ratio: 1;
   margin: 0 auto;
   touch-action: none;
   user-select: none;
   direction: ltr;
 }
 
+.pattern-wrap::before {
+  content: '';
+  display: block;
+  padding-top: 100%;
+}
+
 .pattern-svg {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
+  display: block;
 }
 
 .pattern-svg line {
@@ -1531,7 +1540,11 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 }
 
 .pattern-grid {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
