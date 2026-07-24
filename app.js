@@ -427,10 +427,28 @@ function clearPlayerAC(hiddenId) {
   delete acPlayerData[hiddenId];
 }
 
+function rakebackActive(p) {
+  if (!((p.rakeback_percent || 0) > 0)) return false;
+  if (!p.rakeback_until) return true;          // no expiry date = always active
+  return p.rakeback_until >= today();          // inclusive of the expiry day itself
+}
+
+function rakebackCellLabel(p) {
+  if (p.rakeback_percent == null || p.rakeback_percent === '') return '—';
+  let s = p.rakeback_percent + '%';
+  if (p.rakeback_until) {
+    const expired = p.rakeback_until < today();
+    s += expired
+      ? ` <span style="color:var(--negative)">· פג ${fmtDate(p.rakeback_until)}</span>`
+      : ` <span style="color:var(--text-muted)">· עד ${fmtDate(p.rakeback_until)}</span>`;
+  }
+  return s;
+}
+
 function initAllPlayerACs() {
-  // rb-player: only players with rakeback_percent > 0
+  // rb-player: only players with active rakeback (percent > 0 and not expired)
   initPlayerAC('rb-player-wrap', 'rb-player',
-    p => (p.rakeback_percent || 0) > 0,
+    p => rakebackActive(p),
     () => updateRakebackCalc()
   );
   initPlayerAC('tn-player-wrap', 'tn-player', null);
@@ -1449,7 +1467,7 @@ function renderPlayersTable() {
 
   // — Desktop table rows —
   tbody.innerHTML = filtered.map(p => {
-    const rb    = p.rakeback_percent != null && p.rakeback_percent !== '' ? p.rakeback_percent + '%' : '—';
+    const rb    = rakebackCellLabel(p);
     const wdLbl = WITHDRAWAL_LABELS[p.preferred_withdrawal] || '—';
     return `
     <tr id="pr-${p.id}">
@@ -1470,7 +1488,7 @@ function renderPlayersTable() {
 
   // — Mobile player cards —
   cardsBody.innerHTML = filtered.map(p => {
-    const rb    = p.rakeback_percent != null && p.rakeback_percent !== '' ? p.rakeback_percent + '%' : '—';
+    const rb    = rakebackCellLabel(p);
     const wdLbl = WITHDRAWAL_LABELS[p.preferred_withdrawal] || '—';
     return `
     <div class="player-card">
@@ -1528,6 +1546,11 @@ function openAddPlayerModal() {
         <span class="field-hint">השאר ריק אם אין החזר גנייה</span>
       </div>
       <div class="form-group">
+        <label>החזר גנייה בתוקף עד</label>
+        <input type="date" id="ap-rakeback-until">
+        <span class="field-hint">השאר ריק אם ללא תאריך תפוגה</span>
+      </div>
+      <div class="form-group">
         <label>אופן משיכה מועדף</label>
         <select id="ap-withdrawal">
           <option value="bit">💳 ביט</option>
@@ -1577,6 +1600,11 @@ function openEditModal(id) {
         <input type="number" id="ep-rakeback" value="${p.rakeback_percent ?? ''}" min="0" max="100" placeholder="השאר ריק אם אין">
       </div>
       <div class="form-group">
+        <label>החזר גנייה בתוקף עד</label>
+        <input type="date" id="ep-rakeback-until" value="${p.rakeback_until || ''}">
+        <span class="field-hint">השאר ריק אם ללא תאריך תפוגה</span>
+      </div>
+      <div class="form-group">
         <label>אופן משיכה מועדף</label>
         <select id="ep-withdrawal">
           <option value="bit"           ${p.preferred_withdrawal==='bit'           ?'selected':''}>💳 ביט</option>
@@ -1599,6 +1627,7 @@ async function savePlayer(id) {
   const nickname   = document.getElementById('ep-nickname')?.value.trim() || null;
   const rbVal      = document.getElementById('ep-rakeback')?.value;
   const rb         = rbVal !== '' ? parseFloat(rbVal) : null;
+  const rbUntil    = document.getElementById('ep-rakeback-until')?.value || null;
   const withdrawal = document.getElementById('ep-withdrawal')?.value || 'bit';
 
   if (!name) { showNotif('אנא הזן שם שחקן', 'error'); return; }
@@ -1608,10 +1637,10 @@ async function savePlayer(id) {
 
   try {
     await dbPatch('players', `?id=eq.${id}`, {
-      name, nickname, rakeback_percent: rb, preferred_withdrawal: withdrawal
+      name, nickname, rakeback_percent: rb, rakeback_until: rbUntil, preferred_withdrawal: withdrawal
     });
     const p = players.find(pl => pl.id === id);
-    if (p) Object.assign(p, { name, nickname, rakeback_percent: rb, preferred_withdrawal: withdrawal });
+    if (p) Object.assign(p, { name, nickname, rakeback_percent: rb, rakeback_until: rbUntil, preferred_withdrawal: withdrawal });
 
     document.getElementById('edit-player-modal')?.remove();
     renderPlayersTable();
@@ -1626,6 +1655,7 @@ async function addPlayer() {
   const nickname   = document.getElementById('ap-nickname')?.value.trim() || null;
   const rbVal      = document.getElementById('ap-rakeback')?.value;
   const rb         = rbVal !== '' ? parseFloat(rbVal) : null;
+  const rbUntil    = document.getElementById('ap-rakeback-until')?.value || null;
   const withdrawal = document.getElementById('ap-withdrawal')?.value || 'bit';
 
   if (!name) { showNotif('אנא הזן שם שחקן', 'error'); return; }
@@ -1635,7 +1665,7 @@ async function addPlayer() {
 
   try {
     const result = await dbPost('players', {
-      name, nickname, rakeback_percent: rb, preferred_withdrawal: withdrawal
+      name, nickname, rakeback_percent: rb, rakeback_until: rbUntil, preferred_withdrawal: withdrawal
     });
     if (result && result[0]) players.push(result[0]);
 
