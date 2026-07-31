@@ -583,6 +583,7 @@ async function initRakebackCommitments() {
   rctInited = true;
   document.getElementById('rct-addRowBtn').addEventListener('click', rctAddRow);
   document.getElementById('rct-addColBtn').addEventListener('click', rctAddPaymentColumn);
+  document.getElementById('rct-delColBtn').addEventListener('click', rctRemovePaymentColumn);
   document.getElementById('rct-exportExcelBtn').addEventListener('click', rctExportExcel);
   await rctLoadState();
   rctRenderAll();
@@ -593,7 +594,7 @@ async function rctLoadState() {
     const rows = await dbGet('rakeback_commitments', '?id=eq.1');
     const data = rows && rows[0] && rows[0].data ? rows[0].data : null;
     if (data && Array.isArray(data.people)) {
-      rctState = { people: data.people, paymentCols: Math.max(data.paymentCols || RCT_MIN_COLS, RCT_MIN_COLS) };
+      rctState = { people: data.people, paymentCols: data.paymentCols > 0 ? data.paymentCols : RCT_MIN_COLS };
     } else {
       rctState = { people: [], paymentCols: RCT_MIN_COLS };
     }
@@ -841,6 +842,23 @@ function rctAddRow() {
 
 function rctAddPaymentColumn() {
   rctState.paymentCols += 1;
+  rctScheduleSave();
+  rctRenderAll();
+}
+
+function rctRemovePaymentColumn() {
+  if (rctState.paymentCols <= 1) return;
+  const lastIdx = rctState.paymentCols - 1;
+  const hasData = rctState.people.some(p => {
+    const v = p.payments[lastIdx];
+    return v !== '' && v !== null && v !== undefined && String(v).trim() !== '';
+  });
+  if (hasData && !confirm('בפעימה האחרונה יש נתונים שיימחקו. להסיר בכל זאת?')) return;
+  rctState.paymentCols -= 1;
+  // Drop any orphaned values beyond the new column count
+  rctState.people.forEach(p => {
+    if (p.payments.length > rctState.paymentCols) p.payments.length = rctState.paymentCols;
+  });
   rctScheduleSave();
   rctRenderAll();
 }
