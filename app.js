@@ -549,6 +549,300 @@ async function addRakeback() {
   }
 }
 
+// ============================================================
+// RAKEBACK COMMITMENTS TABLE (payment-tracking sub-tab)
+// Stored as a single jsonb row in `rakeback_commitments` (id=1)
+// ============================================================
+let rctState     = null;
+let rctSaveTimer = null;
+let rctInited    = false;
+const RCT_MIN_COLS = 11;
+
+function switchRakebackSubTab(name, el) {
+  document.querySelectorAll('#rakeback-subtabs .tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('rb-sub-records').style.display     = name === 'records'     ? '' : 'none';
+  document.getElementById('rb-sub-commitments').style.display = name === 'commitments' ? '' : 'none';
+  if (name === 'commitments') initRakebackCommitments();
+}
+
+async function initRakebackCommitments() {
+  if (rctInited) return;
+  rctInited = true;
+  document.getElementById('rct-addRowBtn').addEventListener('click', rctAddRow);
+  document.getElementById('rct-addColBtn').addEventListener('click', rctAddPaymentColumn);
+  document.getElementById('rct-exportJsonBtn').addEventListener('click', rctExportJson);
+  document.getElementById('rct-exportCsvBtn').addEventListener('click', rctExportCsv);
+  document.getElementById('rct-importJsonBtn').addEventListener('click', () => document.getElementById('rct-fileInput').click());
+  document.getElementById('rct-fileInput').addEventListener('change', e => {
+    if (e.target.files && e.target.files[0]) rctImportJson(e.target.files[0]);
+    e.target.value = '';
+  });
+  await rctLoadState();
+  rctRenderAll();
+}
+
+async function rctLoadState() {
+  try {
+    const rows = await dbGet('rakeback_commitments', '?id=eq.1');
+    const data = rows && rows[0] && rows[0].data ? rows[0].data : null;
+    if (data && Array.isArray(data.people)) {
+      rctState = { people: data.people, paymentCols: Math.max(data.paymentCols || RCT_MIN_COLS, RCT_MIN_COLS) };
+    } else {
+      rctState = { people: [], paymentCols: RCT_MIN_COLS };
+    }
+  } catch (e) {
+    rctState = { people: [], paymentCols: RCT_MIN_COLS };
+    showNotif('שגיאה בטעינת טבלת ההתחייבויות: ' + e.message, 'error');
+  }
+}
+
+function rctScheduleSave() {
+  const pillText = document.getElementById('rct-savePillText');
+  if (pillText) pillText.textContent = 'שומר…';
+  const pill = document.getElementById('rct-savePill');
+  if (pill) pill.style.opacity = '0.7';
+  clearTimeout(rctSaveTimer);
+  rctSaveTimer = setTimeout(rctPersist, 400);
+}
+
+async function rctPersist() {
+  try {
+    await dbPatch('rakeback_commitments', '?id=eq.1', { data: rctState, updated_at: now() });
+    rctFlashSaved(true);
+  } catch (e) {
+    rctFlashSaved(false);
+  }
+}
+
+function rctFlashSaved(ok) {
+  const pill = document.getElementById('rct-savePill');
+  const text = document.getElementById('rct-savePillText');
+  if (pill) pill.style.opacity = '1';
+  if (text) text.textContent = ok ? 'נשמר' : 'שמירה נכשלה';
+}
+
+function rctLastFilledPayment(payments) {
+  for (let i = payments.length - 1; i >= 0; i--) {
+    const v = payments[i];
+    if (v !== '' && v !== null && v !== undefined && !isNaN(parseFloat(v))) return { value: parseFloat(v), index: i };
+  }
+  return null;
+}
+
+function rctCountFilled(payments) {
+  return payments.filter(v => v !== '' && v !== null && v !== undefined && String(v).trim() !== '').length;
+}
+
+function rctMakeCellInput(cls, value, placeholder, type) {
+  const input = document.createElement('input');
+  input.className = 'rct-cell ' + cls;
+  input.type = type || 'text';
+  if (type === 'number') input.step = '0.1';
+  input.value = value === undefined || value === null ? '' : value;
+  if (placeholder) input.placeholder = placeholder;
+  return input;
+}
+
+function rctRenderHeader() {
+  const headRow = document.getElementById('rct-headRow');
+  headRow.querySelectorAll('th[data-paycol]').forEach(th => th.remove());
+  const progressTh = headRow.children[headRow.children.length - 2];
+  for (let i = 0; i < rctState.paymentCols; i++) {
+    const th = document.createElement('th');
+    th.setAttribute('data-paycol', i);
+    th.textContent = 'פעימה ' + (i + 1);
+    headRow.insertBefore(th, progressTh);
+  }
+}
+
+function rctUpdateRowData(rowIdx, field, value, payIdx) {
+  const person = rctState.people[rowIdx];
+  if (field === 'note') person.note = value;
+  else if (field === 'name') person.name = value;
+  else if (field === 'percent') person.percent = value === '' ? '' : parseFloat(value) / 100;
+  else if (field === 'payment') {
+    while (person.payments.length <= payIdx) person.payments.push('');
+    person.payments[payIdx] = value === '' ? '' : parseFloat(value);
+  }
+  rctScheduleSave();
+  rctRenderProgress(rowIdx);
+  rctUpdateFooter();
+}
+
+function rctRenderProgress(rowIdx) {
+  const person = rctState.people[rowIdx];
+  const filled = rctCountFilled(person.payments);
+  const pct = Math.round((filled / rctState.paymentCols) * 100);
+  const track = document.querySelector('[data-rct-track="' + rowIdx + '"]');
+  const label = document.querySelector('[data-rct-label="' + rowIdx + '"]');
+  if (track) track.style.width = pct + '%';
+  if (label) {
+    const last = rctLastFilledPayment(person.payments);
+    label.textContent = filled + '/' + rctState.paymentCols + (last ? ' · אחרון: ' + last.value : '');
+  }
+}
+
+function rctUpdateFooter() {
+  const el = document.getElementById('rct-rowCount');
+  if (el) el.textContent = rctState.people.length + ' שמות בטבלה';
+}
+
+function rctRenderBody() {
+  const tbody = document.getElementById('rct-tbody');
+  tbody.innerHTML = '';
+
+  if (rctState.people.length === 0) {
+    const tr = document.createElement('tr');
+    tr.className = 'rct-empty-row';
+    const td = document.createElement('td');
+    td.colSpan = 5 + rctState.paymentCols;
+    td.textContent = 'אין שמות בטבלה עדיין — לחצו על "הוספת שם" כדי להתחיל';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    return;
+  }
+
+  rctState.people.forEach((person, rowIdx) => {
+    const tr = document.createElement('tr');
+
+    const tdIdx = document.createElement('td');
+    tdIdx.className = 'rct-col-idx';
+    tdIdx.textContent = rowIdx + 1;
+    tr.appendChild(tdIdx);
+
+    const tdNote = document.createElement('td');
+    tdNote.className = 'rct-col-note';
+    const noteInput = rctMakeCellInput('rct-note-input', person.note, 'הערה…');
+    noteInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'note', e.target.value));
+    tdNote.appendChild(noteInput);
+    tr.appendChild(tdNote);
+
+    const tdName = document.createElement('td');
+    tdName.className = 'rct-col-name';
+    const nameInput = rctMakeCellInput('rct-name-input', person.name, 'שם…');
+    nameInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'name', e.target.value));
+    tdName.appendChild(nameInput);
+    tr.appendChild(tdName);
+
+    const tdPercent = document.createElement('td');
+    const percentInput = rctMakeCellInput('rct-percent', person.percent === '' || person.percent === undefined ? '' : Math.round(person.percent * 1000) / 10, '%', 'number');
+    percentInput.step = '1'; percentInput.min = '0'; percentInput.max = '100';
+    percentInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'percent', e.target.value));
+    tdPercent.appendChild(percentInput);
+    tdPercent.appendChild(document.createTextNode(' %'));
+    tr.appendChild(tdPercent);
+
+    for (let i = 0; i < rctState.paymentCols; i++) {
+      const td = document.createElement('td');
+      const val = person.payments[i];
+      const payInput = rctMakeCellInput('rct-num', val === undefined ? '' : val, '—', 'number');
+      payInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'payment', e.target.value, i));
+      td.appendChild(payInput);
+      tr.appendChild(td);
+    }
+
+    const tdProgress = document.createElement('td');
+    tdProgress.className = 'rct-progress-cell';
+    tdProgress.innerHTML =
+      '<div class="rct-progress-track"><div class="rct-progress-fill" data-rct-track="' + rowIdx + '" style="width:0%"></div></div>' +
+      '<div class="rct-progress-label" data-rct-label="' + rowIdx + '"></div>';
+    tr.appendChild(tdProgress);
+
+    const tdDel = document.createElement('td');
+    tdDel.className = 'rct-col-del';
+    const delBtn = document.createElement('button');
+    delBtn.className = 'rct-del-btn';
+    delBtn.title = 'מחיקת שורה';
+    delBtn.textContent = '✕';
+    delBtn.addEventListener('click', () => {
+      if (confirm('למחוק את "' + (person.name || 'השורה') + '" מהטבלה?')) {
+        rctState.people.splice(rowIdx, 1);
+        rctScheduleSave();
+        rctRenderAll();
+      }
+    });
+    tdDel.appendChild(delBtn);
+    tr.appendChild(tdDel);
+
+    tbody.appendChild(tr);
+  });
+
+  rctState.people.forEach((_, i) => rctRenderProgress(i));
+}
+
+function rctRenderAll() {
+  rctRenderHeader();
+  rctRenderBody();
+  rctUpdateFooter();
+}
+
+function rctAddRow() {
+  rctState.people.push({ note: '', name: '', percent: '', payments: [] });
+  rctScheduleSave();
+  rctRenderAll();
+  const inputs = document.querySelectorAll('#rct-tbody tr:last-child input');
+  if (inputs.length > 1) inputs[1].focus();
+}
+
+function rctAddPaymentColumn() {
+  rctState.paymentCols += 1;
+  rctScheduleSave();
+  rctRenderAll();
+}
+
+function rctExportJson() {
+  const blob = new Blob([JSON.stringify(rctState, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'גיבוי_החזרי_גניות_' + today() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function rctImportJson(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || !Array.isArray(parsed.people)) throw new Error('bad format');
+      rctState = { people: parsed.people, paymentCols: Math.max(parsed.paymentCols || RCT_MIN_COLS, RCT_MIN_COLS) };
+      rctScheduleSave();
+      rctRenderAll();
+      showNotif('✅ גיבוי יובא בהצלחה');
+    } catch (err) {
+      showNotif('קובץ הגיבוי לא תקין', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function rctCsvEscape(v) {
+  v = String(v === undefined || v === null ? '' : v);
+  if (/[",\n]/.test(v)) return '"' + v.replace(/"/g, '""') + '"';
+  return v;
+}
+
+function rctExportCsv() {
+  const headers = ['#', 'הערות', 'שם', 'אחוז החזר'];
+  for (let i = 0; i < rctState.paymentCols; i++) headers.push('פעימה ' + (i + 1));
+  const rows = [headers];
+  rctState.people.forEach((p, idx) => {
+    const row = [idx + 1, p.note || '', p.name || '', p.percent === '' || p.percent === undefined ? '' : Math.round(p.percent * 1000) / 10 + '%'];
+    for (let i = 0; i < rctState.paymentCols; i++) row.push(p.payments[i] !== undefined ? p.payments[i] : '');
+    rows.push(row);
+  });
+  const csv = '﻿' + rows.map(r => r.map(rctCsvEscape).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'החזרי_גניות_' + today() + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // — Tournaments —
 async function loadTournamentsTable() {
   try {
