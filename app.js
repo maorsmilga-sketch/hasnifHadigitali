@@ -631,9 +631,14 @@ function rctFlashSaved(ok) {
 function rctLastFilledPayment(payments) {
   for (let i = payments.length - 1; i >= 0; i--) {
     const v = payments[i];
-    if (v !== '' && v !== null && v !== undefined && !isNaN(parseFloat(v))) return { value: parseFloat(v), index: i };
+    if (v !== '' && v !== null && v !== undefined && String(v).trim() !== '') return { value: v, index: i };
   }
   return null;
+}
+
+function rctFmtDateShort(iso) {
+  const parts = String(iso || '').split('-'); // YYYY-MM-DD
+  return parts.length === 3 ? parts[2] + '/' + parts[1] : String(iso || '');
 }
 
 function rctCountFilled(payments) {
@@ -677,7 +682,7 @@ function rctUpdateRowData(rowIdx, field, value, payIdx) {
   else if (field === 'percent') person.percent = value === '' ? '' : parseFloat(value) / 100;
   else if (field === 'payment') {
     while (person.payments.length <= payIdx) person.payments.push('');
-    person.payments[payIdx] = value === '' ? '' : parseFloat(value);
+    person.payments[payIdx] = value; // date string (YYYY-MM-DD) or ''
   }
   rctScheduleSave();
   rctRenderProgress(rowIdx);
@@ -693,7 +698,7 @@ function rctRenderProgress(rowIdx) {
   if (track) track.style.width = pct + '%';
   if (label) {
     const last = rctLastFilledPayment(person.payments);
-    label.textContent = filled + '/' + rctState.paymentCols + (last ? ' · אחרון: ' + last.value : '');
+    label.textContent = filled + '/' + rctState.paymentCols + (last ? ' · אחרון: ' + rctFmtDateShort(last.value) : '');
   }
 }
 
@@ -720,21 +725,31 @@ function rctRenderBody() {
   rctState.people.forEach((person, rowIdx) => {
     const tr = document.createElement('tr');
 
-    // Name (frozen right) — choose from players list
+    // Percent input (created first so the name picker can auto-fill it)
+    const percentInput = rctMakeCellInput('rct-percent', person.percent === '' || person.percent === undefined ? '' : Math.round(person.percent * 1000) / 10, '%', 'number');
+    percentInput.step = '1'; percentInput.min = '0'; percentInput.max = '100';
+    percentInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'percent', e.target.value));
+
+    // Name (frozen right) — choose from players; auto-fills the rakeback % from the chosen player
     const tdName = document.createElement('td');
     tdName.className = 'rct-col-name';
     const nameInput = rctMakeCellInput('rct-name-input', person.name, 'שם…');
     nameInput.setAttribute('list', 'rct-players-list');
-    nameInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'name', e.target.value));
+    nameInput.addEventListener('input', e => {
+      rctUpdateRowData(rowIdx, 'name', e.target.value);
+      const match = (players || []).find(p => (p.nickname || p.name) === e.target.value);
+      if (match && match.rakeback_percent != null && match.rakeback_percent !== '') {
+        rctState.people[rowIdx].percent = parseFloat(match.rakeback_percent) / 100;
+        percentInput.value = Math.round(rctState.people[rowIdx].percent * 1000) / 10;
+        rctScheduleSave();
+      }
+    });
     tdName.appendChild(nameInput);
     tr.appendChild(tdName);
 
-    // Percent
+    // Percent cell
     const tdPercent = document.createElement('td');
     tdPercent.className = 'rct-col-pct';
-    const percentInput = rctMakeCellInput('rct-percent', person.percent === '' || person.percent === undefined ? '' : Math.round(person.percent * 1000) / 10, '%', 'number');
-    percentInput.step = '1'; percentInput.min = '0'; percentInput.max = '100';
-    percentInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'percent', e.target.value));
     tdPercent.appendChild(percentInput);
     tr.appendChild(tdPercent);
 
@@ -742,7 +757,7 @@ function rctRenderBody() {
     for (let i = 0; i < rctState.paymentCols; i++) {
       const td = document.createElement('td');
       const val = person.payments[i];
-      const payInput = rctMakeCellInput('rct-num', val === undefined ? '' : val, '—', 'number');
+      const payInput = rctMakeCellInput('rct-date', val === undefined ? '' : val, '', 'date');
       payInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'payment', e.target.value, i));
       td.appendChild(payInput);
       tr.appendChild(td);
