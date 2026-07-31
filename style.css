@@ -2010,19 +2010,34 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   box-shadow: 0 0 0 2px rgba(108,99,255,0.18);
 }
 .rct-num       { text-align: center; width: 40px; font-variant-numeric: tabular-nums; }
-.rct-date {
-  width: 110px;
-  min-width: 94px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-  color-scheme: dark;
-}
-.rct-date::-webkit-calendar-picker-indicator {
-  filter: invert(0.8);
-  opacity: 0.7;
+.rct-beat {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 26px;
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.rct-beat.filled { color: var(--text-primary); font-weight: 600; }
+.rct-beat:hover { background: var(--bg-primary); }
+.rct-beat-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: 0;
   margin: 0;
-  padding: 0 1px;
+  padding: 0;
+  pointer-events: none;
+  color-scheme: dark;
 }
 .rct-col-pct   { width: 38px; min-width: 38px; }
 .rct-percent   { text-align: center; width: 34px; font-variant-numeric: tabular-nums; }

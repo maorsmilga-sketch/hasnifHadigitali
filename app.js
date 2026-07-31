@@ -757,9 +757,31 @@ function rctRenderBody() {
     for (let i = 0; i < rctState.paymentCols; i++) {
       const td = document.createElement('td');
       const val = person.payments[i];
-      const payInput = rctMakeCellInput('rct-date', val === undefined ? '' : val, '', 'date');
-      payInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'payment', e.target.value, i));
-      td.appendChild(payInput);
+      const beatIdx = i;
+
+      // Compact cell that shows a short date and opens a native date picker on tap
+      const wrap = document.createElement('div');
+      wrap.className = 'rct-beat' + (val ? ' filled' : '');
+      const label = document.createElement('span');
+      label.className = 'rct-beat-label';
+      label.textContent = val ? rctFmtDateShort(val) : '＋';
+      const dInput = document.createElement('input');
+      dInput.type = 'date';
+      dInput.className = 'rct-beat-input';
+      if (val) dInput.value = val;
+
+      wrap.addEventListener('click', () => {
+        try { dInput.showPicker(); } catch (err) { dInput.focus(); }
+      });
+      dInput.addEventListener('input', e => {
+        rctUpdateRowData(rowIdx, 'payment', e.target.value, beatIdx);
+        label.textContent = e.target.value ? rctFmtDateShort(e.target.value) : '＋';
+        wrap.classList.toggle('filled', !!e.target.value);
+      });
+
+      wrap.appendChild(label);
+      wrap.appendChild(dInput);
+      td.appendChild(wrap);
       tr.appendChild(td);
     }
 
