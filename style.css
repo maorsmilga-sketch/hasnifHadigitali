@@ -1914,34 +1914,44 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   }
 }
 
-/* ===== RAKEBACK COMMITMENTS TABLE (payment tracking sub-tab) ===== */
+/* ===== RAKEBACK COMMITMENTS TABLE (Excel-like payment tracking) ===== */
 .rct-toolbar {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   align-items: center;
+  margin-bottom: 8px;
 }
-.rct-toolbar .spacer { flex: 1; }
 .rct-save-pill {
   margin-right: auto;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--positive);
   background: rgba(0,212,170,0.12);
   border-radius: 20px;
-  padding: 5px 12px;
+  padding: 4px 10px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   white-space: nowrap;
 }
 .rct-save-pill .rct-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--positive); }
-.rct-scroll-hint { font-size: 12px; color: var(--text-muted); margin: 0 0 8px; }
+.rct-excel-btn {
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.rct-excel-btn:hover { border-color: var(--accent); }
 
 .rct-table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   background: var(--bg-card);
   max-width: 100%;
 }
@@ -1952,15 +1962,16 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   color: var(--text-primary);
 }
 .rct-table th, .rct-table td {
-  padding: 6px 6px;
+  padding: 2px 3px;
   text-align: center;
   vertical-align: middle;
   border-bottom: 1px solid var(--border);
+  border-left: 1px solid var(--border);
   white-space: nowrap;
 }
 .rct-table thead th {
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
   background: var(--bg-secondary);
   border-bottom: 2px solid var(--accent);
@@ -1969,31 +1980,26 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   z-index: 2;
 }
 
-/* frozen columns: idx, note, name — pinned to the right edge in RTL */
-.rct-col-idx  { width: 32px;  min-width: 32px;  position: sticky; right: 0; z-index: 1; }
-.rct-col-note { width: 120px; min-width: 120px; position: sticky; right: 32px; z-index: 1; text-align: right; }
-.rct-col-name { width: 120px; min-width: 120px; position: sticky; right: 152px; z-index: 1; text-align: right; }
-.rct-table thead .rct-col-idx,
-.rct-table thead .rct-col-note,
+/* frozen column: name only — pinned to the right edge in RTL */
+.rct-col-name {
+  width: 84px; min-width: 84px;
+  position: sticky; right: 0; z-index: 1;
+  text-align: right;
+  box-shadow: -5px 0 6px -6px rgba(0,0,0,0.4);
+}
 .rct-table thead .rct-col-name { z-index: 3; }
-.rct-table tbody .rct-col-idx,
-.rct-table tbody .rct-col-note,
 .rct-table tbody .rct-col-name { background: var(--bg-card); }
-.rct-table tbody tr:nth-child(even) .rct-col-idx,
-.rct-table tbody tr:nth-child(even) .rct-col-note,
 .rct-table tbody tr:nth-child(even) .rct-col-name { background: var(--bg-secondary); }
-.rct-col-name { box-shadow: -6px 0 6px -6px rgba(0,0,0,0.35); }
 .rct-table tbody tr:nth-child(even) { background: var(--bg-secondary); }
-.rct-table td.rct-col-idx { color: var(--text-muted); font-size: 12px; }
 
 .rct-cell {
   width: 100%;
   border: 1px solid transparent;
   background: transparent;
   font-family: var(--font);
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-primary);
-  padding: 6px 6px;
+  padding: 4px 3px;
   border-radius: var(--radius-sm);
   text-align: inherit;
 }
@@ -2003,26 +2009,29 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   background: var(--bg-primary);
   box-shadow: 0 0 0 2px rgba(108,99,255,0.18);
 }
-.rct-num     { text-align: center; width: 62px; font-variant-numeric: tabular-nums; }
-.rct-percent { text-align: center; width: 52px; font-variant-numeric: tabular-nums; }
-.rct-note-input, .rct-name-input { width: 112px; }
+.rct-num       { text-align: center; width: 40px; font-variant-numeric: tabular-nums; }
+.rct-col-pct   { width: 38px; min-width: 38px; }
+.rct-percent   { text-align: center; width: 34px; font-variant-numeric: tabular-nums; }
+.rct-name-input { width: 78px; text-align: right; }
+.rct-col-note-h { text-align: right; }
+.rct-note-input { width: 96px; text-align: right; }
 
-.rct-progress-cell { width: 140px; min-width: 140px; }
+.rct-col-prog, .rct-progress-cell { width: 76px; min-width: 76px; }
 .rct-progress-track {
-  height: 7px;
+  height: 5px;
   background: var(--border);
   border-radius: 5px;
   overflow: hidden;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 .rct-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--accent), var(--positive));
   border-radius: 5px;
 }
-.rct-progress-label { font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rct-progress-label { font-size: 10px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-.rct-col-del { width: 34px; min-width: 34px; }
-.rct-del-btn { border: none; background: none; color: var(--negative); padding: 4px 6px; font-size: 15px; cursor: pointer; }
+.rct-col-del, .rct-col-del-h { width: 26px; min-width: 26px; }
+.rct-del-btn { border: none; background: none; color: var(--negative); padding: 2px 4px; font-size: 13px; cursor: pointer; }
 .rct-empty-row td { text-align: center; color: var(--text-muted); padding: 30px 0; font-style: italic; }
-.rct-footer { margin-top: 10px; color: var(--text-muted); font-size: 12px; }
+.rct-footer { margin-top: 8px; color: var(--text-muted); font-size: 12px; }

@@ -320,6 +320,17 @@ function switchBlueTab(tab, el) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('bt-' + tab).classList.add('active');
+  updateBlueSummaryVisibility();
+}
+
+// Hide the blue-table expense/withdrawal summary bar on the commitments sub-tab
+function updateBlueSummaryVisibility() {
+  const bar = document.getElementById('bt-summary-bar');
+  if (!bar) return;
+  const onCommitments =
+    document.getElementById('bt-rakeback')?.classList.contains('active') &&
+    document.getElementById('rb-sub-commitments')?.style.display !== 'none';
+  bar.style.display = onCommitments ? 'none' : '';
 }
 
 async function loadBlueTable() {
@@ -564,6 +575,7 @@ function switchRakebackSubTab(name, el) {
   document.getElementById('rb-sub-records').style.display     = name === 'records'     ? '' : 'none';
   document.getElementById('rb-sub-commitments').style.display = name === 'commitments' ? '' : 'none';
   if (name === 'commitments') initRakebackCommitments();
+  updateBlueSummaryVisibility();
 }
 
 async function initRakebackCommitments() {
@@ -571,13 +583,7 @@ async function initRakebackCommitments() {
   rctInited = true;
   document.getElementById('rct-addRowBtn').addEventListener('click', rctAddRow);
   document.getElementById('rct-addColBtn').addEventListener('click', rctAddPaymentColumn);
-  document.getElementById('rct-exportJsonBtn').addEventListener('click', rctExportJson);
-  document.getElementById('rct-exportCsvBtn').addEventListener('click', rctExportCsv);
-  document.getElementById('rct-importJsonBtn').addEventListener('click', () => document.getElementById('rct-fileInput').click());
-  document.getElementById('rct-fileInput').addEventListener('change', e => {
-    if (e.target.files && e.target.files[0]) rctImportJson(e.target.files[0]);
-    e.target.value = '';
-  });
+  document.getElementById('rct-exportExcelBtn').addEventListener('click', rctExportExcel);
   await rctLoadState();
   rctRenderAll();
 }
@@ -647,13 +653,21 @@ function rctMakeCellInput(cls, value, placeholder, type) {
 function rctRenderHeader() {
   const headRow = document.getElementById('rct-headRow');
   headRow.querySelectorAll('th[data-paycol]').forEach(th => th.remove());
-  const progressTh = headRow.children[headRow.children.length - 2];
+  const progressTh = document.getElementById('rct-progress-th');
   for (let i = 0; i < rctState.paymentCols; i++) {
     const th = document.createElement('th');
     th.setAttribute('data-paycol', i);
-    th.textContent = 'פעימה ' + (i + 1);
+    th.textContent = (i + 1);
     headRow.insertBefore(th, progressTh);
   }
+}
+
+function rctPopulatePlayersList() {
+  const dl = document.getElementById('rct-players-list');
+  if (!dl) return;
+  dl.innerHTML = (players || [])
+    .map(p => `<option value="${escHtml(p.nickname || p.name)}"></option>`)
+    .join('');
 }
 
 function rctUpdateRowData(rowIdx, field, value, payIdx) {
@@ -696,8 +710,8 @@ function rctRenderBody() {
     const tr = document.createElement('tr');
     tr.className = 'rct-empty-row';
     const td = document.createElement('td');
-    td.colSpan = 5 + rctState.paymentCols;
-    td.textContent = 'אין שמות בטבלה עדיין — לחצו על "הוספת שם" כדי להתחיל';
+    td.colSpan = 4 + rctState.paymentCols;
+    td.textContent = 'אין שמות בטבלה עדיין — לחצו על "＋ שם" כדי להתחיל';
     tr.appendChild(td);
     tbody.appendChild(tr);
     return;
@@ -706,33 +720,25 @@ function rctRenderBody() {
   rctState.people.forEach((person, rowIdx) => {
     const tr = document.createElement('tr');
 
-    const tdIdx = document.createElement('td');
-    tdIdx.className = 'rct-col-idx';
-    tdIdx.textContent = rowIdx + 1;
-    tr.appendChild(tdIdx);
-
-    const tdNote = document.createElement('td');
-    tdNote.className = 'rct-col-note';
-    const noteInput = rctMakeCellInput('rct-note-input', person.note, 'הערה…');
-    noteInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'note', e.target.value));
-    tdNote.appendChild(noteInput);
-    tr.appendChild(tdNote);
-
+    // Name (frozen right) — choose from players list
     const tdName = document.createElement('td');
     tdName.className = 'rct-col-name';
     const nameInput = rctMakeCellInput('rct-name-input', person.name, 'שם…');
+    nameInput.setAttribute('list', 'rct-players-list');
     nameInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'name', e.target.value));
     tdName.appendChild(nameInput);
     tr.appendChild(tdName);
 
+    // Percent
     const tdPercent = document.createElement('td');
+    tdPercent.className = 'rct-col-pct';
     const percentInput = rctMakeCellInput('rct-percent', person.percent === '' || person.percent === undefined ? '' : Math.round(person.percent * 1000) / 10, '%', 'number');
     percentInput.step = '1'; percentInput.min = '0'; percentInput.max = '100';
     percentInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'percent', e.target.value));
     tdPercent.appendChild(percentInput);
-    tdPercent.appendChild(document.createTextNode(' %'));
     tr.appendChild(tdPercent);
 
+    // Payment beats
     for (let i = 0; i < rctState.paymentCols; i++) {
       const td = document.createElement('td');
       const val = person.payments[i];
@@ -742,6 +748,7 @@ function rctRenderBody() {
       tr.appendChild(td);
     }
 
+    // Progress
     const tdProgress = document.createElement('td');
     tdProgress.className = 'rct-progress-cell';
     tdProgress.innerHTML =
@@ -749,6 +756,15 @@ function rctRenderBody() {
       '<div class="rct-progress-label" data-rct-label="' + rowIdx + '"></div>';
     tr.appendChild(tdProgress);
 
+    // Note (least-scanned — placed near the end)
+    const tdNote = document.createElement('td');
+    tdNote.className = 'rct-col-note';
+    const noteInput = rctMakeCellInput('rct-note-input', person.note, 'הערה…');
+    noteInput.addEventListener('input', e => rctUpdateRowData(rowIdx, 'note', e.target.value));
+    tdNote.appendChild(noteInput);
+    tr.appendChild(tdNote);
+
+    // Delete
     const tdDel = document.createElement('td');
     tdDel.className = 'rct-col-del';
     const delBtn = document.createElement('button');
@@ -772,6 +788,7 @@ function rctRenderBody() {
 }
 
 function rctRenderAll() {
+  rctPopulatePlayersList();
   rctRenderHeader();
   rctRenderBody();
   rctUpdateFooter();
@@ -791,56 +808,30 @@ function rctAddPaymentColumn() {
   rctRenderAll();
 }
 
-function rctExportJson() {
-  const blob = new Blob([JSON.stringify(rctState, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'גיבוי_החזרי_גניות_' + today() + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function rctImportJson(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const parsed = JSON.parse(e.target.result);
-      if (!parsed || !Array.isArray(parsed.people)) throw new Error('bad format');
-      rctState = { people: parsed.people, paymentCols: Math.max(parsed.paymentCols || RCT_MIN_COLS, RCT_MIN_COLS) };
-      rctScheduleSave();
-      rctRenderAll();
-      showNotif('✅ גיבוי יובא בהצלחה');
-    } catch (err) {
-      showNotif('קובץ הגיבוי לא תקין', 'error');
-    }
-  };
-  reader.readAsText(file);
-}
-
-function rctCsvEscape(v) {
-  v = String(v === undefined || v === null ? '' : v);
-  if (/[",\n]/.test(v)) return '"' + v.replace(/"/g, '""') + '"';
-  return v;
-}
-
-function rctExportCsv() {
-  const headers = ['#', 'הערות', 'שם', 'אחוז החזר'];
+function rctExportExcel() {
+  if (typeof XLSX === 'undefined') {
+    showNotif('ספריית האקסל לא נטענה — נסה לרענן את הדף', 'error');
+    return;
+  }
+  const headers = ['שם', 'אחוז החזר'];
   for (let i = 0; i < rctState.paymentCols; i++) headers.push('פעימה ' + (i + 1));
-  const rows = [headers];
-  rctState.people.forEach((p, idx) => {
-    const row = [idx + 1, p.note || '', p.name || '', p.percent === '' || p.percent === undefined ? '' : Math.round(p.percent * 1000) / 10 + '%'];
-    for (let i = 0; i < rctState.paymentCols; i++) row.push(p.payments[i] !== undefined ? p.payments[i] : '');
-    rows.push(row);
+  headers.push('הערות');
+  const aoa = [headers];
+  rctState.people.forEach(p => {
+    const row = [
+      p.name || '',
+      p.percent === '' || p.percent === undefined ? '' : Math.round(p.percent * 1000) / 10
+    ];
+    for (let i = 0; i < rctState.paymentCols; i++) {
+      row.push(p.payments[i] !== undefined && p.payments[i] !== '' ? p.payments[i] : '');
+    }
+    row.push(p.note || '');
+    aoa.push(row);
   });
-  const csv = '﻿' + rows.map(r => r.map(rctCsvEscape).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'החזרי_גניות_' + today() + '.csv';
-  a.click();
-  URL.revokeObjectURL(url);
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'החזרי גניות');
+  XLSX.writeFile(wb, 'החזרי_גניות_' + today() + '.xlsx');
 }
 
 // — Tournaments —

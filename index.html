@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20260731">
+<link rel="stylesheet" href="style.css?v=20260731b">
 </head>
 <body>
 
@@ -354,29 +354,23 @@
 
           <!-- Sub-tab: Commitments table (payment tracking) -->
           <div id="rb-sub-commitments" class="rb-subpanel" style="display:none">
-            <div class="card" style="margin-bottom:16px">
-              <div class="section-title" style="margin-top:0">טבלת החזרי גניות — מעקב פעימות</div>
-              <div class="rct-toolbar">
-                <button class="btn btn-primary btn-sm" id="rct-addRowBtn">＋ הוספת שם</button>
-                <button class="btn btn-secondary btn-sm" id="rct-addColBtn">＋ הוספת פעימה</button>
-                <button class="btn btn-secondary btn-sm" id="rct-exportJsonBtn">ייצוא גיבוי</button>
-                <button class="btn btn-secondary btn-sm" id="rct-importJsonBtn">ייבוא גיבוי</button>
-                <button class="btn btn-secondary btn-sm" id="rct-exportCsvBtn">CSV</button>
-                <input type="file" id="rct-fileInput" accept="application/json" style="display:none">
-                <span class="rct-save-pill" id="rct-savePill"><span class="rct-dot"></span><span id="rct-savePillText">נשמר</span></span>
-              </div>
+            <div class="rct-toolbar">
+              <button class="btn btn-primary btn-xs" id="rct-addRowBtn">＋ שם</button>
+              <button class="btn btn-secondary btn-xs" id="rct-addColBtn">＋ פעימה</button>
+              <button class="rct-excel-btn" id="rct-exportExcelBtn" title="הורד אקסל">📥</button>
+              <span class="rct-save-pill" id="rct-savePill"><span class="rct-dot"></span><span id="rct-savePillText">נשמר</span></span>
             </div>
-            <p class="rct-scroll-hint">עמודות # / הערות / שם קבועות — גללו אופקית כדי לראות את כל הפעימות</p>
+            <datalist id="rct-players-list"></datalist>
             <div class="rct-table-scroll">
               <table class="rct-table">
                 <thead>
                   <tr id="rct-headRow">
-                    <th class="rct-col-idx">#</th>
-                    <th class="rct-col-note">הערות</th>
                     <th class="rct-col-name">שם</th>
-                    <th>אחוז החזר</th>
-                    <th>התקדמות</th>
-                    <th></th>
+                    <th class="rct-col-pct">%</th>
+                    <!-- payment columns injected here -->
+                    <th class="rct-col-prog" id="rct-progress-th">התקדמות</th>
+                    <th class="rct-col-note-h">הערה</th>
+                    <th class="rct-col-del-h"></th>
                   </tr>
                 </thead>
                 <tbody id="rct-tbody"></tbody>
@@ -576,7 +570,7 @@
         </div>
 
         <!-- Blue Table Summary (fixed bottom) -->
-        <div class="summary-bar" style="margin-top:32px">
+        <div class="summary-bar" id="bt-summary-bar" style="margin-top:32px">
           <div class="summary-item">
             <span class="summary-label">סה"כ הוצאות (צ'יפים)</span>
             <span class="summary-value chips-color" id="bt-total-chips">0</span>
@@ -980,6 +974,6 @@ function showManagementSection() {
 }
 </script>
 
-<script src="app.js?v=20260731"></script>
+<script src="app.js?v=20260731b"></script>
 </body>
 </html>
