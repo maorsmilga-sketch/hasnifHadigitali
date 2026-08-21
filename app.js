@@ -225,7 +225,7 @@ async function loadDashboard() {
 
   const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash) + n(cp.bank_leumi);
   const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-  const chipsIls = n(cp.counter) / 10;
+  const chipsIls = n(cp.counter); // יחס 1:1 צ'יפ = ₪1
   const profit   = total - chipsIls;    // רווח כללי = סה"כ בקופה פחות צ'יפים בכסף
   const half     = profit / 2;
   const idoNet   = half - n(cp.debt_ido);
@@ -473,7 +473,7 @@ function initAllPlayerACs() {
 // — Counter —
 function updateCounterDisplay() {
   const val = parseFloat(document.getElementById('counter-value')?.value) || 0;
-  setText('counter-ils', '₪' + fmt(val / 10));
+  setText('counter-ils', '₪' + fmt(val));
 }
 
 async function saveCounter() {
@@ -527,7 +527,7 @@ async function loadRakebackTable() {
         <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_rakeback','${r.id}','loadRakebackTable')">מחק</button></td>
       </tr>`).join('');
     const total = data.reduce((s, r) => s + n(r.rakeback_amount), 0);
-    setText('bt-rb-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total / 10)}`);
+    setText('bt-rb-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total)}`);
   } catch (e) {
     showNotif('שגיאה בטעינת החזרי גנייה: ' + e.message, 'error');
   }
@@ -909,7 +909,7 @@ async function loadTournamentsTable() {
         <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_tournaments','${r.id}','loadTournamentsTable')">מחק</button></td>
       </tr>`).join('');
     const total = data.reduce((s, r) => s + n(r.prize_chips), 0);
-    setText('bt-tn-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total / 10)}`);
+    setText('bt-tn-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total)}`);
   } catch (e) {
     showNotif('שגיאה בטעינת טורנירים: ' + e.message, 'error');
   }
@@ -957,7 +957,7 @@ async function loadBonusesTable() {
         <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_bonuses','${r.id}','loadBonusesTable')">מחק</button></td>
       </tr>`).join('');
     const total = data.reduce((s, r) => s + n(r.chips_amount), 0);
-    setText('bt-bn-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total / 10)}`);
+    setText('bt-bn-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total)}`);
   } catch (e) {
     showNotif('שגיאה בטעינת בונוסים: ' + e.message, 'error');
   }
@@ -1010,7 +1010,7 @@ async function loadReferralsTable() {
         </tr>`;
     }).join('');
     const total = data.reduce((s, r) => s + n(r.chips_amount), 0);
-    setText('bt-ref-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total / 10)}`);
+    setText('bt-ref-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(total)}`);
   } catch (e) {
     showNotif('שגיאה בטעינת חבר מביא חבר: ' + e.message, 'error');
   }
@@ -1076,7 +1076,7 @@ async function addWithdrawal() {
   if (!date)               { showNotif('אנא בחר תאריך', 'error');              return; }
   if (!chips || chips <= 0){ showNotif('אנא הזן כמות צ\'יפים תקינה', 'error'); return; }
 
-  const ils = chips / 10;
+  const ils = chips; // יחס 1:1 צ'יפ = ₪1
 
   try {
     await dbPost('withdrawals', {
@@ -1196,29 +1196,29 @@ async function refreshBTSummary() {
 
     // Global summary bar
     setText('bt-total-chips',       fmt(totalChips) + ' צ\'יפים');
-    setText('bt-total-ils',         '₪' + fmt(totalChips / 10));
+    setText('bt-total-ils',         '₪' + fmt(totalChips));
     setText('bt-total-withdrawals', '₪' + fmt(sumWdIls));
 
     // Per-tab summary rows (only if not already set by load functions)
     const upd = (id, txt) => { const el = document.getElementById(id); if (el && !el.textContent) el.textContent = txt; };
-    upd('bt-rb-summary',  `סה"כ: ${fmt(sumRb)} צ' | ₪${fmt(sumRb / 10)}`);
-    upd('bt-tn-summary',  `סה"כ: ${fmt(sumTn)} צ' | ₪${fmt(sumTn / 10)}`);
-    upd('bt-bn-summary',  `סה"כ: ${fmt(sumBn)} צ' | ₪${fmt(sumBn / 10)}`);
-    upd('bt-ref-summary', `סה"כ: ${fmt(sumRef)} צ' | ₪${fmt(sumRef / 10)}`);
+    upd('bt-rb-summary',  `סה"כ: ${fmt(sumRb)} צ' | ₪${fmt(sumRb)}`);
+    upd('bt-tn-summary',  `סה"כ: ${fmt(sumTn)} צ' | ₪${fmt(sumTn)}`);
+    upd('bt-bn-summary',  `סה"כ: ${fmt(sumBn)} צ' | ₪${fmt(sumBn)}`);
+    upd('bt-ref-summary', `סה"כ: ${fmt(sumRef)} צ' | ₪${fmt(sumRef)}`);
     upd('bt-wd-summary',  `סה"כ: ₪${fmt(sumWdIls)} | ${fmt(sumWdChips)} צ'`);
     upd('bt-exp-summary', `סה"כ: ₪${fmt(sumExp)}`);
     setText('bt-exp-total', '₪' + fmt(sumExp));
 
     // Dashboard card
-    setText('dash-rb-sum',  `₪${fmt(sumRb / 10)}`);
-    setText('dash-tn-sum',  `₪${fmt(sumTn / 10)}`);
-    setText('dash-bn-sum',  `₪${fmt(sumBn / 10)}`);
-    setText('dash-ref-sum', `₪${fmt(sumRef / 10)}`);
+    setText('dash-rb-sum',  `₪${fmt(sumRb)}`);
+    setText('dash-tn-sum',  `₪${fmt(sumTn)}`);
+    setText('dash-bn-sum',  `₪${fmt(sumBn)}`);
+    setText('dash-ref-sum', `₪${fmt(sumRef)}`);
     setText('dash-wd-sum',  `₪${fmt(sumWdIls)}`);
     setText('dash-exp-sum', `₪${fmt(sumExp)}`);
 
     // Dashboard expenses card
-    setText('val-expenses-ils', fmt(totalChips / 10));
+    setText('val-expenses-ils', fmt(totalChips));
   } catch {}
 }
 
@@ -1393,7 +1393,7 @@ function renderHistoryTable(data) {
   tbody.innerHTML = data.map(r => {
     const profitColor    = n(r.profit_total) >= 0 ? 'positive-color' : 'negative-color';
     const perPersonColor = (n(r.profit_total) / 2) >= 0 ? 'positive-color' : 'negative-color';
-    const expensesIls    = n(r.total_expenses_chips) / 10;
+    const expensesIls    = n(r.total_expenses_chips);
     return `
     <tr>
       <td>${r.period_end || '—'}</td>
@@ -2072,21 +2072,21 @@ async function closePeriod(periodStart) {
     const detailRakeback = (rb || []).map(r => ({
       player: playerLabel(r.players),
       rakeback_chips: n(r.rakeback_amount),
-      rakeback_ils:   n(r.rakeback_amount) / 10,
+      rakeback_ils:   n(r.rakeback_amount),
       date: r.created_at?.slice(0,10)
     }));
 
     const detailTournaments = (tn || []).map(r => ({
       player:      playerLabel(r.players),
       prize_chips: n(r.prize_chips),
-      prize_ils:   n(r.prize_chips) / 10,
+      prize_ils:   n(r.prize_chips),
       date: r.created_at?.slice(0,10)
     }));
 
     const detailBonuses = (bn || []).map(r => ({
       player:      playerLabel(r.players),
       chips:       n(r.chips_amount),
-      ils:         n(r.chips_amount) / 10,
+      ils:         n(r.chips_amount),
       note:        r.note || '',
       date: r.created_at?.slice(0,10)
     }));
@@ -2125,7 +2125,7 @@ async function closePeriod(periodStart) {
     const cp     = currentPeriod;
     const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash) + n(cp.bank_leumi);
     const total       = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-    const chipsIls    = n(cp.counter) / 10;
+    const chipsIls    = n(cp.counter);
     const profitTotal = total - chipsIls;
     const profitHalf  = profitTotal / 2;
 
@@ -2184,7 +2184,7 @@ async function closePeriod(periodStart) {
         `💰 רווח כולל: ₪${fmt(profitTotal)}\n` +
         `👤 רווח לאחד: ₪${fmt(profitHalf)}\n` +
         `💸 סה"כ משיכות: ₪${fmt(totalWd)}\n` +
-        `📊 סה"כ הוצאות: ${fmt(totalExpenses)} צ' (₪${fmt(totalExpenses / 10)})\n` +
+        `📊 סה"כ הוצאות טבלה: ₪${fmt(totalExpenses)}\n` +
         `🧾 הוצאות כלליות: ₪${fmt(totalGeneralExpenses)}\n` +
         `━━━━━━━━━━━━━━\n` +
         `נסגר ע"י: ${getDisplayName()}`
@@ -2259,7 +2259,7 @@ function loadSettlementPage() {
   // Profit per partner — total in coffers minus chips value
   const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + paybox + n(cp.cashcash) + bankLeumi;
   const total      = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-  const chipsIls   = n(cp.counter) / 10;
+  const chipsIls   = n(cp.counter);
   const profitEach = (total - chipsIls) / 2;
 
   setText('st-profit-each', '₪' + fmt(profitEach));
@@ -2588,7 +2588,7 @@ function exportHistoryToExcel() {
     'תאריך סגירה': r.period_end || '',
     'סוג רשומה': r.entry_type === 'manual_import' ? 'ייבוא ידני' : 'רגיל',
     "הוצאות טבלה (צ'יפים)": n(r.total_expenses_chips),
-    'הוצאות טבלה (₪)': n(r.total_expenses_chips) / 10,
+    'הוצאות טבלה (₪)': n(r.total_expenses_chips),
     'הוצאות כלליות (₪)': n(r.total_general_expenses_ils),
     'משיכות (₪)': n(r.total_withdrawals_ils),
     'רווח כללי (₪)': n(r.profit_total),
