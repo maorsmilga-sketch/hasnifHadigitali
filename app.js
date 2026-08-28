@@ -695,6 +695,14 @@ function rctUpdateRowData(rowIdx, field, value, payIdx) {
   else if (field === 'payment') {
     while (person.payments.length <= payIdx) person.payments.push('');
     person.payments[payIdx] = value; // date string (YYYY-MM-DD) or ''
+    // when a date is cleared, also clear paid status
+    if (!value) {
+      if (!person.paid) person.paid = [];
+      person.paid[payIdx] = false;
+    }
+  } else if (field === 'paid') {
+    if (!person.paid) person.paid = [];
+    person.paid[payIdx] = value;
   }
   rctScheduleSave();
   rctRenderProgress(rowIdx);
@@ -768,41 +776,66 @@ function rctRenderBody() {
     // Payment beats
     for (let i = 0; i < rctState.paymentCols; i++) {
       const td = document.createElement('td');
-      const val = person.payments[i];
+      const val  = person.payments[i];
+      const isPaid = !!(person.paid && person.paid[i]);
       const beatIdx = i;
 
-      // Compact cell that shows a short date and opens a native date picker on tap
+      // Compact cell: shows date in red (pending) or green+✓ (paid) on click
       const wrap = document.createElement('div');
-      wrap.className = 'rct-beat' + (val ? ' filled' : '');
+      const stateClass = val ? (isPaid ? ' rct-beat-paid' : ' rct-beat-pending') : '';
+      wrap.className = 'rct-beat' + (val ? ' filled' : '') + stateClass;
+
+      // ✓ badge (top-left corner, visible only when paid)
+      const badge = document.createElement('span');
+      badge.className = 'rct-beat-check';
+      badge.textContent = '✓';
+
       const label = document.createElement('span');
       label.className = 'rct-beat-label';
       label.textContent = val ? rctFmtDateShort(val) : '＋';
+
       const dInput = document.createElement('input');
       dInput.type = 'date';
       dInput.className = 'rct-beat-input';
       if (val) dInput.value = val;
 
-      wrap.addEventListener('click', () => {
-        try { dInput.showPicker(); } catch (err) { dInput.focus(); }
-      });
-      dInput.addEventListener('input', e => {
-        rctUpdateRowData(rowIdx, 'payment', e.target.value, beatIdx);
-        label.textContent = e.target.value ? rctFmtDateShort(e.target.value) : '＋';
-        wrap.classList.toggle('filled', !!e.target.value);
+      // Click on a filled beat: toggle paid/pending; on an empty beat: open date picker
+      wrap.addEventListener('click', e => {
+        if (dInput.contains(e.target)) return;
+        if (val || dInput.value) {
+          // toggle paid status
+          const nowPaid = !rctState.people[rowIdx].paid?.[beatIdx];
+          rctUpdateRowData(rowIdx, 'paid', nowPaid, beatIdx);
+          wrap.classList.toggle('rct-beat-pending', !nowPaid);
+          wrap.classList.toggle('rct-beat-paid',    nowPaid);
+        } else {
+          try { dInput.showPicker(); } catch (err) { dInput.focus(); }
+        }
       });
 
+      dInput.addEventListener('input', e => {
+        const newVal = e.target.value;
+        rctUpdateRowData(rowIdx, 'payment', newVal, beatIdx);
+        label.textContent = newVal ? rctFmtDateShort(newVal) : '＋';
+        wrap.classList.toggle('filled', !!newVal);
+        // new date defaults to pending (red)
+        wrap.classList.toggle('rct-beat-pending', !!newVal);
+        wrap.classList.toggle('rct-beat-paid', false);
+      });
+
+      wrap.appendChild(badge);
       wrap.appendChild(label);
       wrap.appendChild(dInput);
       td.appendChild(wrap);
       tr.appendChild(td);
     }
 
-    // Progress
+    // Progress (hidden — column removed from view)
     const tdProgress = document.createElement('td');
-    tdProgress.className = 'rct-progress-cell';
+    tdProgress.style.display = 'none';
     tdProgress.innerHTML =
-      '<div class="rct-progress-track"><div class="rct-progress-fill" data-rct-track="' + rowIdx + '" style="width:0%"></div></div>' +
-      '<div class="rct-progress-label" data-rct-label="' + rowIdx + '"></div>';
+      '<div class="rct-progress-fill" data-rct-track="' + rowIdx + '" style="width:0%"></div>' +
+      '<div data-rct-label="' + rowIdx + '"></div>';
     tr.appendChild(tdProgress);
 
     // Note (least-scanned — placed near the end)
@@ -844,7 +877,7 @@ function rctRenderAll() {
 }
 
 function rctAddRow() {
-  rctState.people.push({ note: '', name: '', percent: '', payments: [] });
+  rctState.people.push({ note: '', name: '', percent: '', payments: [], paid: [] });
   rctScheduleSave();
   rctRenderAll();
   const inputs = document.querySelectorAll('#rct-tbody tr:last-child input');
