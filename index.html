@@ -218,15 +218,19 @@
           <div class="funds-grid">
             <div class="fund-tile">
               <div class="fund-tile-label">
-                <img src="PayBox.png" alt="PayBox" class="label-logo"> PayBox
+                <img src="PayBox.png" alt="PayBox" class="label-logo"> PayBox מאור
               </div>
-              <input type="number" id="paybox" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+              <div class="paybox-subtitle" id="paybox-maor-subtitle" contenteditable="true" spellcheck="false"></div>
+              <input type="number" id="paybox_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
               <div class="fund-tile-currency">₪</div>
-              <div class="paybox-owner-toggle">
-                <span class="paybox-owner-label">אחריות:</span>
-                <button class="paybox-owner-btn active" id="paybox-owner-ido" onclick="setPayboxOwner('ido')">עידו</button>
-                <button class="paybox-owner-btn" id="paybox-owner-maor" onclick="setPayboxOwner('maor')">מאור</button>
+            </div>
+            <div class="fund-tile">
+              <div class="fund-tile-label">
+                <img src="PayBox.png" alt="PayBox" class="label-logo"> PayBox עידו
               </div>
+              <div class="paybox-subtitle" id="paybox-ido-subtitle" contenteditable="true" spellcheck="false"></div>
+              <input type="number" id="paybox_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+              <div class="fund-tile-currency">₪</div>
             </div>
             <div class="fund-tile">
               <div class="fund-tile-label">💰 CashCash</div>
@@ -791,8 +795,8 @@
               <span>Bit דורין</span>
               <span id="st-bit-dorin">₪0</span>
             </div>
-            <div class="settlement-team-row paybox-row" id="st-paybox-ido-row" style="display:none">
-              <span>PayBox (אחריות עידו)</span>
+            <div class="settlement-team-row paybox-row" id="st-paybox-ido-row">
+              <span>PayBox עידו</span>
               <span id="st-paybox-ido-val">₪0</span>
             </div>
             <div class="settlement-team-total">
@@ -811,8 +815,8 @@
               <span>Bit רוית</span>
               <span id="st-bit-ravit">₪0</span>
             </div>
-            <div class="settlement-team-row paybox-row" id="st-paybox-maor-row" style="display:none">
-              <span>PayBox (אחריות מאור)</span>
+            <div class="settlement-team-row paybox-row" id="st-paybox-maor-row">
+              <span>PayBox מאור</span>
               <span id="st-paybox-maor-val">₪0</span>
             </div>
             <div class="settlement-team-total">

@@ -1578,38 +1578,20 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   border-color: var(--negative);
 }
 
-/* ===== PAYBOX OWNER TOGGLE ===== */
-.paybox-owner-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-.paybox-owner-label {
+/* ===== PAYBOX SUBTITLE (editable label under each PayBox tile) ===== */
+.paybox-subtitle {
   font-size: 11px;
   color: var(--text-muted);
-  font-weight: 600;
-  letter-spacing: 0.2px;
+  margin: 2px 0 6px;
+  outline: none;
+  cursor: text;
+  min-width: 40px;
+  border-radius: 3px;
+  padding: 1px 2px;
 }
-
-.paybox-owner-btn {
-  font-size: 11px;
-  font-family: var(--font);
-  font-weight: 700;
-  padding: 4px 11px;
-  border-radius: 20px;
-  border: 1px solid var(--border-light);
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.paybox-owner-btn.active {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
+.paybox-subtitle:focus {
+  color: var(--text-primary);
+  border-bottom: 1px dashed var(--accent);
 }
 
 /* ===== PAYBOX USE TOGGLE (settlement page) ===== */

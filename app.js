@@ -154,7 +154,7 @@ async function mountApp() {
     showNotif('שגיאה בטעינת הנתונים: ' + e.message, 'error');
   }
 
-  initPayboxOwnerUI();
+  initPayboxSubtitles();
   navigate('dashboard');
 }
 
@@ -171,11 +171,11 @@ async function loadInitialData() {
     // First-time setup: insert the single control row
     const created = await dbPost('current_period', {
       id: 1, bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
-      paybox: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0
+      paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0
     });
     currentPeriod = (created && created[0]) ? created[0] : {
       id: 1, bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
-      paybox: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0
+      paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0
     };
   }
 
@@ -234,7 +234,7 @@ async function loadDashboard() {
 
   const cp = currentPeriod || {};
 
-  const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash) + n(cp.bank_leumi);
+  const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash) + n(cp.bank_leumi);
   const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
   const chipsIls = chipsToIls(cp.counter);
   const profit   = total - chipsIls;    // רווח כללי = סה"כ בקופה פחות צ'יפים בכסף
@@ -271,22 +271,24 @@ async function loadDashboard() {
 async function loadFunds() {
   const cp = currentPeriod || {};
 
-  setVal('bit_maor',      cp.bit_maor  || '');
-  setVal('bit_ido',       cp.bit_ido   || '');
-  setVal('bit_ravit',     cp.bit_ravit || '');
-  setVal('bit_dorin',     cp.bit_dorin || '');
-  setVal('paybox',        cp.paybox    || '');
-  setVal('cashcash',      cp.cashcash  || '');
-  setVal('bank_leumi',    cp.bank_leumi || '');
+  setVal('bit_maor',      cp.bit_maor    || '');
+  setVal('bit_ido',       cp.bit_ido     || '');
+  setVal('bit_ravit',     cp.bit_ravit   || '');
+  setVal('bit_dorin',     cp.bit_dorin   || '');
+  setVal('paybox_maor',   cp.paybox_maor || '');
+  setVal('paybox_ido',    cp.paybox_ido  || '');
+  setVal('cashcash',      cp.cashcash    || '');
+  setVal('bank_leumi',    cp.bank_leumi  || '');
   setVal('funds-debt_ido',  cp.debt_ido  || '');
   setVal('funds-debt_maor', cp.debt_maor || '');
 
+  initPayboxSubtitles();
   updateFundsSummary();
 }
 
 function updateFundsSummary() {
   const g = id => parseFloat(document.getElementById(id)?.value) || 0;
-  const liquid = g('bit_maor') + g('bit_ido') + g('bit_ravit') + g('bit_dorin') + g('paybox') + g('cashcash') + g('bank_leumi');
+  const liquid = g('bit_maor') + g('bit_ido') + g('bit_ravit') + g('bit_dorin') + g('paybox_maor') + g('paybox_ido') + g('cashcash') + g('bank_leumi');
   const total  = liquid + g('funds-debt_ido') + g('funds-debt_maor') + otherPlayersDebtTotal();
 
   setText('funds-liquid', '₪' + fmt(liquid));
@@ -297,10 +299,10 @@ async function saveFunds() {
   try {
     const g = id => parseFloat(document.getElementById(id)?.value) || 0;
     const data = {
-      bit_maor: g('bit_maor'),  bit_ido: g('bit_ido'),
-      bit_ravit: g('bit_ravit'), bit_dorin: g('bit_dorin'),
-      paybox: g('paybox'),       cashcash: g('cashcash'),
-      bank_leumi: g('bank_leumi'),
+      bit_maor: g('bit_maor'),    bit_ido: g('bit_ido'),
+      bit_ravit: g('bit_ravit'),  bit_dorin: g('bit_dorin'),
+      paybox_maor: g('paybox_maor'), paybox_ido: g('paybox_ido'),
+      cashcash: g('cashcash'),    bank_leumi: g('bank_leumi'),
       updated_at: now()
     };
 
@@ -2167,7 +2169,7 @@ async function closePeriod(periodStart) {
     const totalGeneralExpenses = sumField(exp, 'amount_ils');
 
     const cp     = currentPeriod;
-    const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox) + n(cp.cashcash) + n(cp.bank_leumi);
+    const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash) + n(cp.bank_leumi);
     const total       = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
     const chipsIls    = chipsToIls(cp.counter);
     const profitTotal = total - chipsIls;
@@ -2199,7 +2201,7 @@ async function closePeriod(periodStart) {
     // 3. Reset current_period — debts are intentionally kept
     const resetData = {
       bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
-      paybox: 0, cashcash: 0, bank_leumi: 0,
+      paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0,
       counter: 0, updated_at: now()
     };
     await dbPatch('current_period', '?id=eq.1', resetData);
@@ -2249,24 +2251,28 @@ function toggleSidebar() {} // kept for safety, no longer used
 function closeSidebar()  {} // kept for safety, no longer used
 
 // ============================================================
-// PAYBOX OWNER — localStorage
+// PAYBOX SUBTITLES — localStorage (editable labels per paybox)
 // ============================================================
-function getPayboxOwner() {
-  return localStorage.getItem('payboxOwner') || 'ido';
+const PAYBOX_SUBTITLE_DEFAULTS = { maor: 'הסניף הדיגיטלי', ido: 'הסניף הדיגיטלי 2' };
+
+function getPayboxSubtitle(who) {
+  return localStorage.getItem('payboxSubtitle_' + who) || PAYBOX_SUBTITLE_DEFAULTS[who];
 }
 
-function setPayboxOwner(who) {
-  localStorage.setItem('payboxOwner', who);
-  document.getElementById('paybox-owner-ido').classList.toggle('active',  who === 'ido');
-  document.getElementById('paybox-owner-maor').classList.toggle('active', who === 'maor');
+function savePayboxSubtitle(who, text) {
+  const val = text.trim();
+  if (val) localStorage.setItem('payboxSubtitle_' + who, val);
+  else localStorage.removeItem('payboxSubtitle_' + who);
 }
 
-function initPayboxOwnerUI() {
-  const owner = getPayboxOwner();
-  const idoBtn  = document.getElementById('paybox-owner-ido');
-  const maorBtn = document.getElementById('paybox-owner-maor');
-  if (idoBtn)  idoBtn.classList.toggle('active',  owner === 'ido');
-  if (maorBtn) maorBtn.classList.toggle('active', owner === 'maor');
+function initPayboxSubtitles() {
+  ['maor', 'ido'].forEach(who => {
+    const el = document.getElementById('paybox-' + who + '-subtitle');
+    if (!el) return;
+    el.textContent = getPayboxSubtitle(who);
+    el.addEventListener('blur', () => savePayboxSubtitle(who, el.textContent));
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+  });
 }
 
 // ============================================================
@@ -2278,31 +2284,31 @@ function loadSettlementPage() {
   const cp = currentPeriod || {};
 
   // Populate team tiles
-  const bitIdo   = n(cp.bit_ido);
-  const bitDorin = n(cp.bit_dorin);
-  const bitMaor  = n(cp.bit_maor);
-  const bitRavit = n(cp.bit_ravit);
-  const paybox   = n(cp.paybox);
+  const bitIdo     = n(cp.bit_ido);
+  const bitDorin   = n(cp.bit_dorin);
+  const bitMaor    = n(cp.bit_maor);
+  const bitRavit   = n(cp.bit_ravit);
+  const payboxMaor = n(cp.paybox_maor);
+  const payboxIdo  = n(cp.paybox_ido);
 
   setText('st-bit-ido',   '₪' + fmt(bitIdo));
   setText('st-bit-dorin', '₪' + fmt(bitDorin));
   setText('st-bit-maor',  '₪' + fmt(bitMaor));
   setText('st-bit-ravit', '₪' + fmt(bitRavit));
 
-  // PayBox rows visibility
-  const owner = getPayboxOwner();
+  // PayBox rows — fixed per team, visibility controlled by settlementUsePaybox toggle
   const rowIdo  = document.getElementById('st-paybox-ido-row');
   const rowMaor = document.getElementById('st-paybox-maor-row');
-  if (rowIdo)  { rowIdo.style.display  = (owner === 'ido'  && settlementUsePaybox) ? 'flex' : 'none'; }
-  if (rowMaor) { rowMaor.style.display = (owner === 'maor' && settlementUsePaybox) ? 'flex' : 'none'; }
-  setText('st-paybox-ido-val',  '₪' + fmt(paybox));
-  setText('st-paybox-maor-val', '₪' + fmt(paybox));
+  if (rowIdo)  rowIdo.style.display  = settlementUsePaybox ? 'flex' : 'none';
+  if (rowMaor) rowMaor.style.display = settlementUsePaybox ? 'flex' : 'none';
+  setText('st-paybox-ido-val',  '₪' + fmt(payboxIdo));
+  setText('st-paybox-maor-val', '₪' + fmt(payboxMaor));
 
   const bankLeumi = n(cp.bank_leumi);
   setText('st-bank-leumi', '₪' + fmt(bankLeumi));
 
   // Profit per partner — total in coffers minus chips value
-  const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + paybox + n(cp.cashcash) + bankLeumi;
+  const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + payboxMaor + payboxIdo + n(cp.cashcash) + bankLeumi;
   const total      = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
   const chipsIls   = chipsToIls(cp.counter);
   const profitEach = (total - chipsIls) / 2;
@@ -2310,10 +2316,10 @@ function loadSettlementPage() {
   setText('st-profit-each', '₪' + fmt(profitEach));
 
   // Team totals — Bit + PayBox only (Leumi excluded)
-  const ipoExtra  = (settlementUsePaybox && owner === 'ido')  ? paybox : 0;
-  const maorExtra = (settlementUsePaybox && owner === 'maor') ? paybox : 0;
-  const teamIdo   = bitIdo + bitDorin + ipoExtra;
-  const teamMaor  = bitMaor + bitRavit + maorExtra;
+  const pbIdoExtra  = settlementUsePaybox ? payboxIdo  : 0;
+  const pbMaorExtra = settlementUsePaybox ? payboxMaor : 0;
+  const teamIdo   = bitIdo + bitDorin + pbIdoExtra;
+  const teamMaor  = bitMaor + bitRavit + pbMaorExtra;
 
   setText('st-total-ido',  '₪' + fmt(teamIdo));
   setText('st-total-maor', '₪' + fmt(teamMaor));
