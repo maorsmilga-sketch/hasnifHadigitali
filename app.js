@@ -581,7 +581,7 @@ async function addRakeback() {
     await dbPost('blue_table_rakeback', {
       player_id: playerId, rake_taken: rake,
       rakeback_percent: pct, rakeback_amount: amount,
-      created_by: getDisplayName()
+      created_by: getDisplayName(), created_at: now()
     });
     document.getElementById('rb-rake').value = '';
     setText('rb-calc', '0 צ\'יפים');
@@ -992,7 +992,7 @@ async function addTournament() {
   try {
     await dbPost('blue_table_tournaments', {
       player_id: playerId, tournament_type: type,
-      prize_chips: prize, created_by: getDisplayName()
+      prize_chips: prize, created_by: getDisplayName(), created_at: now()
     });
     document.getElementById('tn-prize').value = '';
     clearPlayerAC('tn-player');
@@ -1039,7 +1039,8 @@ async function addBonus() {
 
   try {
     await dbPost('blue_table_bonuses', {
-      player_id: playerId, chips_amount: chips, note: note || null, created_by: getDisplayName()
+      player_id: playerId, chips_amount: chips, note: note || null,
+      created_by: getDisplayName(), created_at: now()
     });
     document.getElementById('bn-chips').value = '';
     document.getElementById('bn-note').value = '';
@@ -1095,7 +1096,7 @@ async function addReferral() {
   try {
     await dbPost('blue_table_referrals', {
       referring_player_id: fromId, referred_player_id: toId,
-      chips_amount: chips, created_by: getDisplayName()
+      chips_amount: chips, created_by: getDisplayName(), created_at: now()
     });
     document.getElementById('ref-chips').value = '';
     clearPlayerAC('ref-from');
@@ -1147,7 +1148,7 @@ async function addWithdrawal() {
   try {
     await dbPost('withdrawals', {
       player_id: playerId, withdrawal_date: date,
-      amount_ils: ils, chips_amount: chips, created_by: getDisplayName()
+      amount_ils: ils, chips_amount: chips, created_by: getDisplayName(), created_at: now()
     });
     document.getElementById('wd-chips').value = '';
     clearPlayerAC('wd-player');
@@ -1211,7 +1212,7 @@ async function addExpense() {
     await dbPost('blue_table_expenses', {
       description: desc, amount_ils: amount, category,
       other_description: category === 'other' ? otherDesc : null,
-      created_by: getDisplayName()
+      created_by: getDisplayName(), created_at: now()
     });
     document.getElementById('exp-desc').value = '';
     document.getElementById('exp-amount').value = '';
@@ -1373,7 +1374,7 @@ async function _updateDebt(person, newVal) {
 
     if (delta !== 0) {
       try {
-        await dbPost('debt_log', { person, amount: delta, created_by: getDisplayName() });
+        await dbPost('debt_log', { person, amount: delta, created_by: getDisplayName(), created_at: now() });
       } catch {}
     }
   } catch (e) {
@@ -2072,7 +2073,8 @@ async function addPlayer() {
 
   try {
     const result = await dbPost('players', {
-      name, nickname, rakeback_percent: rb, rakeback_until: rbUntil, preferred_withdrawal: withdrawal
+      name, nickname, rakeback_percent: rb, rakeback_until: rbUntil,
+      preferred_withdrawal: withdrawal, created_at: now()
     });
     if (result && result[0]) players.push(result[0]);
 
@@ -2140,14 +2142,14 @@ async function closePeriod(periodStart) {
       player: playerLabel(r.players),
       rakeback_chips: n(r.rakeback_amount),
       rakeback_ils:   chipsToIls(r.rakeback_amount),
-      date: r.created_at?.slice(0,10)
+      date: israelDateFromTimestamp(r.created_at)
     }));
 
     const detailTournaments = (tn || []).map(r => ({
       player:      playerLabel(r.players),
       prize_chips: n(r.prize_chips),
       prize_ils:   chipsToIls(r.prize_chips),
-      date: r.created_at?.slice(0,10)
+      date: israelDateFromTimestamp(r.created_at)
     }));
 
     const detailBonuses = (bn || []).map(r => ({
@@ -2155,7 +2157,7 @@ async function closePeriod(periodStart) {
       chips:       n(r.chips_amount),
       ils:         chipsToIls(r.chips_amount),
       note:        r.note || '',
-      date: r.created_at?.slice(0,10)
+      date: israelDateFromTimestamp(r.created_at)
     }));
 
     const detailReferrals = (ref || []).map(r => {
@@ -2165,7 +2167,7 @@ async function closePeriod(periodStart) {
         referring: playerLabel(from),
         referred:  playerLabel(to),
         chips:     n(r.chips_amount),
-        date: r.created_at?.slice(0,10)
+        date: israelDateFromTimestamp(r.created_at)
       };
     });
 
@@ -2173,7 +2175,7 @@ async function closePeriod(periodStart) {
       player: playerLabel(r.players),
       amount_ils: n(r.amount_ils),
       method: r.method || '',
-      date: r.created_at?.slice(0,10)
+      date: israelDateFromTimestamp(r.created_at)
     }));
 
     const detailExpenses = (exp || []).map(r => ({
@@ -2181,7 +2183,7 @@ async function closePeriod(periodStart) {
       category: r.category,
       other_description: r.other_description || '',
       amount_ils: n(r.amount_ils),
-      date: r.created_at?.slice(0,10)
+      date: israelDateFromTimestamp(r.created_at)
     }));
 
     const totalExpenses = sumField(rb,'rakeback_amount') + sumField(tn,'prize_chips') +
@@ -2420,12 +2422,39 @@ function setPayboxUsage(useIt) {
 // UTILITIES
 // ============================================================
 function n(v)   { return parseFloat(v) || 0; }
-function now()  { return new Date().toISOString(); }
-function today(){ return new Date().toISOString().split('T')[0]; }
+
+const ISRAEL_TZ = 'Asia/Jerusalem';
+
+function israelOffsetString(date = new Date()) {
+  const tz = new Intl.DateTimeFormat('en-US', {
+    timeZone: ISRAEL_TZ,
+    timeZoneName: 'longOffset'
+  }).formatToParts(date).find(p => p.type === 'timeZoneName')?.value || 'GMT+2';
+  if (tz === 'GMT') return '+00:00';
+  const m = tz.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+  if (!m) return '+02:00';
+  return `${m[1]}${String(m[2]).padStart(2, '0')}:${String(m[3] || '0').padStart(2, '0')}`;
+}
+
+function israelLocalISO(date = new Date()) {
+  return date.toLocaleString('sv-SE', { timeZone: ISRAEL_TZ }).replace(' ', 'T') + israelOffsetString(date);
+}
+
+function israelDateStr(date = new Date()) {
+  return date.toLocaleDateString('en-CA', { timeZone: ISRAEL_TZ });
+}
+
+function israelDateFromTimestamp(str) {
+  if (!str) return '';
+  return israelDateStr(new Date(str));
+}
+
+function now()  { return israelLocalISO(); }
+function today(){ return israelDateStr(); }
 function yesterday() {
   const d = new Date();
   d.setDate(d.getDate() - 1);
-  return d.toISOString().split('T')[0];
+  return israelDateStr(d);
 }
 
 function fmt(num) {
@@ -2436,8 +2465,10 @@ function fmt(num) {
 function fmtDate(str) {
   if (!str) return '—';
   try {
-    return new Date(str).toLocaleDateString('he-IL',
-      { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return new Date(str).toLocaleDateString('he-IL', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      timeZone: ISRAEL_TZ
+    });
   } catch { return str; }
 }
 
