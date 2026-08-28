@@ -2106,7 +2106,7 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 
 /* Screen wrapper for home/blue grids */
 .app-grid-screen {
-  padding: 20px 16px 32px;
+  padding: 80px 16px 32px; /* 60px fixed topbar + 20px breathing room */
 }
 
 /* 3-column icon grid */
