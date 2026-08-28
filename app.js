@@ -2255,6 +2255,12 @@ async function closePeriod(periodStart) {
         `💸 סה"כ משיכות: ₪${fmt(totalWd)}\n` +
         `📊 סה"כ הוצאות: ${fmt(totalExpenses)} צ' (₪${fmt(chipsToIls(totalExpenses))})\n` +
         `🧾 הוצאות כלליות: ₪${fmt(totalGeneralExpenses)}\n` +
+        (n(cp.rake_app) > 0 ? (() => {
+          const rakeWa = n(cp.rake_app);
+          const gapWa  = profitTotal - rakeWa;
+          const pctWa  = (Math.abs(gapWa) / rakeWa * 100).toFixed(1);
+          return `🎯 Total Rake (App): ₪${fmt(rakeWa)} | פער: ${gapWa >= 0 ? '+' : ''}₪${fmt(gapWa)} (${pctWa}%)\n`;
+        })() : '') +
         `━━━━━━━━━━━━━━\n` +
         `נסגר ע"י: ${getDisplayName()}`
       );
