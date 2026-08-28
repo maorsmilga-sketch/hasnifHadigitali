@@ -171,11 +171,11 @@ async function loadInitialData() {
     // First-time setup: insert the single control row
     const created = await dbPost('current_period', {
       id: 1, bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
-      paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0
+      paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0, rake_app: 0
     });
     currentPeriod = (created && created[0]) ? created[0] : {
       id: 1, bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
-      paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0
+      paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0, rake_app: 0
     };
   }
 
@@ -251,6 +251,25 @@ async function loadDashboard() {
   setText('val-profit-ido-net',  '₪' + fmt(idoNet));
   setText('val-profit-maor-net', '₪' + fmt(maorNet));
 
+  // Rake control card
+  const rakeApp     = n(cp.rake_app);
+  const controlCard = document.getElementById('rake-control-card');
+  if (rakeApp > 0 && controlCard) {
+    controlCard.style.display = '';
+    const gap = profit - rakeApp;
+    const pct = Math.abs(gap) / rakeApp * 100;
+    const gapColor = pct > 10 ? 'var(--negative)' : 'var(--positive)';
+    setText('ctrl-rake',   '₪' + fmt(rakeApp));
+    setText('ctrl-profit', '₪' + fmt(profit));
+    const gapEl = document.getElementById('ctrl-gap');
+    if (gapEl) {
+      gapEl.textContent = (gap >= 0 ? '+' : '') + '₪' + fmt(gap) + ' (' + pct.toFixed(1) + '%)';
+      gapEl.style.color = gapColor;
+    }
+  } else if (controlCard) {
+    controlCard.style.display = 'none';
+  }
+
   // Dynamic profit card colour
   const profitEl = document.getElementById('sv-profit');
   if (profitEl) {
@@ -281,6 +300,7 @@ async function loadFunds() {
   setVal('bank_leumi',    cp.bank_leumi  || '');
   setVal('funds-debt_ido',  cp.debt_ido  || '');
   setVal('funds-debt_maor', cp.debt_maor || '');
+  setVal('rake_app',        cp.rake_app  || '');
 
   initPayboxSubtitles();
   updateFundsSummary();
@@ -303,6 +323,7 @@ async function saveFunds() {
       bit_ravit: g('bit_ravit'),  bit_dorin: g('bit_dorin'),
       paybox_maor: g('paybox_maor'), paybox_ido: g('paybox_ido'),
       cashcash: g('cashcash'),    bank_leumi: g('bank_leumi'),
+      rake_app: g('rake_app'),
       updated_at: now()
     };
 
@@ -2195,14 +2216,15 @@ async function closePeriod(periodStart) {
       detail_referrals:      detailReferrals,
       detail_withdrawals:    detailWithdrawals,
       detail_expenses:       detailExpenses,
-      chips_per_shekel:      CHIPS_PER_SHEKEL
+      chips_per_shekel:      CHIPS_PER_SHEKEL,
+      rake_app:              n(cp.rake_app)
     });
 
     // 3. Reset current_period — debts are intentionally kept
     const resetData = {
       bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
       paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0,
-      counter: 0, updated_at: now()
+      counter: 0, rake_app: 0, updated_at: now()
     };
     await dbPatch('current_period', '?id=eq.1', resetData);
     Object.assign(currentPeriod, resetData);

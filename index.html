@@ -138,6 +138,24 @@
           </div>
         </div>
 
+        <div class="card" id="rake-control-card" style="display:none">
+          <h3 class="section-title" style="margin-top:0">🎯 בקרת גנייה</h3>
+          <div class="dash-bt-grid">
+            <div class="dash-bt-item">
+              <span class="dash-bt-label">Total Rake (App)</span>
+              <span class="dash-bt-val" id="ctrl-rake">—</span>
+            </div>
+            <div class="dash-bt-item">
+              <span class="dash-bt-label">רווח כללי</span>
+              <span class="dash-bt-val" id="ctrl-profit">—</span>
+            </div>
+            <div class="dash-bt-item">
+              <span class="dash-bt-label">פער</span>
+              <span class="dash-bt-val" id="ctrl-gap">—</span>
+            </div>
+          </div>
+        </div>
+
         <div class="card">
           <h3 class="section-title" style="margin-top:0">📊 סיכום טבלה כחולה (תקופה נוכחית)</h3>
           <div class="dash-bt-grid">
@@ -257,6 +275,17 @@
             <div class="fund-tile fund-tile-readonly">
               <div class="fund-tile-label">חוב מאור</div>
               <input type="number" id="funds-debt_maor" class="readonly-field" readonly>
+              <div class="fund-tile-currency">₪</div>
+            </div>
+          </div>
+
+          <!-- Rake control section -->
+          <div class="funds-section-label" style="margin-top:16px">🎯 בקרה</div>
+          <div class="funds-grid">
+            <div class="fund-tile">
+              <div class="fund-tile-label">Total rake per period (app)</div>
+              <input type="number" id="rake_app" placeholder="0" min="0" step="0.01"
+                     oninput="onFundsInput()" onblur="onFundsBlur()">
               <div class="fund-tile-currency">₪</div>
             </div>
           </div>
