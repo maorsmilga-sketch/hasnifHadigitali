@@ -293,7 +293,7 @@ footer{margin-top:12px;color:var(--muted);font-size:12px;text-align:center}
     <div id="tab-table">
       <div class="owners" id="owners">
         <div class="seg" data-o=""><span>הכל</span><span class="n" id="cn-all">0</span></div>
-        <div class="seg active" data-o="מאור"><span class="dot"></span><span>מאור</span><span class="n" id="cn-maor">0</span></div>
+        <div class="seg" data-o="מאור"><span class="dot"></span><span>מאור</span><span class="n" id="cn-maor">0</span></div>
         <div class="seg" data-o="עידו"><span class="dot"></span><span>עידו</span><span class="n" id="cn-ido">0</span></div>
       </div>
       <div class="status-filters" id="status-filters"><label>סטטוס:</label></div>
@@ -452,9 +452,44 @@ function startApp() {
     document.getElementById('sync-txt').style.color = ok ? '#22c55e' : '#f59e0b';
   });
 
-  // State
-  let fbData = {}, ownerSel = 'מאור', statusSel = 'ללא סטטוס';
+  // ── Filter persistence: URL params → localStorage → hardcoded defaults ──
+  const FILTER_LS_KEY = 'contactsFilter';
+  function readSavedFilters() {
+    // 1. URL params take highest priority (bookmarkable links)
+    const url = new URLSearchParams(location.search);
+    if (url.has('owner') || url.has('status')) {
+      return { owner: url.get('owner') ?? 'מאור', status: url.get('status') ?? 'ללא סטטוס' };
+    }
+    // 2. Fallback to localStorage (per-device preference)
+    try {
+      const saved = JSON.parse(localStorage.getItem(FILTER_LS_KEY) || 'null');
+      if (saved && typeof saved === 'object' && ('owner' in saved || 'status' in saved)) return saved;
+    } catch {}
+    // 3. Hardcoded defaults
+    return { owner: 'מאור', status: 'ללא סטטוס' };
+  }
+  function saveFilterState() {
+    const data = { owner: ownerSel, status: statusSel };
+    try { localStorage.setItem(FILTER_LS_KEY, JSON.stringify(data)); } catch {}
+    // Also sync to URL so users can bookmark their exact view
+    const qs = new URLSearchParams();
+    qs.set('owner', ownerSel);
+    qs.set('status', statusSel);
+    history.replaceState(null, '', '?' + qs.toString());
+  }
+
+  // State — initialised from saved preferences
+  const _initFilters = readSavedFilters();
+  let fbData = {}, ownerSel = _initFilters.owner, statusSel = _initFilters.status;
   let sentLog = {}, dailyPersonSel = 'מאור';
+
+  // Apply initial active class to owner segment
+  function applyOwnerActiveClass() {
+    document.querySelectorAll('.seg').forEach(x =>
+      x.classList.toggle('active', x.getAttribute('data-o') === ownerSel)
+    );
+  }
+  applyOwnerActiveClass();
 
   // Seed contacts (first time)
   contactsRef.once('value').then(snap => {
@@ -532,7 +567,9 @@ function startApp() {
       `<div class="stt-seg ${!statusSel?'active':''}" data-s="">הכל <span class="n">${subset.length}</span></div>` +
       keys.map(k => `<div class="stt-seg ${statusSel===k?'active':''}" data-s="${esc(k)}">${esc(k)} <span class="n">${counts[k]}</span></div>`).join('');
     container.querySelectorAll('.stt-seg').forEach(el => el.addEventListener('click', () => {
-      statusSel = el.dataset.s; render();
+      statusSel = el.dataset.s;
+      saveFilterState();
+      render();
     }));
   }
 
@@ -837,7 +874,9 @@ function startApp() {
     const s = e.target.closest('.seg'); if (!s) return;
     ownerSel = s.getAttribute('data-o');
     document.querySelectorAll('.seg').forEach(x => x.classList.toggle('active', x === s));
-    statusSel = ''; render();
+    statusSel = '';
+    saveFilterState();
+    render();
   });
 
   gf.addEventListener('change', render);

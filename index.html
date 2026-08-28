@@ -16,14 +16,36 @@
 <!-- TOAST NOTIFICATION -->
 <div id="notification"></div>
 
-<!-- ===================== GLOBAL 2-TAB NAV ===================== -->
-<div id="global-tabs">
+<!-- ===================== GLOBAL 2-TAB NAV (hidden — replaced by landing) ===================== -->
+<div id="global-tabs" style="display:none">
   <button class="g-tab g-tab--active" id="tab-contacts" onclick="switchTab('contacts')">📋 אנשי קשר</button>
   <button class="g-tab" id="tab-management" onclick="switchTab('management')">⚙️ ניהול</button>
 </div>
 
-<!-- ===================== CONTACTS SECTION (default landing) ===================== -->
-<div id="contacts-section">
+<!-- ===================== LANDING SCREEN ===================== -->
+<div id="landing-screen" class="app-grid-screen landing-screen">
+  <div class="landing-logo">
+    <img src="logo1.png" alt="לוגו" class="landing-logo-img">
+    <div class="landing-title">הסניף הדיגיטלי</div>
+  </div>
+  <div class="app-grid landing-grid">
+    <button type="button" class="app-icon" onclick="showContactsSection()">
+      <span class="app-icon-img">📋</span>
+      <span class="app-icon-label">אנשי קשר</span>
+    </button>
+    <button type="button" class="app-icon" onclick="switchTab('management')">
+      <span class="app-icon-img">⚙️</span>
+      <span class="app-icon-label">דף ניהול</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===================== CONTACTS SECTION ===================== -->
+<div id="contacts-section" style="display:none">
+  <div class="contacts-topbar">
+    <button class="back-btn" onclick="showLandingScreen()">&#8592; ראשי</button>
+    <span class="contacts-topbar-title">📋 אנשי קשר</span>
+  </div>
   <iframe src="contacts.html" id="contacts-frame" title="אנשי קשר"></iframe>
 </div>
 
@@ -35,71 +57,90 @@
 
     <!-- TOP NAVBAR -->
     <header id="topbar">
+      <button id="back-btn" class="back-btn" hidden>&#8592; חזור</button>
       <div class="topbar-brand">
         <img src="logo1.png" alt="לוגו" class="topbar-logo">
         <span class="topbar-title">הסניף הדיגיטלי</span>
       </div>
-
-      <nav class="topbar-nav">
-        <button class="top-nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
-          <span class="top-nav-icon">📊</span><span>לוח בקרה</span>
-        </button>
-        <button class="top-nav-item" data-page="funds" onclick="navigate('funds')">
-          <span class="top-nav-icon">💰</span><span>כספים בחוץ</span>
-        </button>
-        <button class="top-nav-item" data-page="blue-table" onclick="navigate('blue-table')">
-          <span class="top-nav-icon">📋</span><span>הטבלה הכחולה</span>
-        </button>
-        <button class="top-nav-item" data-page="debts" onclick="navigate('debts')">
-          <span class="top-nav-icon">⚖️</span><span>חובות</span>
-        </button>
-        <button class="top-nav-item" data-page="history" onclick="navigate('history')">
-          <span class="top-nav-icon">📈</span><span>היסטוריה</span>
-        </button>
-        <button class="top-nav-item" data-page="players" onclick="navigate('players')">
-          <span class="top-nav-icon">👥</span><span>שחקנים</span>
-        </button>
-        <button class="top-nav-item" data-page="settlement" onclick="navigate('settlement')">
-          <span class="top-nav-icon">🔄</span><span>התקזזות</span>
-        </button>
-      </nav>
-
       <div class="topbar-user">
         <span class="user-badge" id="user-badge">—</span>
         <button class="btn-logout-top" onclick="doLogout()">🚪</button>
       </div>
     </header>
 
-    <!-- BOTTOM TAB BAR (mobile only) -->
-    <nav id="bottom-tabs">
-      <button class="bottom-tab active" data-page="dashboard" onclick="navigate('dashboard')">
-        <span>📊</span><span>בקרה</span>
-      </button>
-      <button class="bottom-tab" data-page="funds" onclick="navigate('funds')">
-        <span>💰</span><span>כספים</span>
-      </button>
-      <button class="bottom-tab" data-page="blue-table" onclick="navigate('blue-table')">
-        <span>📋</span><span>הטבלה הכחולה</span>
-      </button>
-      <button class="bottom-tab" data-page="debts" onclick="navigate('debts')">
-        <span>⚖️</span><span>חובות</span>
-      </button>
-      <button class="bottom-tab" data-page="history" onclick="navigate('history')">
-        <span>📈</span><span>גרפים</span>
-      </button>
-      <button class="bottom-tab" data-page="players" onclick="navigate('players')">
-        <span>👥</span><span>שחקנים</span>
-      </button>
-      <button class="bottom-tab" data-page="settlement" onclick="navigate('settlement')">
-        <span>🔄</span><span>התקזזות</span>
-      </button>
-    </nav>
+    <!-- HOME GRID -->
+    <div id="home-grid" class="app-grid-screen">
+      <div class="app-grid">
+        <button type="button" class="app-icon" onclick="openPage('dashboard')">
+          <span class="app-icon-img">📊</span>
+          <span class="app-icon-label">בקרה</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openPage('funds')">
+          <span class="app-icon-img">💰</span>
+          <span class="app-icon-label">כספים</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openBlueGrid()">
+          <span class="app-icon-img">📋</span>
+          <span class="app-icon-label">הטבלה הכחולה</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openPage('debts')">
+          <span class="app-icon-img">⚖️</span>
+          <span class="app-icon-label">חובות</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openPage('history')">
+          <span class="app-icon-img">📈</span>
+          <span class="app-icon-label">גרפים</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openPage('players')">
+          <span class="app-icon-img">👥</span>
+          <span class="app-icon-label">שחקנים</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openPage('settlement')">
+          <span class="app-icon-img">🔄</span>
+          <span class="app-icon-label">התקזזות</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- BLUE TABLE SUB-GRID -->
+    <div id="blue-grid" class="app-grid-screen" hidden>
+      <div class="app-grid">
+        <button type="button" class="app-icon" onclick="openBlueTab('counter')">
+          <span class="app-icon-img">🎰</span>
+          <span class="app-icon-label">ספירת צ'יפים</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openBlueTab('rakeback')">
+          <span class="app-icon-img">💸</span>
+          <span class="app-icon-label">החזר גנייה</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openBlueTab('tournaments')">
+          <span class="app-icon-img">🏆</span>
+          <span class="app-icon-label">טורנירים</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openBlueTab('bonuses')">
+          <span class="app-icon-img">🎁</span>
+          <span class="app-icon-label">בונוסים</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openBlueTab('referrals')">
+          <span class="app-icon-img">🤝</span>
+          <span class="app-icon-label">חבר מביא חבר</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openBlueTab('withdrawals-tab')">
+          <span class="app-icon-img">💳</span>
+          <span class="app-icon-label">משיכות</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openBlueTab('expenses')">
+          <span class="app-icon-img">🧾</span>
+          <span class="app-icon-label">הוצאות</span>
+        </button>
+      </div>
+    </div>
 
     <!-- MAIN CONTENT -->
     <main id="main-content">
 
       <!-- ===== PAGE 1: DASHBOARD ===== -->
-      <div id="page-dashboard" class="page active">
+      <div id="page-dashboard" class="page">
         <div class="page-header">
           <h1>לוח בקרה ראשי</h1>
           <p>סיכום נתוני הקופה בזמן אמת</p>
@@ -312,20 +353,10 @@
           <p>כל הסכומים בצ'יפים (1 צ'יף = ₪1)</p>
         </div>
 
-        <div class="tabs-wrapper">
-          <div class="tabs" id="blue-tabs">
-            <button class="tab active" onclick="switchBlueTab('counter',this)">🎰 Counter</button>
-            <button class="tab" onclick="switchBlueTab('rakeback',this)">💸 החזר גנייה</button>
-            <button class="tab" onclick="switchBlueTab('tournaments',this)">🏆 טורנירים</button>
-            <button class="tab" onclick="switchBlueTab('bonuses',this)">🎁 בונוס צ'יפים</button>
-            <button class="tab" onclick="switchBlueTab('referrals',this)">🤝 חבר מביא חבר</button>
-            <button class="tab" onclick="switchBlueTab('withdrawals-tab',this)">💳 משיכות</button>
-            <button class="tab" onclick="switchBlueTab('expenses',this)">🧾 הוצאות</button>
-          </div>
-        </div>
+        <!-- blue-tabs replaced by #blue-grid icon launcher above -->
 
         <!-- Tab: Counter -->
-        <div id="bt-counter" class="tab-panel active">
+        <div id="bt-counter" class="tab-panel">
           <div class="card">
             <div class="section-title" style="margin-top:0">ספירת צ'יפים פיזיים</div>
             <div class="form-group" style="max-width:320px">
@@ -341,18 +372,28 @@
 
         <!-- Tab: Rakeback -->
         <div id="bt-rakeback" class="tab-panel">
-          <div class="tabs-wrapper" style="margin-bottom:16px">
-            <div class="tabs" id="rakeback-subtabs">
-              <button class="tab active" onclick="switchRakebackSubTab('records',this)">📄 רשומות</button>
-              <button class="tab" onclick="switchRakebackSubTab('commitments',this)">📋 טבלת התחייבויות</button>
-            </div>
+          <!-- Rakeback sub-nav: small icon buttons to switch between records / commitments -->
+          <div class="md-tab-bar rb-subnav">
+            <button type="button" class="md-tab active" id="rb-subnav-records"
+                    onclick="switchRakebackSubTab('records'); this.classList.add('active'); document.getElementById('rb-subnav-commitments').classList.remove('active')">
+              📄 רשומות
+            </button>
+            <button type="button" class="md-tab" id="rb-subnav-commitments"
+                    onclick="switchRakebackSubTab('commitments'); this.classList.add('active'); document.getElementById('rb-subnav-records').classList.remove('active')">
+              📋 התחייבויות
+            </button>
           </div>
 
           <!-- Sub-tab: Records (existing) -->
           <div id="rb-sub-records" class="rb-subpanel">
-            <div class="card" style="margin-bottom:20px">
-              <div class="section-title" style="margin-top:0">הוסף רשומת החזר גנייה</div>
-              <div class="form-row">
+            <!-- FAB -->
+            <button class="md-fab" onclick="openSheet('rb-sheet')" title="הוסף רשומה">＋</button>
+
+            <!-- Bottom Sheet -->
+            <div class="md-sheet-overlay" id="rb-sheet" style="display:none">
+              <div class="md-sheet">
+                <div class="md-sheet-handle"></div>
+                <div class="md-sheet-title">הוסף החזר גנייה</div>
                 <div class="form-group">
                   <label>שחקן</label>
                   <div class="player-ac-wrap" id="rb-player-wrap">
@@ -365,23 +406,16 @@
                   <label>כמות גנייה שנלקחה (צ'יפים)</label>
                   <input type="number" id="rb-rake" placeholder="0" min="0" oninput="updateRakebackCalc()">
                 </div>
+                <div class="calc-display">
+                  החזר לשחקן: <strong id="rb-calc">0 צ'יפים</strong>
+                </div>
+                <button class="btn btn-primary" onclick="addRakeback()">הוסף רשומה</button>
+                <button class="md-sheet-close" onclick="closeSheet('rb-sheet')">ביטול</button>
               </div>
-              <div class="calc-display">
-                החזר לשחקן: <strong id="rb-calc">0 צ'יפים</strong>
-              </div>
-              <button class="btn btn-primary" onclick="addRakeback()">➕ הוסף רשומה</button>
             </div>
-            <div class="table-container">
-              <table>
-                <thead>
-                  <tr>
-                    <th>תאריך</th><th>שחקן</th><th>גנייה (צ')</th>
-                    <th>אחוז</th><th>החזר (צ')</th><th>הוזן ע"י</th><th>פעולות</th>
-                  </tr>
-                </thead>
-                <tbody id="rb-table-body"><tr><td colspan="7" class="empty-state">אין רשומות</td></tr></tbody>
-              </table>
-            </div>
+
+            <!-- Card list -->
+            <div class="md-list" id="rb-table-body"><div class="md-list-empty">אין רשומות</div></div>
             <div class="tab-summary" id="bt-rb-summary"></div>
           </div>
 
@@ -416,9 +450,14 @@
 
         <!-- Tab: Tournaments -->
         <div id="bt-tournaments" class="tab-panel">
-          <div class="card" style="margin-bottom:20px">
-            <div class="section-title" style="margin-top:0">הוסף רשומת טורניר</div>
-            <div class="form-row">
+          <!-- FAB -->
+          <button class="md-fab" onclick="openSheet('tn-sheet')" title="הוסף טורניר">＋</button>
+
+          <!-- Bottom Sheet -->
+          <div class="md-sheet-overlay" id="tn-sheet" style="display:none">
+            <div class="md-sheet">
+              <div class="md-sheet-handle"></div>
+              <div class="md-sheet-title">הוסף רשומת טורניר</div>
               <div class="form-group">
                 <label>שחקן זוכה</label>
                 <div class="player-ac-wrap" id="tn-player-wrap">
@@ -438,28 +477,26 @@
                 <label>סכום פרס (צ'יפים)</label>
                 <input type="number" id="tn-prize" placeholder="0" min="0">
               </div>
+              <button class="btn btn-primary" onclick="addTournament()">הוסף רשומה</button>
+              <button class="md-sheet-close" onclick="closeSheet('tn-sheet')">ביטול</button>
             </div>
-            <button class="btn btn-primary" onclick="addTournament()">➕ הוסף רשומה</button>
           </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>תאריך</th><th>שחקן</th><th>סוג</th>
-                  <th>פרס (צ')</th><th>הוזן ע"י</th><th>פעולות</th>
-                </tr>
-              </thead>
-              <tbody id="tn-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
-            </table>
-          </div>
+
+          <!-- Card list -->
+          <div class="md-list" id="tn-table-body"><div class="md-list-empty">אין רשומות</div></div>
           <div class="tab-summary" id="bt-tn-summary"></div>
         </div>
 
         <!-- Tab: Bonuses -->
         <div id="bt-bonuses" class="tab-panel">
-          <div class="card" style="margin-bottom:20px">
-            <div class="section-title" style="margin-top:0">הוסף בונוס צ'יפים</div>
-            <div class="form-row">
+          <!-- FAB -->
+          <button class="md-fab" onclick="openSheet('bn-sheet')" title="הוסף בונוס">＋</button>
+
+          <!-- Bottom Sheet -->
+          <div class="md-sheet-overlay" id="bn-sheet" style="display:none">
+            <div class="md-sheet">
+              <div class="md-sheet-handle"></div>
+              <div class="md-sheet-title">הוסף בונוס צ'יפים</div>
               <div class="form-group">
                 <label>שחקן</label>
                 <div class="player-ac-wrap" id="bn-player-wrap">
@@ -476,25 +513,26 @@
                 <label>הערה</label>
                 <input type="text" id="bn-note" placeholder="הערה חופשית...">
               </div>
+              <button class="btn btn-primary" onclick="addBonus()">הוסף רשומה</button>
+              <button class="md-sheet-close" onclick="closeSheet('bn-sheet')">ביטול</button>
             </div>
-            <button class="btn btn-primary" onclick="addBonus()">➕ הוסף רשומה</button>
           </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr><th>תאריך</th><th>שחקן</th><th>צ'יפים</th><th>הערה</th><th>הוזן ע"י</th><th>פעולות</th></tr>
-              </thead>
-              <tbody id="bn-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
-            </table>
-          </div>
+
+          <!-- Card list -->
+          <div class="md-list" id="bn-table-body"><div class="md-list-empty">אין רשומות</div></div>
           <div class="tab-summary" id="bt-bn-summary"></div>
         </div>
 
         <!-- Tab: Referrals -->
         <div id="bt-referrals" class="tab-panel">
-          <div class="card" style="margin-bottom:20px">
-            <div class="section-title" style="margin-top:0">הוסף — חבר מביא חבר</div>
-            <div class="form-row">
+          <!-- FAB -->
+          <button class="md-fab" onclick="openSheet('ref-sheet')" title="הוסף חבר מביא חבר">＋</button>
+
+          <!-- Bottom Sheet -->
+          <div class="md-sheet-overlay" id="ref-sheet" style="display:none">
+            <div class="md-sheet">
+              <div class="md-sheet-handle"></div>
+              <div class="md-sheet-title">חבר מביא חבר</div>
               <div class="form-group">
                 <label>שחקן מביא</label>
                 <div class="player-ac-wrap" id="ref-from-wrap">
@@ -515,25 +553,26 @@
                 <label>סכום (צ'יפים)</label>
                 <input type="number" id="ref-chips" placeholder="0" min="0">
               </div>
+              <button class="btn btn-primary" onclick="addReferral()">הוסף רשומה</button>
+              <button class="md-sheet-close" onclick="closeSheet('ref-sheet')">ביטול</button>
             </div>
-            <button class="btn btn-primary" onclick="addReferral()">➕ הוסף רשומה</button>
           </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr><th>תאריך</th><th>מביא</th><th>מובא</th><th>צ'יפים</th><th>הוזן ע"י</th><th>פעולות</th></tr>
-              </thead>
-              <tbody id="ref-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
-            </table>
-          </div>
+
+          <!-- Card list -->
+          <div class="md-list" id="ref-table-body"><div class="md-list-empty">אין רשומות</div></div>
           <div class="tab-summary" id="bt-ref-summary"></div>
         </div>
 
         <!-- Tab: Withdrawals -->
         <div id="bt-withdrawals-tab" class="tab-panel">
-          <div class="card" style="margin-bottom:20px">
-            <div class="section-title" style="margin-top:0">הוסף משיכת שחקן</div>
-            <div class="form-row">
+          <!-- FAB -->
+          <button class="md-fab" onclick="openSheet('wd-sheet')" title="הוסף משיכה">＋</button>
+
+          <!-- Bottom Sheet -->
+          <div class="md-sheet-overlay" id="wd-sheet" style="display:none">
+            <div class="md-sheet">
+              <div class="md-sheet-handle"></div>
+              <div class="md-sheet-title">הוסף משיכת שחקן</div>
               <div class="form-group">
                 <label>שחקן</label>
                 <div class="player-ac-wrap" id="wd-player-wrap">
@@ -550,25 +589,26 @@
                 <label>כמות צ'יפים</label>
                 <input type="number" id="wd-chips" placeholder="0" min="0">
               </div>
+              <button class="btn btn-primary" onclick="addWithdrawal()">הוסף רשומה</button>
+              <button class="md-sheet-close" onclick="closeSheet('wd-sheet')">ביטול</button>
             </div>
-            <button class="btn btn-primary" onclick="addWithdrawal()">➕ הוסף רשומה</button>
           </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr><th>תאריך</th><th>שחקן</th><th>סכום (₪)</th><th>צ'יפים</th><th>הוזן ע"י</th><th>פעולות</th></tr>
-              </thead>
-              <tbody id="wd-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
-            </table>
-          </div>
+
+          <!-- Card list -->
+          <div class="md-list" id="wd-table-body"><div class="md-list-empty">אין רשומות</div></div>
           <div class="tab-summary" id="bt-wd-summary"></div>
         </div>
 
         <!-- Tab: Expenses -->
         <div id="bt-expenses" class="tab-panel">
-          <div class="card" style="margin-bottom:20px">
-            <div class="section-title" style="margin-top:0">הוסף הוצאה</div>
-            <div class="form-row">
+          <!-- FAB -->
+          <button class="md-fab" onclick="openSheet('exp-sheet')" title="הוסף הוצאה">＋</button>
+
+          <!-- Bottom Sheet -->
+          <div class="md-sheet-overlay" id="exp-sheet" style="display:none">
+            <div class="md-sheet">
+              <div class="md-sheet-handle"></div>
+              <div class="md-sheet-title">הוסף הוצאה</div>
               <div class="form-group">
                 <label>תיאור</label>
                 <input type="text" id="exp-desc" placeholder="תיאור ההוצאה...">
@@ -589,17 +629,13 @@
                 <label>פירוט "אחר"</label>
                 <input type="text" id="exp-other-desc" placeholder="פרט...">
               </div>
+              <button class="btn btn-primary" onclick="addExpense()">הוסף הוצאה</button>
+              <button class="md-sheet-close" onclick="closeSheet('exp-sheet')">ביטול</button>
             </div>
-            <button class="btn btn-primary" onclick="addExpense()">➕ הוסף הוצאה</button>
           </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr><th>תאריך</th><th>תיאור</th><th>מהות</th><th>סכום (₪)</th><th>הוזן ע"י</th><th>פעולות</th></tr>
-              </thead>
-              <tbody id="exp-table-body"><tr><td colspan="6" class="empty-state">אין רשומות</td></tr></tbody>
-            </table>
-          </div>
+
+          <!-- Card list -->
+          <div class="md-list" id="exp-table-body"><div class="md-list-empty">אין רשומות</div></div>
           <div class="tab-summary" id="bt-exp-summary"></div>
         </div>
 
@@ -661,10 +697,14 @@
           </div>
         </div>
 
-        <!-- Other player debts -->
-        <div class="card" style="margin-top:24px">
-          <div class="section-title" style="margin-top:0">➕ חוב לשחקן אחר</div>
-          <div class="form-row">
+        <!-- FAB for other player debt -->
+        <button class="md-fab" onclick="openSheet('debt-sheet')" title="עדכן חוב שחקן">＋</button>
+
+        <!-- Bottom Sheet for other player debt -->
+        <div class="md-sheet-overlay" id="debt-sheet" style="display:none">
+          <div class="md-sheet">
+            <div class="md-sheet-handle"></div>
+            <div class="md-sheet-title">עדכן חוב שחקן</div>
             <div class="form-group">
               <label>שחקן</label>
               <div class="player-ac-wrap" id="pd-player-wrap">
@@ -674,13 +714,14 @@
               </div>
             </div>
             <div class="form-group">
-              <label>סכום</label>
+              <label>סכום (₪)</label>
               <input type="number" id="pd-player-amount" placeholder="0" min="0" step="0.01">
             </div>
-          </div>
-          <div class="quick-buttons">
-            <button class="btn btn-success btn-sm" onclick="manualPlayerDebt(1)">➕ הוסף לחוב</button>
-            <button class="btn btn-danger btn-sm" onclick="manualPlayerDebt(-1)">➖ הפחת מחוב</button>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-success" style="flex:1;padding:14px" onclick="manualPlayerDebt(1)">➕ הוסף לחוב</button>
+              <button class="btn btn-danger" style="flex:1;padding:14px" onclick="manualPlayerDebt(-1)">➖ הפחת מחוב</button>
+            </div>
+            <button class="md-sheet-close" onclick="closeSheet('debt-sheet')">ביטול</button>
           </div>
         </div>
 
@@ -696,25 +737,8 @@
 
         <div class="card" style="margin-bottom:24px">
           <div class="card-title">📋 טבלת היסטוריה</div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>תאריך סגירה</th>
-                  <th class="col-hide-sm">הוצאות (₪)</th>
-                  <th class="col-hide-sm">משיכות (₪)</th>
-                  <th>רווח כללי</th>
-                  <th>רווח לאחד</th>
-                  <th class="col-hide-sm">רווח עידו</th>
-                  <th class="col-hide-sm">רווח מאור</th>
-                  <th class="col-hide-xs">הערות</th>
-                  <th>פעולות</th>
-                </tr>
-              </thead>
-              <tbody id="history-table-body">
-                <tr><td colspan="9" class="empty-state">אין נתוני היסטוריה</td></tr>
-              </tbody>
-            </table>
+          <div class="md-list" id="history-table-body">
+            <div class="md-list-empty">אין נתוני היסטוריה</div>
           </div>
         </div>
 
@@ -883,7 +907,7 @@
 
         <!-- Actions -->
         <div class="settlement-actions">
-          <button class="btn btn-secondary" onclick="navigate('dashboard')">← חזור ללוח</button>
+          <button class="btn btn-secondary" onclick="goBack()">← חזור</button>
           <button class="btn btn-danger close-period-btn" onclick="confirmClosePeriod()">⚠️ אשר וסגור תקופה</button>
         </div>
       </div>
@@ -993,7 +1017,14 @@ function switchTab(tab) {
   }
 }
 
+function showLandingScreen() {
+  document.getElementById('landing-screen').style.display = 'flex';
+  document.getElementById('contacts-section').style.display = 'none';
+  document.getElementById('management-section').style.display = 'none';
+}
+
 function showContactsSection() {
+  document.getElementById('landing-screen').style.display = 'none';
   document.getElementById('contacts-section').style.display = 'block';
   document.getElementById('management-section').style.display = 'none';
   document.getElementById('tab-contacts').classList.add('g-tab--active');
@@ -1001,6 +1032,7 @@ function showContactsSection() {
 }
 
 function showManagementSection() {
+  document.getElementById('landing-screen').style.display = 'none';
   document.getElementById('contacts-section').style.display = 'none';
   document.getElementById('management-section').style.display = 'block';
   document.getElementById('tab-contacts').classList.remove('g-tab--active');

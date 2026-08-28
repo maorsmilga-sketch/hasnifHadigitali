@@ -31,6 +31,22 @@ function historyRatio(record) {
 }
 
 // ============================================================
+// BOTTOM SHEET HELPERS
+// ============================================================
+function openSheet(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = 'flex';
+  requestAnimationFrame(() => el.classList.add('open'));
+}
+function closeSheet(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  setTimeout(() => { if (!el.classList.contains('open')) el.style.display = 'none'; }, 350);
+}
+
+// ============================================================
 // STATE
 // ============================================================
 let currentPeriod   = null;
@@ -137,7 +153,7 @@ function doLogout() {
   players         = [];
   window._mgmtMounted = false;
   document.getElementById('app').style.display = 'none';
-  showContactsSection(); // return to contacts tab — no PIN required
+  showLandingScreen(); // return to home landing screen
 }
 
 // ============================================================
@@ -155,7 +171,7 @@ async function mountApp() {
   }
 
   initPayboxSubtitles();
-  navigate('dashboard');
+  showHome();
 }
 
 async function loadInitialData() {
@@ -188,22 +204,82 @@ async function loadInitialData() {
 }
 
 // ============================================================
-// NAVIGATION
+// NAVIGATION — Android App Grid
 // ============================================================
-function navigate(page) {
+// navState: 'home' | 'page' | 'blue-grid' | 'blue-tab'
+let navState = 'home';
+let blueTabLoaded = false;
+
+function _setBackBtn(visible) {
+  const btn = document.getElementById('back-btn');
+  if (btn) btn.hidden = !visible;
+}
+
+function _hideAll() {
+  document.getElementById('home-grid').hidden = true;
+  document.getElementById('blue-grid').hidden = true;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('[data-page]').forEach(n => n.classList.remove('active'));
+}
 
-  const pageEl = document.getElementById('page-' + page);
-  if (pageEl) pageEl.classList.add('active');
+function showHome() {
+  navState = 'home';
+  document.getElementById('home-grid').hidden = false;
+  document.getElementById('blue-grid').hidden = true;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  _setBackBtn(false);
+  window.scrollTo({ top: 0 });
+}
 
-  // Highlight both topbar and bottom-tabs items
-  document.querySelectorAll(`[data-page="${page}"]`).forEach(el => el.classList.add('active'));
-
-  // Scroll to top on page change (important on mobile)
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-
+function openPage(page) {
+  navState = 'page';
+  _hideAll();
+  document.getElementById('page-' + page)?.classList.add('active');
+  _setBackBtn(true);
+  window.scrollTo({ top: 0 });
   loadPageData(page);
+}
+
+function openBlueGrid() {
+  navState = 'blue-grid';
+  _hideAll();
+  document.getElementById('blue-grid').hidden = false;
+  _setBackBtn(true);
+  window.scrollTo({ top: 0 });
+  // Initialise blue table data once (forms, autocomplete, counter)
+  if (!blueTabLoaded) {
+    blueTabLoaded = true;
+    loadPageData('blue-table');
+  }
+}
+
+function openBlueTab(tab) {
+  navState = 'blue-tab';
+  _hideAll();
+  document.getElementById('page-blue-table')?.classList.add('active');
+  // Hide all tab panels then show the chosen one
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('bt-' + tab)?.classList.add('active');
+  // For rakeback: show the records sub-panel by default; hide commitments
+  if (tab === 'rakeback') {
+    const rec = document.getElementById('rb-sub-records');
+    const com = document.getElementById('rb-sub-commitments');
+    if (rec) rec.style.display = '';
+    if (com) com.style.display = 'none';
+  }
+  updateBlueSummaryVisibility();
+  _setBackBtn(true);
+  window.scrollTo({ top: 0 });
+}
+
+function goBack() {
+  if (navState === 'blue-tab') { openBlueGrid(); return; }
+  showHome();
+}
+
+// Compatibility shim — existing in-page buttons call navigate()
+function navigate(page) {
+  if (page === 'home') { showHome(); return; }
+  openPage(page);
 }
 
 async function loadPageData(page) {
@@ -349,12 +425,8 @@ function onFundsBlur() {
 // ============================================================
 // PAGE 3 — BLUE TABLE
 // ============================================================
-function switchBlueTab(tab, el) {
-  document.querySelectorAll('#blue-tabs .tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('bt-' + tab).classList.add('active');
-  updateBlueSummaryVisibility();
+function switchBlueTab(tab) {
+  openBlueTab(tab);
 }
 
 // Hide the blue-table expense/withdrawal summary bar on the commitments sub-tab
@@ -546,20 +618,19 @@ async function loadRakebackTable() {
     const data = await dbGet('blue_table_rakeback', '?order=created_at.desc&select=*,players(name,nickname)');
     const tbody = document.getElementById('rb-table-body');
     if (!data || !data.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      tbody.innerHTML = '<div class="md-list-empty">אין רשומות בתקופה הנוכחית</div>';
       setText('bt-rb-summary', '');
       return;
     }
     tbody.innerHTML = data.map(r => `
-      <tr>
-        <td>${fmtDate(r.created_at)}</td>
-        <td>${playerLabel(r.players?.name, r.players?.nickname)}</td>
-        <td class="chips-color">${fmt(r.rake_taken)}</td>
-        <td>${fmt(r.rakeback_percent)}%</td>
-        <td class="chips-color"><strong>${fmt(r.rakeback_amount)}</strong></td>
-        <td>${r.created_by || '—'}</td>
-        <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_rakeback','${r.id}','loadRakebackTable')">מחק</button></td>
-      </tr>`).join('');
+      <div class="md-list-item">
+        <div class="md-list-content">
+          <div class="md-list-title">${playerLabel(r.players?.name, r.players?.nickname)}</div>
+          <div class="md-list-subtitle">${fmtDate(r.created_at)} · גנייה: ${fmt(r.rake_taken)} צ' · ${fmt(r.rakeback_percent)}%</div>
+        </div>
+        <div class="md-list-trailing chips-color">${fmt(r.rakeback_amount)} צ'</div>
+        <button class="md-icon-btn" onclick="deleteRecord('blue_table_rakeback','${r.id}','loadRakebackTable')" title="מחק">🗑️</button>
+      </div>`).join('');
     const total = data.reduce((s, r) => s + n(r.rakeback_amount), 0);
     setText('bt-rb-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(chipsToIls(total))}`);
   } catch (e) {
@@ -587,6 +658,7 @@ async function addRakeback() {
     setText('rb-calc', '0 צ\'יפים');
     clearPlayerAC('rb-player');
     showNotif('✅ רשומת החזר גנייה נוספה');
+    closeSheet('rb-sheet');
     await loadRakebackTable();
     refreshBTSummary();
   } catch (e) {
@@ -603,11 +675,11 @@ let rctSaveTimer = null;
 let rctInited    = false;
 const RCT_MIN_COLS = 11;
 
-function switchRakebackSubTab(name, el) {
-  document.querySelectorAll('#rakeback-subtabs .tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('rb-sub-records').style.display     = name === 'records'     ? '' : 'none';
-  document.getElementById('rb-sub-commitments').style.display = name === 'commitments' ? '' : 'none';
+function switchRakebackSubTab(name) {
+  const rec = document.getElementById('rb-sub-records');
+  const com = document.getElementById('rb-sub-commitments');
+  if (rec) rec.style.display = name === 'records'      ? '' : 'none';
+  if (com) com.style.display = name === 'commitments'  ? '' : 'none';
   if (name === 'commitments') initRakebackCommitments();
   updateBlueSummaryVisibility();
 }
@@ -962,19 +1034,19 @@ async function loadTournamentsTable() {
     const data = await dbGet('blue_table_tournaments', '?order=created_at.desc&select=*,players(name,nickname)');
     const tbody = document.getElementById('tn-table-body');
     if (!data || !data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      tbody.innerHTML = '<div class="md-list-empty">אין רשומות בתקופה הנוכחית</div>';
       setText('bt-tn-summary', '');
       return;
     }
     tbody.innerHTML = data.map(r => `
-      <tr>
-        <td>${fmtDate(r.created_at)}</td>
-        <td>${playerLabel(r.players?.name, r.players?.nickname)}</td>
-        <td>${r.tournament_type === 'omaha' ? 'אומהה' : 'הולדם'}</td>
-        <td class="chips-color"><strong>${fmt(r.prize_chips)}</strong></td>
-        <td>${r.created_by || '—'}</td>
-        <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_tournaments','${r.id}','loadTournamentsTable')">מחק</button></td>
-      </tr>`).join('');
+      <div class="md-list-item">
+        <div class="md-list-content">
+          <div class="md-list-title">${playerLabel(r.players?.name, r.players?.nickname)}</div>
+          <div class="md-list-subtitle">${fmtDate(r.created_at)} · ${r.tournament_type === 'omaha' ? 'אומהה' : 'הולדם'}</div>
+        </div>
+        <div class="md-list-trailing chips-color">${fmt(r.prize_chips)} צ'</div>
+        <button class="md-icon-btn" onclick="deleteRecord('blue_table_tournaments','${r.id}','loadTournamentsTable')" title="מחק">🗑️</button>
+      </div>`).join('');
     const total = data.reduce((s, r) => s + n(r.prize_chips), 0);
     setText('bt-tn-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(chipsToIls(total))}`);
   } catch (e) {
@@ -997,6 +1069,7 @@ async function addTournament() {
     document.getElementById('tn-prize').value = '';
     clearPlayerAC('tn-player');
     showNotif('✅ רשומת טורניר נוספה');
+    closeSheet('tn-sheet');
     await loadTournamentsTable();
     refreshBTSummary();
   } catch (e) {
@@ -1010,19 +1083,19 @@ async function loadBonusesTable() {
     const data = await dbGet('blue_table_bonuses', '?order=created_at.desc&select=*,players(name,nickname)');
     const tbody = document.getElementById('bn-table-body');
     if (!data || !data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      tbody.innerHTML = '<div class="md-list-empty">אין רשומות בתקופה הנוכחית</div>';
       setText('bt-bn-summary', '');
       return;
     }
     tbody.innerHTML = data.map(r => `
-      <tr>
-        <td>${fmtDate(r.created_at)}</td>
-        <td>${playerLabel(r.players?.name, r.players?.nickname)}</td>
-        <td class="chips-color"><strong>${fmt(r.chips_amount)}</strong></td>
-        <td>${escHtml(r.note || '—')}</td>
-        <td>${r.created_by || '—'}</td>
-        <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_bonuses','${r.id}','loadBonusesTable')">מחק</button></td>
-      </tr>`).join('');
+      <div class="md-list-item">
+        <div class="md-list-content">
+          <div class="md-list-title">${playerLabel(r.players?.name, r.players?.nickname)}</div>
+          <div class="md-list-subtitle">${fmtDate(r.created_at)}${r.note ? ' · ' + escHtml(r.note) : ''}</div>
+        </div>
+        <div class="md-list-trailing chips-color">${fmt(r.chips_amount)} צ'</div>
+        <button class="md-icon-btn" onclick="deleteRecord('blue_table_bonuses','${r.id}','loadBonusesTable')" title="מחק">🗑️</button>
+      </div>`).join('');
     const total = data.reduce((s, r) => s + n(r.chips_amount), 0);
     setText('bt-bn-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(chipsToIls(total))}`);
   } catch (e) {
@@ -1046,6 +1119,7 @@ async function addBonus() {
     document.getElementById('bn-note').value = '';
     clearPlayerAC('bn-player');
     showNotif('✅ בונוס נוסף');
+    closeSheet('bn-sheet');
     await loadBonusesTable();
     refreshBTSummary();
   } catch (e) {
@@ -1060,7 +1134,7 @@ async function loadReferralsTable() {
       '?order=created_at.desc&select=id,chips_amount,created_by,created_at,referring_player_id,referred_player_id');
     const tbody = document.getElementById('ref-table-body');
     if (!data || !data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      tbody.innerHTML = '<div class="md-list-empty">אין רשומות בתקופה הנוכחית</div>';
       setText('bt-ref-summary', '');
       return;
     }
@@ -1068,14 +1142,14 @@ async function loadReferralsTable() {
       const from = players.find(p => p.id === r.referring_player_id);
       const to   = players.find(p => p.id === r.referred_player_id);
       return `
-        <tr>
-          <td>${fmtDate(r.created_at)}</td>
-          <td>${playerLabel(from?.name, from?.nickname)}</td>
-          <td>${playerLabel(to?.name, to?.nickname)}</td>
-          <td class="chips-color"><strong>${fmt(r.chips_amount)}</strong></td>
-          <td>${r.created_by || '—'}</td>
-          <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_referrals','${r.id}','loadReferralsTable')">מחק</button></td>
-        </tr>`;
+        <div class="md-list-item">
+          <div class="md-list-content">
+            <div class="md-list-title">${playerLabel(from?.name, from?.nickname)} ← ${playerLabel(to?.name, to?.nickname)}</div>
+            <div class="md-list-subtitle">${fmtDate(r.created_at)}</div>
+          </div>
+          <div class="md-list-trailing chips-color">${fmt(r.chips_amount)} צ'</div>
+          <button class="md-icon-btn" onclick="deleteRecord('blue_table_referrals','${r.id}','loadReferralsTable')" title="מחק">🗑️</button>
+        </div>`;
     }).join('');
     const total = data.reduce((s, r) => s + n(r.chips_amount), 0);
     setText('bt-ref-summary', `סה"כ: ${fmt(total)} צ' | ₪${fmt(chipsToIls(total))}`);
@@ -1102,6 +1176,7 @@ async function addReferral() {
     clearPlayerAC('ref-from');
     clearPlayerAC('ref-to');
     showNotif('✅ רשומת חבר מביא חבר נוספה');
+    closeSheet('ref-sheet');
     await loadReferralsTable();
     refreshBTSummary();
   } catch (e) {
@@ -1115,19 +1190,19 @@ async function loadWithdrawalsTable() {
     const data = await dbGet('withdrawals', '?order=created_at.desc&select=*,players(name,nickname)');
     const tbody = document.getElementById('wd-table-body');
     if (!data || !data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      tbody.innerHTML = '<div class="md-list-empty">אין רשומות בתקופה הנוכחית</div>';
       setText('bt-wd-summary', '');
       return;
     }
     tbody.innerHTML = data.map(r => `
-      <tr>
-        <td>${r.withdrawal_date || fmtDate(r.created_at)}</td>
-        <td>${playerLabel(r.players?.name, r.players?.nickname)}</td>
-        <td class="positive-color"><strong>₪${fmt(chipsToIls(r.chips_amount))}</strong></td>
-        <td class="chips-color">${fmt(r.chips_amount)}</td>
-        <td>${r.created_by || '—'}</td>
-        <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('withdrawals','${r.id}','loadWithdrawalsTable')">מחק</button></td>
-      </tr>`).join('');
+      <div class="md-list-item">
+        <div class="md-list-content">
+          <div class="md-list-title">${playerLabel(r.players?.name, r.players?.nickname)}</div>
+          <div class="md-list-subtitle">${r.withdrawal_date || fmtDate(r.created_at)} · ${fmt(r.chips_amount)} צ'</div>
+        </div>
+        <div class="md-list-trailing positive-color">₪${fmt(chipsToIls(r.chips_amount))}</div>
+        <button class="md-icon-btn" onclick="deleteRecord('withdrawals','${r.id}','loadWithdrawalsTable')" title="מחק">🗑️</button>
+      </div>`).join('');
     const totalChips = data.reduce((s, r) => s + n(r.chips_amount), 0);
     setText('bt-wd-summary', `סה"כ: ₪${fmt(chipsToIls(totalChips))} | ${fmt(totalChips)} צ'`);
   } catch (e) {
@@ -1153,6 +1228,7 @@ async function addWithdrawal() {
     document.getElementById('wd-chips').value = '';
     clearPlayerAC('wd-player');
     showNotif('✅ משיכה נוספה');
+    closeSheet('wd-sheet');
     await loadWithdrawalsTable();
     refreshBTSummary();
   } catch (e) {
@@ -1178,19 +1254,19 @@ async function loadExpensesTable() {
     const data = await dbGet('blue_table_expenses', '?order=created_at.desc');
     const tbody = document.getElementById('exp-table-body');
     if (!data || !data.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">אין רשומות בתקופה הנוכחית</td></tr>';
+      tbody.innerHTML = '<div class="md-list-empty">אין רשומות בתקופה הנוכחית</div>';
       setText('bt-exp-summary', '');
       return;
     }
     tbody.innerHTML = data.map(r => `
-      <tr>
-        <td>${fmtDate(r.created_at)}</td>
-        <td>${escHtml(r.description || '—')}</td>
-        <td>${escHtml(expenseCategoryLabel(r))}</td>
-        <td class="negative-color"><strong>₪${fmt(r.amount_ils)}</strong></td>
-        <td>${r.created_by || '—'}</td>
-        <td><button class="btn btn-danger btn-xs" onclick="deleteRecord('blue_table_expenses','${r.id}','loadExpensesTable')">מחק</button></td>
-      </tr>`).join('');
+      <div class="md-list-item">
+        <div class="md-list-content">
+          <div class="md-list-title">${escHtml(r.description || '—')}</div>
+          <div class="md-list-subtitle">${fmtDate(r.created_at)} · ${escHtml(expenseCategoryLabel(r))}</div>
+        </div>
+        <div class="md-list-trailing negative-color">₪${fmt(r.amount_ils)}</div>
+        <button class="md-icon-btn" onclick="deleteRecord('blue_table_expenses','${r.id}','loadExpensesTable')" title="מחק">🗑️</button>
+      </div>`).join('');
     const total = data.reduce((s, r) => s + n(r.amount_ils), 0);
     setText('bt-exp-summary', `סה"כ: ₪${fmt(total)}`);
   } catch (e) {
@@ -1220,6 +1296,7 @@ async function addExpense() {
     document.getElementById('exp-category').value = 'subscription';
     toggleExpenseOther();
     showNotif('✅ הוצאה נוספה');
+    closeSheet('exp-sheet');
     await loadExpensesTable();
     refreshBTSummary();
   } catch (e) {
@@ -1336,6 +1413,7 @@ async function manualPlayerDebt(sign) {
     inputEl.value = '';
     clearPlayerAC('pd-player');
     showNotif(`✅ חוב ${p.nickname || p.name} עודכן → ₪${fmt(newVal)}`);
+    closeSheet('debt-sheet');
     renderOtherPlayerDebts();
   } catch (e) {
     showNotif('שגיאה בעדכון חוב: ' + e.message, 'error');
@@ -1454,7 +1532,7 @@ async function loadHistory() {
 function renderHistoryTable(data) {
   const tbody = document.getElementById('history-table-body');
   if (!data.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">אין נתוני היסטוריה</td></tr>';
+    tbody.innerHTML = '<div class="md-list-empty">אין נתוני היסטוריה</div>';
     return;
   }
   tbody.innerHTML = data.map(r => {
@@ -1462,21 +1540,16 @@ function renderHistoryTable(data) {
     const perPersonColor = (n(r.profit_total) / 2) >= 0 ? 'positive-color' : 'negative-color';
     const expensesIls    = chipsToIls(r.total_expenses_chips, historyRatio(r));
     return `
-    <tr>
-      <td>${r.period_end || '—'}</td>
-      <td class="col-hide-sm">₪${fmt(expensesIls)}</td>
-      <td class="col-hide-sm">₪${fmt(r.total_withdrawals_ils)}</td>
-      <td class="${profitColor}"><strong>₪${fmt(r.profit_total)}</strong></td>
-      <td class="${perPersonColor}"><strong>₪${fmt(n(r.profit_total) / 2)}</strong></td>
-      <td class="col-hide-sm">₪${fmt(r.profit_ido)}</td>
-      <td class="col-hide-sm">₪${fmt(r.profit_maor)}</td>
-      <td class="col-hide-xs" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notes || '—'}</td>
-      <td>
-        <div class="action-row">
-          <button class="btn btn-secondary btn-xs" onclick='openPeriodDetail(${JSON.stringify(r).replace(/'/g,"&#39;")})'>פרטים</button>
-        </div>
-      </td>
-    </tr>`;
+    <div class="md-list-item" style="cursor:pointer" onclick='openPeriodDetail(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <div class="md-list-content">
+        <div class="md-list-title">${r.period_end || '—'}</div>
+        <div class="md-list-subtitle">הוצ' ₪${fmt(expensesIls)} · משיכות ₪${fmt(r.total_withdrawals_ils)}${r.notes ? ' · ' + r.notes : ''}</div>
+      </div>
+      <div style="text-align:left;flex-shrink:0">
+        <div class="md-list-trailing ${profitColor}">₪${fmt(r.profit_total)}</div>
+        <div style="font-size:11px;color:var(--text-secondary);text-align:left">לאחד: <span class="${perPersonColor}">₪${fmt(n(r.profit_total)/2)}</span></div>
+      </div>
+    </div>`;
   }).join('');
 }
 
@@ -1899,31 +1972,15 @@ function renderPlayersTable() {
     const rb    = rakebackCellLabel(p);
     const wdLbl = WITHDRAWAL_LABELS[p.preferred_withdrawal] || '—';
     return `
-    <div class="player-card">
-      <div class="player-card-header">
-        <div>
-          <div class="player-card-name">${escHtml(p.name)}</div>
-          ${p.nickname ? `<div class="player-card-nick">"${escHtml(p.nickname)}"</div>` : ''}
+    <div class="md-list-item" style="flex-direction:column;align-items:stretch;gap:8px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="md-list-content">
+          <div class="md-list-title">${escHtml(p.name)}${p.nickname ? ` <span style="font-weight:400;color:var(--text-secondary)">"${escHtml(p.nickname)}"</span>` : ''}</div>
+          <div class="md-list-subtitle">החזר גנייה: ${rb} · ${wdLbl}</div>
         </div>
-        <div class="action-row">
-          <button class="btn btn-secondary btn-xs" onclick="openEditModal('${p.id}')">✏️</button>
-          <button class="btn btn-secondary btn-xs" onclick="openPlayerStats('${p.id}','${escHtml(p.nickname||p.name)}')">📊</button>
-          <button class="btn btn-danger btn-xs" onclick="deletePlayer('${p.id}')">🗑️</button>
-        </div>
-      </div>
-      <div class="player-card-info">
-        <div class="player-info-item">
-          <span class="player-info-label">החזר גנייה</span>
-          <span class="player-info-value">${rb}</span>
-        </div>
-        <div class="player-info-item">
-          <span class="player-info-label">משיכה מועדפת</span>
-          <span class="player-info-value">${wdLbl}</span>
-        </div>
-        <div class="player-info-item">
-          <span class="player-info-label">הצטרף</span>
-          <span class="player-info-value">${fmtDate(p.created_at)}</span>
-        </div>
+        <button class="md-icon-btn" style="color:var(--text-secondary);font-size:15px" onclick="openPlayerStats('${p.id}','${escHtml(p.nickname||p.name)}')" title="סטטיסטיקות">📊</button>
+        <button class="md-icon-btn" style="color:var(--accent);font-size:15px" onclick="openEditModal('${p.id}')" title="ערוך">✏️</button>
+        <button class="md-icon-btn" onclick="deletePlayer('${p.id}')" title="מחק">🗑️</button>
       </div>
     </div>`;
   }).join('');
@@ -2673,6 +2730,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Contacts tab is the default landing page — no auto-mount or PIN on load.
   // Management is accessed via the tab switcher which handles auth.
   initPinLock(); // register inactivity + visibility listeners
+
+  // Wire the app-grid back button
+  const backBtn = document.getElementById('back-btn');
+  if (backBtn) backBtn.addEventListener('click', goBack);
 });
 // ------------------------------------------------------------
 // EXPORT HISTORY → EXCEL (.xlsx)
