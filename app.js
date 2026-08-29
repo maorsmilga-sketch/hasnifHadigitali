@@ -580,8 +580,6 @@ function initAllPlayerACs() {
 
 // — Counter —
 function updateCounterDisplay() {
-  const val = parseFloat(document.getElementById('counter-value')?.value) || 0;
-  setText('counter-ils', '₪' + fmt(chipsToIls(val)));
   updateBadBeatDisplay(); // keep total-ils in sync
 }
 
@@ -612,7 +610,6 @@ function onCounterBlur() {
 function updateBadBeatDisplay() {
   const bb  = parseFloat(document.getElementById('badbeat-value')?.value) || 0;
   const ctr = parseFloat(document.getElementById('counter-value')?.value) || 0;
-  setText('badbeat-ils',       '₪' + fmt(chipsToIls(bb)));
   setText('counter-total-ils', '₪' + fmt(chipsToIls(ctr + bb)));
 }
 
@@ -1372,7 +1369,6 @@ async function refreshBTSummary() {
     const totalChips = sumRb + sumTn + sumBn + sumRef;
 
     // Global summary bar
-    setText('bt-total-chips',       fmt(totalChips) + ' צ\'יפים');
     setText('bt-total-ils',         '₪' + fmt(chipsToIls(totalChips)));
     setText('bt-total-withdrawals', '₪' + fmt(chipsToIls(sumWdChips)));
 
@@ -1397,6 +1393,147 @@ async function refreshBTSummary() {
     // Dashboard expenses card
     setText('val-expenses-ils', fmt(chipsToIls(totalChips)));
   } catch {}
+}
+
+// ============================================================
+// DASHBOARD — Blue Table Detail Modal
+// ============================================================
+function closeDashDetail() {
+  document.getElementById('dash-detail-overlay').style.display = 'none';
+}
+
+async function openDashBTDetail(type) {
+  const cfg = {
+    rb:  { title: '💸 החזרי גנייה',   table: 'blue_table_rakeback',   qs: '?order=created_at.desc&select=*,players(name,nickname)' },
+    tn:  { title: '🏆 טורנירים',       table: 'blue_table_tournaments', qs: '?order=created_at.desc&select=*,players(name,nickname)' },
+    bn:  { title: '🎁 בונוסים',        table: 'blue_table_bonuses',     qs: '?order=created_at.desc&select=*,players(name,nickname)' },
+    ref: { title: '🤝 חבר מביא חבר',   table: 'blue_table_referrals',  qs: '?order=created_at.desc&select=id,chips_amount,created_at,referring_player_id,referred_player_id' },
+    wd:  { title: '💳 משיכות',         table: 'withdrawals',            qs: '?order=created_at.desc&select=*,players(name,nickname)' },
+    exp: { title: '🧾 הוצאות כלליות',  table: 'blue_table_expenses',   qs: '?order=created_at.desc' },
+  }[type];
+  if (!cfg) return;
+
+  setText('dash-detail-title', cfg.title);
+  const overlay = document.getElementById('dash-detail-overlay');
+  const body    = document.getElementById('dash-detail-body');
+  overlay.style.display = 'flex';
+  body.innerHTML = '<div class="md-list-empty">טוען...</div>';
+
+  try {
+    const data = await dbGet(cfg.table, cfg.qs);
+    if (!data || !data.length) {
+      body.innerHTML = '<div class="md-list-empty">אין רשומות בתקופה הנוכחית</div>';
+      return;
+    }
+
+    if (type === 'rb') {
+      body.innerHTML = data.map(r => `
+        <div class="md-list-item">
+          <div class="md-list-content">
+            <div class="md-list-title">${playerLabel(r.players?.name, r.players?.nickname)}</div>
+            <div class="md-list-subtitle">${fmtDate(r.created_at)} · גנייה: ${fmt(r.rake_taken)} צ' · ${fmt(r.rakeback_percent)}%</div>
+          </div>
+          <div class="md-list-trailing chips-color">${fmt(r.rakeback_amount)} צ'</div>
+        </div>`).join('');
+    } else if (type === 'tn') {
+      body.innerHTML = data.map(r => `
+        <div class="md-list-item">
+          <div class="md-list-content">
+            <div class="md-list-title">${playerLabel(r.players?.name, r.players?.nickname)}</div>
+            <div class="md-list-subtitle">${fmtDate(r.created_at)} · ${r.tournament_type === 'omaha' ? 'אומהה' : 'הולדם'}</div>
+          </div>
+          <div class="md-list-trailing chips-color">${fmt(r.prize_chips)} צ'</div>
+        </div>`).join('');
+    } else if (type === 'bn') {
+      body.innerHTML = data.map(r => `
+        <div class="md-list-item">
+          <div class="md-list-content">
+            <div class="md-list-title">${playerLabel(r.players?.name, r.players?.nickname)}</div>
+            <div class="md-list-subtitle">${fmtDate(r.created_at)}${r.note ? ' · ' + escHtml(r.note) : ''}</div>
+          </div>
+          <div class="md-list-trailing chips-color">${fmt(r.chips_amount)} צ'</div>
+        </div>`).join('');
+    } else if (type === 'ref') {
+      body.innerHTML = data.map(r => {
+        const from = players.find(p => p.id === r.referring_player_id);
+        const to   = players.find(p => p.id === r.referred_player_id);
+        return `
+        <div class="md-list-item">
+          <div class="md-list-content">
+            <div class="md-list-title">${playerLabel(from?.name, from?.nickname)} ← ${playerLabel(to?.name, to?.nickname)}</div>
+            <div class="md-list-subtitle">${fmtDate(r.created_at)}</div>
+          </div>
+          <div class="md-list-trailing chips-color">${fmt(r.chips_amount)} צ'</div>
+        </div>`;
+      }).join('');
+    } else if (type === 'wd') {
+      body.innerHTML = data.map(r => `
+        <div class="md-list-item">
+          <div class="md-list-content">
+            <div class="md-list-title">${playerLabel(r.players?.name, r.players?.nickname)}</div>
+            <div class="md-list-subtitle">${r.withdrawal_date || fmtDate(r.created_at)} · ${fmt(r.chips_amount)} צ'</div>
+          </div>
+          <div class="md-list-trailing positive-color">₪${fmt(chipsToIls(r.chips_amount))}</div>
+        </div>`).join('');
+    } else if (type === 'exp') {
+      body.innerHTML = data.map(r => `
+        <div class="md-list-item">
+          <div class="md-list-content">
+            <div class="md-list-title">${escHtml(r.description || '—')}</div>
+            <div class="md-list-subtitle">${fmtDate(r.created_at)} · ${escHtml(expenseCategoryLabel(r))}</div>
+          </div>
+          <div class="md-list-trailing negative-color">₪${fmt(r.amount_ils)}</div>
+        </div>`).join('');
+    }
+  } catch (e) {
+    body.innerHTML = '<div class="md-list-empty">שגיאה בטעינת הנתונים</div>';
+  }
+}
+
+// ============================================================
+// QUICK ADD-PLAYER (inline shortcut from tn/bn/wd sheets)
+// ============================================================
+let _quickAddPlayerTarget = null; // 'tn' | 'bn' | 'wd'
+
+function openQuickAddPlayer(target) {
+  _quickAddPlayerTarget = target;
+  setVal('qap-name', '');
+  setVal('qap-nickname', '');
+  setVal('qap-rb', '60');
+  document.getElementById('quick-player-overlay').style.display = 'flex';
+}
+
+function closeQuickAddPlayer() {
+  document.getElementById('quick-player-overlay').style.display = 'none';
+}
+
+async function saveQuickPlayer() {
+  const name     = (document.getElementById('qap-name')?.value || '').trim();
+  const nickname = (document.getElementById('qap-nickname')?.value || '').trim();
+  const rb       = parseFloat(document.getElementById('qap-rb')?.value) || 60;
+  if (!name) { showNotif('שם חובה', 'error'); return; }
+
+  try {
+    const result = await dbPost('players', { name, nickname: nickname || null, rakeback_percent: rb, created_at: now() });
+    if (result && result[0]) {
+      players.push(result[0]);
+
+      // Auto-select the new player in the source form
+      const t = _quickAddPlayerTarget;
+      if (t) {
+        const wrap = document.getElementById(`${t}-player-wrap`);
+        if (wrap) {
+          wrap.querySelector('.player-ac-input').value = nickname || name;
+          document.getElementById(`${t}-player`).value = result[0].id;
+          acPlayerData[`${t}-player`] = result[0];
+        }
+      }
+    }
+    closeQuickAddPlayer();
+    showNotif('✅ שחקן נוסף בהצלחה');
+  } catch (e) {
+    showNotif('שגיאה: ' + e.message, 'error');
+  }
 }
 
 // ============================================================

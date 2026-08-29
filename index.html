@@ -199,31 +199,42 @@
 
         <div class="card">
           <h3 class="section-title" style="margin-top:0">📊 סיכום טבלה כחולה (תקופה נוכחית)</h3>
+          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 12px;text-align:center">לחץ על שורה לפירוט רשומות</p>
           <div class="dash-bt-grid">
-            <div class="dash-bt-item">
+            <div class="dash-bt-item" style="cursor:pointer" onclick="openDashBTDetail('rb')">
               <span class="dash-bt-label">💸 החזרי גנייה</span>
               <span class="dash-bt-val" id="dash-rb-sum">—</span>
             </div>
-            <div class="dash-bt-item">
+            <div class="dash-bt-item" style="cursor:pointer" onclick="openDashBTDetail('tn')">
               <span class="dash-bt-label">🏆 טורנירים</span>
               <span class="dash-bt-val" id="dash-tn-sum">—</span>
             </div>
-            <div class="dash-bt-item">
+            <div class="dash-bt-item" style="cursor:pointer" onclick="openDashBTDetail('bn')">
               <span class="dash-bt-label">🎁 בונוסים</span>
               <span class="dash-bt-val" id="dash-bn-sum">—</span>
             </div>
-            <div class="dash-bt-item">
+            <div class="dash-bt-item" style="cursor:pointer" onclick="openDashBTDetail('ref')">
               <span class="dash-bt-label">🤝 חבר מביא חבר</span>
               <span class="dash-bt-val" id="dash-ref-sum">—</span>
             </div>
-            <div class="dash-bt-item">
+            <div class="dash-bt-item" style="cursor:pointer" onclick="openDashBTDetail('wd')">
               <span class="dash-bt-label">💳 משיכות</span>
               <span class="dash-bt-val negative-color" id="dash-wd-sum">—</span>
             </div>
-            <div class="dash-bt-item">
+            <div class="dash-bt-item" style="cursor:pointer" onclick="openDashBTDetail('exp')">
               <span class="dash-bt-label">🧾 הוצאות כלליות</span>
               <span class="dash-bt-val negative-color" id="dash-exp-sum">—</span>
             </div>
+          </div>
+        </div>
+
+        <!-- Detail modal for dashboard blue-table rows -->
+        <div id="dash-detail-overlay" class="md-sheet-overlay" style="display:none" onclick="closeDashDetail()">
+          <div class="md-sheet" onclick="event.stopPropagation()" style="max-height:75vh;overflow-y:auto">
+            <div class="md-sheet-handle"></div>
+            <div class="md-sheet-title" id="dash-detail-title">פירוט</div>
+            <div id="dash-detail-body" class="md-list"></div>
+            <button class="md-sheet-close" onclick="closeDashDetail()">סגור</button>
           </div>
         </div>
 
@@ -360,24 +371,20 @@
           <div class="card">
             <div class="section-title" style="margin-top:0">ספירת צ'יפים פיזיים</div>
             <div class="form-group" style="max-width:320px">
-              <label>כמות צ'יפים במועדון</label>
-              <input type="number" id="counter-value" placeholder="0" min="0" oninput="onCounterInput()" onblur="onCounterBlur()">
-            </div>
-            <div class="counter-display">
-              <span class="counter-label">שווה ערך בכסף:</span>
-              <span class="counter-value" id="counter-ils">₪0</span>
+              <label>כמות צ'יפים במועדון (₪)</label>
+              <input type="number" id="counter-value" placeholder="0" min="0"
+                     style="border-color:var(--positive);box-shadow:0 0 0 2px rgba(74,222,128,0.15)"
+                     oninput="onCounterInput()" onblur="onCounterBlur()">
             </div>
 
-            <div class="form-group" style="max-width:320px;margin-top:20px">
-              <label>BadBeat (צ'יפים)</label>
-              <input type="number" id="badbeat-value" placeholder="0" min="0" oninput="onBadBeatInput()" onblur="onBadBeatBlur()">
-            </div>
-            <div class="counter-display">
-              <span class="counter-label">BadBeat בכסף:</span>
-              <span class="counter-value" id="badbeat-ils">₪0</span>
+            <div class="form-group" style="max-width:320px;margin-top:16px">
+              <label>BadBeat (₪)</label>
+              <input type="number" id="badbeat-value" placeholder="0" min="0"
+                     style="border-color:#38bdf8;box-shadow:0 0 0 2px rgba(56,189,248,0.15)"
+                     oninput="onBadBeatInput()" onblur="onBadBeatBlur()">
             </div>
 
-            <div class="counter-display" style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+            <div class="counter-display" style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
               <span class="counter-label">סה"כ מוחסר מרווח:</span>
               <span class="counter-value" id="counter-total-ils">₪0</span>
             </div>
@@ -400,6 +407,8 @@
 
           <!-- Sub-tab: Records (existing) -->
           <div id="rb-sub-records" class="rb-subpanel">
+            <div class="tab-summary" id="bt-rb-summary"></div>
+
             <!-- FAB -->
             <button class="md-fab" onclick="openSheet('rb-sheet')" title="הוסף רשומה">＋</button>
 
@@ -430,7 +439,6 @@
 
             <!-- Card list -->
             <div class="md-list" id="rb-table-body"><div class="md-list-empty">אין רשומות</div></div>
-            <div class="tab-summary" id="bt-rb-summary"></div>
           </div>
 
           <!-- Sub-tab: Commitments table (payment tracking) -->
@@ -464,6 +472,8 @@
 
         <!-- Tab: Tournaments -->
         <div id="bt-tournaments" class="tab-panel">
+          <div class="tab-summary" id="bt-tn-summary"></div>
+
           <!-- FAB -->
           <button class="md-fab" onclick="openSheet('tn-sheet')" title="הוסף טורניר">＋</button>
 
@@ -474,10 +484,13 @@
               <div class="md-sheet-title">הוסף רשומת טורניר</div>
               <div class="form-group">
                 <label>שחקן זוכה</label>
-                <div class="player-ac-wrap" id="tn-player-wrap">
-                  <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
-                  <input type="hidden" id="tn-player">
-                  <ul class="player-ac-list"></ul>
+                <div style="display:flex;align-items:flex-start;gap:8px">
+                  <div class="player-ac-wrap" id="tn-player-wrap" style="flex:1">
+                    <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                    <input type="hidden" id="tn-player">
+                    <ul class="player-ac-list"></ul>
+                  </div>
+                  <button type="button" class="md-icon-btn quick-add-player-btn" onclick="openQuickAddPlayer('tn')" title="הוסף שחקן חדש">➕</button>
                 </div>
               </div>
               <div class="form-group">
@@ -498,11 +511,12 @@
 
           <!-- Card list -->
           <div class="md-list" id="tn-table-body"><div class="md-list-empty">אין רשומות</div></div>
-          <div class="tab-summary" id="bt-tn-summary"></div>
         </div>
 
         <!-- Tab: Bonuses -->
         <div id="bt-bonuses" class="tab-panel">
+          <div class="tab-summary" id="bt-bn-summary"></div>
+
           <!-- FAB -->
           <button class="md-fab" onclick="openSheet('bn-sheet')" title="הוסף בונוס">＋</button>
 
@@ -513,10 +527,13 @@
               <div class="md-sheet-title">הוסף בונוס צ'יפים</div>
               <div class="form-group">
                 <label>שחקן</label>
-                <div class="player-ac-wrap" id="bn-player-wrap">
-                  <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
-                  <input type="hidden" id="bn-player">
-                  <ul class="player-ac-list"></ul>
+                <div style="display:flex;align-items:flex-start;gap:8px">
+                  <div class="player-ac-wrap" id="bn-player-wrap" style="flex:1">
+                    <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                    <input type="hidden" id="bn-player">
+                    <ul class="player-ac-list"></ul>
+                  </div>
+                  <button type="button" class="md-icon-btn quick-add-player-btn" onclick="openQuickAddPlayer('bn')" title="הוסף שחקן חדש">➕</button>
                 </div>
               </div>
               <div class="form-group">
@@ -534,11 +551,12 @@
 
           <!-- Card list -->
           <div class="md-list" id="bn-table-body"><div class="md-list-empty">אין רשומות</div></div>
-          <div class="tab-summary" id="bt-bn-summary"></div>
         </div>
 
         <!-- Tab: Referrals -->
         <div id="bt-referrals" class="tab-panel">
+          <div class="tab-summary" id="bt-ref-summary"></div>
+
           <!-- FAB -->
           <button class="md-fab" onclick="openSheet('ref-sheet')" title="הוסף חבר מביא חבר">＋</button>
 
@@ -574,11 +592,12 @@
 
           <!-- Card list -->
           <div class="md-list" id="ref-table-body"><div class="md-list-empty">אין רשומות</div></div>
-          <div class="tab-summary" id="bt-ref-summary"></div>
         </div>
 
         <!-- Tab: Withdrawals -->
         <div id="bt-withdrawals-tab" class="tab-panel">
+          <div class="tab-summary" id="bt-wd-summary"></div>
+
           <!-- FAB -->
           <button class="md-fab" onclick="openSheet('wd-sheet')" title="הוסף משיכה">＋</button>
 
@@ -589,10 +608,13 @@
               <div class="md-sheet-title">הוסף משיכת שחקן</div>
               <div class="form-group">
                 <label>שחקן</label>
-                <div class="player-ac-wrap" id="wd-player-wrap">
-                  <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
-                  <input type="hidden" id="wd-player">
-                  <ul class="player-ac-list"></ul>
+                <div style="display:flex;align-items:flex-start;gap:8px">
+                  <div class="player-ac-wrap" id="wd-player-wrap" style="flex:1">
+                    <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                    <input type="hidden" id="wd-player">
+                    <ul class="player-ac-list"></ul>
+                  </div>
+                  <button type="button" class="md-icon-btn quick-add-player-btn" onclick="openQuickAddPlayer('wd')" title="הוסף שחקן חדש">➕</button>
                 </div>
               </div>
               <div class="form-group">
@@ -610,11 +632,12 @@
 
           <!-- Card list -->
           <div class="md-list" id="wd-table-body"><div class="md-list-empty">אין רשומות</div></div>
-          <div class="tab-summary" id="bt-wd-summary"></div>
         </div>
 
         <!-- Tab: Expenses -->
         <div id="bt-expenses" class="tab-panel">
+          <div class="tab-summary" id="bt-exp-summary"></div>
+
           <!-- FAB -->
           <button class="md-fab" onclick="openSheet('exp-sheet')" title="הוסף הוצאה">＋</button>
 
@@ -650,15 +673,10 @@
 
           <!-- Card list -->
           <div class="md-list" id="exp-table-body"><div class="md-list-empty">אין רשומות</div></div>
-          <div class="tab-summary" id="bt-exp-summary"></div>
         </div>
 
         <!-- Blue Table Summary (fixed bottom) -->
         <div class="summary-bar" id="bt-summary-bar" style="margin-top:32px">
-          <div class="summary-item">
-            <span class="summary-label">סה"כ הוצאות (צ'יפים)</span>
-            <span class="summary-value chips-color" id="bt-total-chips">0</span>
-          </div>
           <div class="summary-item">
             <span class="summary-label">סה"כ הוצאות (₪)</span>
             <span class="summary-value" id="bt-total-ils">₪0</span>
@@ -671,6 +689,28 @@
             <span class="summary-label">סה"כ הוצאות כלליות (₪)</span>
             <span class="summary-value negative-color" id="bt-exp-total">₪0</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Quick Add-Player modal (shared across tn/bn/wd sheets) -->
+      <div id="quick-player-overlay" class="md-sheet-overlay" style="display:none" onclick="closeQuickAddPlayer()">
+        <div class="md-sheet" onclick="event.stopPropagation()">
+          <div class="md-sheet-handle"></div>
+          <div class="md-sheet-title">הוסף שחקן חדש</div>
+          <div class="form-group">
+            <label>שם</label>
+            <input type="text" id="qap-name" placeholder="שם מלא">
+          </div>
+          <div class="form-group">
+            <label>כינוי (אופציונלי)</label>
+            <input type="text" id="qap-nickname" placeholder="כינוי...">
+          </div>
+          <div class="form-group">
+            <label>% גנייה</label>
+            <input type="number" id="qap-rb" placeholder="60" value="60" min="0" max="100">
+          </div>
+          <button class="btn btn-primary" onclick="saveQuickPlayer()">שמור שחקן</button>
+          <button class="md-sheet-close" onclick="closeQuickAddPlayer()">ביטול</button>
         </div>
       </div>
 

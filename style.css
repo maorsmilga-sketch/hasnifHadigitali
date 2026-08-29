@@ -1448,6 +1448,14 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   align-items: center;
   gap: 4px;
   text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+.dash-bt-item[onclick]:hover {
+  border-color: rgba(108, 99, 255, 0.5);
+  background: var(--bg-secondary);
+}
+.dash-bt-item[onclick]:active {
+  transform: scale(0.97);
 }
 
 .dash-bt-label {
@@ -2570,6 +2578,13 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   flex-shrink: 0;
 }
 .md-icon-btn:active { background: rgba(255,71,87,0.15); }
+
+.quick-add-player-btn {
+  color: var(--positive);
+  margin-top: 2px;
+}
+.quick-add-player-btn:hover { background: rgba(74,222,128,0.1); }
+.quick-add-player-btn:active { background: rgba(74,222,128,0.2); }
 
 /* ----- TabLayout (Material inner tabs) ----- */
 .md-tab-bar {
