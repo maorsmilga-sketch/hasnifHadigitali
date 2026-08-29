@@ -2106,14 +2106,19 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 
 /* Screen wrapper for home/blue grids */
 .app-grid-screen {
-  padding: 80px 16px 32px; /* 60px fixed topbar + 20px breathing room */
+  padding: 80px 20px 40px; /* 60px fixed topbar + 20px breathing room */
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* 3-column icon grid */
+/* 2-column icon grid */
 .app-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
 }
 
 /* Individual app icon tile */
@@ -2122,12 +2127,12 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 14px;
   background: linear-gradient(160deg, #26264e 0%, #1a1a33 100%);
   border: 1px solid var(--border);
-  border-radius: 22px;
-  padding: 18px 6px 14px;
-  min-height: 100px;
+  border-radius: 24px;
+  padding: 28px 12px 22px;
+  min-height: 130px;
   width: 100%;
   cursor: pointer;
   box-shadow: 0 4px 18px rgba(0,0,0,0.4);
@@ -2144,12 +2149,12 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 }
 
 .app-icon-img {
-  font-size: 34px;
+  font-size: 46px;
   line-height: 1;
 }
 
 .app-icon-label {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text-primary);
   text-align: center;
@@ -2258,7 +2263,7 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 
 .landing-grid {
   grid-template-columns: repeat(2, 1fr);
-  max-width: 280px;
+  max-width: 360px;
   width: 100%;
   gap: 18px;
 }
