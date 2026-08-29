@@ -2277,10 +2277,11 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
-  gap: 40px;
-  background: radial-gradient(ellipse at 50% 30%, #1d1d40 0%, var(--bg-primary) 70%);
+  padding: 12vh 20px 40px; /* override app-grid-screen's topbar-aware padding */
+  gap: 0;
+  background: radial-gradient(ellipse at 50% 25%, #1d1d40 0%, var(--bg-primary) 70%);
   animation: appFadeIn 0.25s ease;
 }
 
@@ -2288,28 +2289,51 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  margin-bottom: 52px;
 }
 
 .landing-logo-img {
-  width: 90px;
-  height: 90px;
+  width: 140px;
+  height: 140px;
   object-fit: contain;
-  filter: drop-shadow(0 0 24px rgba(108,99,255,0.35));
+  filter: drop-shadow(0 0 32px rgba(108,99,255,0.5)) drop-shadow(0 0 12px rgba(0,200,100,0.25));
 }
 
 .landing-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: 0.5px;
+  font-size: 30px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 40%, #86efac 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 8px rgba(74,222,128,0.35));
 }
 
 .landing-grid {
-  grid-template-columns: repeat(2, 1fr);
-  max-width: 360px;
-  width: 100%;
-  gap: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: 90%;
+  max-width: 400px;
+  gap: 15px;
+}
+
+/* Larger proportions for the 2-button landing screen */
+.landing-grid .app-icon {
+  min-height: 180px;
+  padding: 36px 16px 28px;
+  border-radius: 32px;
+}
+
+.landing-grid .app-icon-img {
+  font-size: 68px;
+}
+
+.landing-grid .app-icon-label {
+  font-size: 17px;
+  letter-spacing: 0.5px;
 }
 
 /* Contacts section topbar */
