@@ -259,16 +259,18 @@ body {
   top: 0;
   right: 0;
   left: 0;
-  height: 60px;
-  background: #13132a;
-  border-bottom: 1px solid var(--border);
+  height: 68px;
+  background: rgba(13, 13, 28, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(180, 150, 80, 0.18);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
   z-index: 100;
   gap: 16px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.4);
+  box-shadow: 0 2px 32px rgba(0,0,0,0.55), 0 1px 0 rgba(255,220,100,0.07) inset;
 }
 
 .topbar-brand {
@@ -279,17 +281,23 @@ body {
 }
 
 .topbar-logo {
-  height: 36px;
-  width: 36px;
+  height: 40px;
+  width: 40px;
   object-fit: contain;
-  border-radius: 8px;
+  border-radius: 10px;
+  filter: drop-shadow(0 0 8px rgba(220, 170, 40, 0.5));
 }
 
 .topbar-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--accent);
+  font-size: 19px;
+  font-weight: 900;
   white-space: nowrap;
+  background: linear-gradient(135deg, #f5d070 0%, #e8a820 35%, #fff4c2 55%, #c98a10 75%, #f5d070 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.3px;
+  filter: drop-shadow(0 0 8px rgba(220, 170, 40, 0.45));
 }
 
 .topbar-nav {
@@ -1887,12 +1895,12 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 }
 
 #management-section #main-content {
-  padding-top: calc(60px + 28px);
+  padding-top: calc(68px + 28px);
 }
 
 @media (max-width: 768px) {
   #management-section #main-content {
-    padding-top: calc(60px + 16px);
+    padding-top: calc(68px + 16px);
   }
 }
 
@@ -2106,7 +2114,7 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 
 /* Screen wrapper for home/blue grids */
 .app-grid-screen {
-  padding: 80px 20px 40px; /* 60px fixed topbar + 20px breathing room */
+  padding: 88px 20px 48px; /* 68px fixed topbar + 20px breathing room */
   width: 100%;
   box-sizing: border-box;
 }
@@ -2115,51 +2123,75 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 .app-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 18px;
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
 }
 
-/* Individual app icon tile */
+/* Individual app icon tile — Glassmorphism */
 .app-icon {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 14px;
-  background: linear-gradient(160deg, #26264e 0%, #1a1a33 100%);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 28px 12px 22px;
-  min-height: 130px;
+  background: linear-gradient(145deg, rgba(60, 55, 120, 0.55) 0%, rgba(20, 18, 50, 0.72) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  padding: 30px 16px 24px;
+  min-height: 140px;
   width: 100%;
   cursor: pointer;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.4);
-  transition: transform 0.13s ease, box-shadow 0.13s ease, border-color 0.13s ease;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   font-family: var(--font);
+  position: relative;
+  overflow: hidden;
+}
+/* Subtle inner glow shimmer */
+.app-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at 50% 0%, rgba(180, 150, 255, 0.12) 0%, transparent 65%);
+  pointer-events: none;
 }
 .app-icon:hover {
-  border-color: var(--accent);
-  box-shadow: 0 6px 24px rgba(108,99,255,0.25);
+  border-color: rgba(180, 140, 255, 0.4);
+  box-shadow:
+    0 12px 40px rgba(108, 99, 255, 0.35),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
 }
 .app-icon:active {
-  transform: scale(0.94);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  transform: scale(0.95) translateY(0);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .app-icon-img {
-  font-size: 46px;
+  font-size: 50px;
   line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
 }
 
 .app-icon-label {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: rgba(235, 230, 255, 0.92);
   text-align: center;
   line-height: 1.3;
-  letter-spacing: 0.1px;
+  letter-spacing: 0.3px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
 
 /* Slide-in animation for grids and pages */
