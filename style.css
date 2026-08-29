@@ -292,12 +292,12 @@ body {
   font-size: 19px;
   font-weight: 900;
   white-space: nowrap;
-  background: linear-gradient(135deg, #f5d070 0%, #e8a820 35%, #fff4c2 55%, #c98a10 75%, #f5d070 100%);
+  background: linear-gradient(135deg, #a8f0c0 0%, #4ade80 40%, #86efac 60%, #22c55e 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: 0.3px;
-  filter: drop-shadow(0 0 8px rgba(220, 170, 40, 0.45));
+  filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.5));
 }
 
 .topbar-nav {
@@ -1096,39 +1096,49 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 }
 
 .fund-tile {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px 12px;
+  background: linear-gradient(160deg, rgba(40, 36, 80, 0.7) 0%, rgba(20, 18, 45, 0.85) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(108, 99, 255, 0.35);
+  border-top: 1.5px solid rgba(160, 150, 255, 0.5);
+  border-radius: var(--radius);
+  padding: 16px 16px 14px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
   gap: 10px;
   position: relative;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07);
 }
 
 .fund-tile:hover {
-  border-color: var(--border-light);
+  border-color: rgba(108, 99, 255, 0.6);
+  box-shadow: 0 6px 28px rgba(108,99,255,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 .fund-tile:focus-within {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(108,99,255,0.12);
+  box-shadow: 0 0 0 2px rgba(108,99,255,0.2), 0 6px 28px rgba(108,99,255,0.25);
 }
 
 .fund-tile-readonly {
-  opacity: 0.85;
-  background: rgba(255,255,255,0.02);
+  opacity: 0.82;
+  background: linear-gradient(160deg, rgba(30, 26, 60, 0.6) 0%, rgba(15, 14, 35, 0.75) 100%);
 }
 
 .fund-tile-label {
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-secondary);
-  letter-spacing: 0.2px;
+  color: rgba(180, 170, 255, 0.85);
+  letter-spacing: 0.3px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
+  width: 100%;
+  text-align: center;
 }
 
 .fund-tile input {
@@ -1136,7 +1146,7 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   min-width: 0;
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1.5px solid rgba(108, 99, 255, 0.3);
   border-radius: 0;
   padding: 6px 0;
   color: var(--text-primary);
@@ -1145,7 +1155,7 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   font-weight: 700;
   outline: none;
   direction: ltr;
-  text-align: right;
+  text-align: center;
   box-shadow: none !important;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1163,12 +1173,14 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   background: transparent !important;
   pointer-events: none;
   font-weight: 700;
+  text-align: center;
 }
 
 .fund-tile-currency {
   font-size: 12px;
-  color: var(--text-secondary);
-  text-align: left;
+  color: rgba(130, 120, 200, 0.7);
+  text-align: center;
+  width: 100%;
 }
 
 /* ===== PLAYERS ADMIN ===== */
