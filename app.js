@@ -187,11 +187,11 @@ async function loadInitialData() {
     // First-time setup: insert the single control row
     const created = await dbPost('current_period', {
       id: 1, bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
-      paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0, rake_app: 0
+      paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0, rake_app: 0, badbeat: 0
     });
     currentPeriod = (created && created[0]) ? created[0] : {
       id: 1, bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
-      paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0, rake_app: 0
+      paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0, debt_ido: 0, debt_maor: 0, counter: 0, rake_app: 0, badbeat: 0
     };
   }
 
@@ -312,8 +312,8 @@ async function loadDashboard() {
 
   const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash) + n(cp.bank_leumi);
   const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-  const chipsIls = chipsToIls(cp.counter);
-  const profit   = total - chipsIls;    // רווח כללי = סה"כ בקופה פחות צ'יפים בכסף
+  const chipsIls = chipsToIls(n(cp.counter) + n(cp.badbeat));
+  const profit   = total - chipsIls;    // רווח כללי = סה"כ בקופה פחות (צ'יפים + BadBeat)
   const half     = profit / 2;
   const idoNet   = half - n(cp.debt_ido);
   const maorNet  = half - n(cp.debt_maor);
@@ -449,10 +449,12 @@ async function loadBlueTable() {
   const wdDate = document.getElementById('wd-date');
   if (wdDate && !wdDate.value) wdDate.value = today();
 
-  // Load counter
+  // Load counter + badbeat
   if (currentPeriod) {
     setVal('counter-value', currentPeriod.counter || '');
+    setVal('badbeat-value', currentPeriod.badbeat || '');
     updateCounterDisplay();
+    updateBadBeatDisplay();
   }
 
   await Promise.all([
@@ -580,6 +582,7 @@ function initAllPlayerACs() {
 function updateCounterDisplay() {
   const val = parseFloat(document.getElementById('counter-value')?.value) || 0;
   setText('counter-ils', '₪' + fmt(chipsToIls(val)));
+  updateBadBeatDisplay(); // keep total-ils in sync
 }
 
 async function saveCounter() {
@@ -603,6 +606,36 @@ function onCounterInput() {
 function onCounterBlur() {
   clearTimeout(counterSaveTimer);
   saveCounter();
+}
+
+// — BadBeat —
+function updateBadBeatDisplay() {
+  const bb  = parseFloat(document.getElementById('badbeat-value')?.value) || 0;
+  const ctr = parseFloat(document.getElementById('counter-value')?.value) || 0;
+  setText('badbeat-ils',       '₪' + fmt(chipsToIls(bb)));
+  setText('counter-total-ils', '₪' + fmt(chipsToIls(ctr + bb)));
+}
+
+async function saveBadBeat() {
+  try {
+    const val = parseFloat(document.getElementById('badbeat-value').value) || 0;
+    await dbPatch('current_period', '?id=eq.1', { badbeat: val, updated_at: now() });
+    currentPeriod.badbeat = val;
+    loadDashboard();
+  } catch (e) {
+    showNotif('שגיאה בשמירת BadBeat: ' + e.message, 'error');
+  }
+}
+
+let badBeatSaveTimer = null;
+function onBadBeatInput() {
+  updateBadBeatDisplay();
+  clearTimeout(badBeatSaveTimer);
+  badBeatSaveTimer = setTimeout(saveBadBeat, 700);
+}
+function onBadBeatBlur() {
+  clearTimeout(badBeatSaveTimer);
+  saveBadBeat();
 }
 
 // — Rakeback —
@@ -1740,10 +1773,14 @@ function openPeriodDetail(r) {
     return `<div class="table-container"><table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>`;
   };
 
-  // Counter
+  // Counter + BadBeat
   const _hRatio = historyRatio(r);
   const counterHtml = r.counter_snapshot
     ? `<div class="pd-stat">Counter: <strong>${fmt(n(r.counter_snapshot))} צ'</strong> = <strong>₪${fmt(chipsToIls(r.counter_snapshot, _hRatio))}</strong></div>`
+    : '';
+  const bbSnap = n(r.badbeat_snapshot);
+  const badBeatHtml = bbSnap > 0
+    ? `<div class="pd-stat">BadBeat: <strong>${fmt(bbSnap)} צ'</strong> = <strong>₪${fmt(chipsToIls(bbSnap, _hRatio))}</strong></div>`
     : '';
 
   // Summary
@@ -1793,7 +1830,7 @@ function openPeriodDetail(r) {
 
   body.innerHTML =
     summaryHtml +
-    (counterHtml ? `<div class="pd-section">${counterHtml}</div>` : '') +
+    ((counterHtml || badBeatHtml) ? `<div class="pd-section">${counterHtml}${badBeatHtml}</div>` : '') +
     section('💳','משיכות',         wdHtml)  +
     section('💸','החזר גנייה',     rbHtml)  +
     section('🏆','טורנירים',       tnHtml)  +
@@ -2251,7 +2288,7 @@ async function closePeriod(periodStart) {
     const cp     = currentPeriod;
     const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash) + n(cp.bank_leumi);
     const total       = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-    const chipsIls    = chipsToIls(cp.counter);
+    const chipsIls    = chipsToIls(n(cp.counter) + n(cp.badbeat));
     const profitTotal = total - chipsIls;
     const profitHalf  = profitTotal / 2;
 
@@ -2276,14 +2313,15 @@ async function closePeriod(periodStart) {
       detail_withdrawals:    detailWithdrawals,
       detail_expenses:       detailExpenses,
       chips_per_shekel:      CHIPS_PER_SHEKEL,
-      rake_app:              n(cp.rake_app)
+      rake_app:              n(cp.rake_app),
+      badbeat_snapshot:      n(cp.badbeat)
     });
 
     // 3. Reset current_period — debts are intentionally kept
     const resetData = {
       bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
       paybox_maor: 0, paybox_ido: 0, cashcash: 0, bank_leumi: 0,
-      counter: 0, rake_app: 0, updated_at: now()
+      counter: 0, rake_app: 0, badbeat: 0, updated_at: now()
     };
     await dbPatch('current_period', '?id=eq.1', resetData);
     Object.assign(currentPeriod, resetData);
@@ -2394,10 +2432,10 @@ function loadSettlementPage() {
   const bankLeumi = n(cp.bank_leumi);
   setText('st-bank-leumi', '₪' + fmt(bankLeumi));
 
-  // Profit per partner — total in coffers minus chips value
+  // Profit per partner — total in coffers minus chips value (counter + badbeat)
   const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + payboxMaor + payboxIdo + n(cp.cashcash) + bankLeumi;
   const total      = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-  const chipsIls   = chipsToIls(cp.counter);
+  const chipsIls   = chipsToIls(n(cp.counter) + n(cp.badbeat));
   const profitEach = (total - chipsIls) / 2;
 
   setText('st-profit-each', '₪' + fmt(profitEach));
