@@ -1399,7 +1399,7 @@ async function refreshBTSummary() {
 // DASHBOARD — Blue Table Detail Modal
 // ============================================================
 function closeDashDetail() {
-  document.getElementById('dash-detail-overlay').style.display = 'none';
+  closeSheet('dash-detail-overlay');
 }
 
 async function openDashBTDetail(type) {
@@ -1414,9 +1414,8 @@ async function openDashBTDetail(type) {
   if (!cfg) return;
 
   setText('dash-detail-title', cfg.title);
-  const overlay = document.getElementById('dash-detail-overlay');
-  const body    = document.getElementById('dash-detail-body');
-  overlay.style.display = 'flex';
+  const body = document.getElementById('dash-detail-body');
+  openSheet('dash-detail-overlay');  // handles display:flex + .open class + animation
   body.innerHTML = '<div class="md-list-empty">טוען...</div>';
 
   try {
@@ -1500,11 +1499,11 @@ function openQuickAddPlayer(target) {
   setVal('qap-name', '');
   setVal('qap-nickname', '');
   setVal('qap-rb', '60');
-  document.getElementById('quick-player-overlay').style.display = 'flex';
+  openSheet('quick-player-overlay');
 }
 
 function closeQuickAddPlayer() {
-  document.getElementById('quick-player-overlay').style.display = 'none';
+  closeSheet('quick-player-overlay');
 }
 
 async function saveQuickPlayer() {

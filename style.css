@@ -1418,7 +1418,6 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 
 /* ===== TAB SUMMARY ROWS ===== */
 .tab-summary {
-  margin-top: 14px;
   padding: 10px 16px;
   background: var(--bg-card);
   border: 1px solid var(--border-light);
@@ -1427,7 +1426,11 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   font-weight: 700;
   color: var(--accent);
   text-align: center;
-  min-height: 18px;
+  margin-bottom: 14px;
+}
+/* Hide the summary box completely when JS hasn't filled it yet */
+.tab-summary:empty {
+  display: none;
 }
 
 /* ===== DASHBOARD BLUE TABLE GRID ===== */
@@ -2627,11 +2630,7 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   padding: 4px 0;
 }
 
-/* Summary bar clears FAB */
-.tab-summary,
-.md-list ~ .tab-summary {
-  margin-bottom: 0;
-}
+/* Ensure pages with FAB have enough bottom padding */
 
 /* Ensure pages with FAB have enough bottom padding */
 .tab-panel { padding-bottom: 12px; }
