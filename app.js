@@ -380,6 +380,12 @@ async function loadFunds() {
 
   initPayboxSubtitles();
   updateFundsSummary();
+
+  // Counter + BadBeat
+  setVal('counter-value', cp.counter || '');
+  setVal('badbeat-value', cp.badbeat || '');
+  updateCounterDisplay();
+  updateBadBeatDisplay();
 }
 
 function updateFundsSummary() {
@@ -449,13 +455,7 @@ async function loadBlueTable() {
   const wdDate = document.getElementById('wd-date');
   if (wdDate && !wdDate.value) wdDate.value = today();
 
-  // Load counter + badbeat
-  if (currentPeriod) {
-    setVal('counter-value', currentPeriod.counter || '');
-    setVal('badbeat-value', currentPeriod.badbeat || '');
-    updateCounterDisplay();
-    updateBadBeatDisplay();
-  }
+  // Counter + BadBeat are now loaded via loadFunds()
 
   await Promise.all([
     loadRakebackTable(),

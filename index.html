@@ -105,10 +105,6 @@
     <!-- BLUE TABLE SUB-GRID -->
     <div id="blue-grid" class="app-grid-screen" hidden>
       <div class="app-grid">
-        <button type="button" class="app-icon" onclick="openBlueTab('counter')">
-          <span class="app-icon-img">🎰</span>
-          <span class="app-icon-label">ספירת צ'יפים</span>
-        </button>
         <button type="button" class="app-icon" onclick="openBlueTab('rakeback')">
           <span class="app-icon-img">💸</span>
           <span class="app-icon-label">החזר גנייה</span>
@@ -372,6 +368,33 @@
             </div>
           </div>
 
+          <!-- CHIPS COUNTER -->
+          <div class="fm-category">
+            <div class="fm-cat-label">🎰 ספירת צ'יפים</div>
+            <div class="fm-grid">
+              <div class="fm-cell">
+                <span class="fm-label" style="color:var(--positive)">צ'יפים במועדון</span>
+                <div class="fm-input-row">
+                  <input type="number" id="counter-value" placeholder="0" min="0"
+                         oninput="onCounterInput()" onblur="onCounterBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
+              <div class="fm-cell">
+                <span class="fm-label" style="color:#38bdf8">BadBeat</span>
+                <div class="fm-input-row">
+                  <input type="number" id="badbeat-value" placeholder="0" min="0"
+                         oninput="onBadBeatInput()" onblur="onBadBeatBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
+            </div>
+            <div class="counter-display" style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+              <span class="counter-label">סה"כ מוחסר מרווח:</span>
+              <span class="counter-value" id="counter-total-ils">₪0</span>
+            </div>
+          </div>
+
         </div>
 
         <!-- Sticky summary footer -->
@@ -397,31 +420,6 @@
         </div>
 
         <!-- blue-tabs replaced by #blue-grid icon launcher above -->
-
-        <!-- Tab: Counter -->
-        <div id="bt-counter" class="tab-panel">
-          <div class="card">
-            <div class="section-title" style="margin-top:0">ספירת צ'יפים פיזיים</div>
-            <div class="form-group" style="max-width:320px">
-              <label>כמות צ'יפים במועדון (₪)</label>
-              <input type="number" id="counter-value" placeholder="0" min="0"
-                     style="border-color:var(--positive);box-shadow:0 0 0 2px rgba(74,222,128,0.15)"
-                     oninput="onCounterInput()" onblur="onCounterBlur()">
-            </div>
-
-            <div class="form-group" style="max-width:320px;margin-top:16px">
-              <label>BadBeat (₪)</label>
-              <input type="number" id="badbeat-value" placeholder="0" min="0"
-                     style="border-color:#38bdf8;box-shadow:0 0 0 2px rgba(56,189,248,0.15)"
-                     oninput="onBadBeatInput()" onblur="onBadBeatBlur()">
-            </div>
-
-            <div class="counter-display" style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
-              <span class="counter-label">סה"כ מוחסר מרווח:</span>
-              <span class="counter-value" id="counter-total-ils">₪0</span>
-            </div>
-          </div>
-        </div>
 
         <!-- Tab: Rakeback -->
         <div id="bt-rakeback" class="tab-panel">
