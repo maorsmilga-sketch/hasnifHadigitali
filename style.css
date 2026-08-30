@@ -1647,37 +1647,30 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 }
 .dash-close-btn:active { transform: scale(0.98); }
 
-/* Extra bottom padding so footer doesn't hide content */
+/* Extra bottom padding so sticky footer doesn't hide content */
 #page-dashboard.active {
   padding-bottom: 72px;
 }
 
-/* On mobile, reduce side padding for dashboard so cards use full width */
-@media (max-width: 768px) {
-  #page-dashboard.active {
-    padding-left: 0;
-    padding-right: 0;
-  }
-  #page-dashboard .page-header,
-  #page-dashboard .stats-grid,
-  #page-dashboard .card {
-    padding-left: 15px;
-    padding-right: 15px;
-  }
-  #page-dashboard .stats-grid {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-}
-
 /* ===== DASHBOARD COMPACT METRIC CARDS ===== */
+/*
+ * display:flex + align-items:stretch forces every direct child
+ * (.page-header, .stats-grid, .card) to fill the full width of
+ * the container, even in dir="rtl" where block children would
+ * otherwise be sized by content and anchored to the inline-start
+ * (right) edge.
+ */
 #page-dashboard {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   width: 100%;
-  max-width: 100vw;
   box-sizing: border-box;
   overflow-x: hidden;
 }
 #page-dashboard .page-header {
+  width: 100%;
+  box-sizing: border-box;
   padding-bottom: 8px;
   margin-bottom: 8px;
 }
@@ -1689,6 +1682,9 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   margin-top: 2px;
 }
 #page-dashboard .stats-grid {
+  display: grid;
+  width: 100%;
+  box-sizing: border-box;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 10px;
@@ -1696,7 +1692,6 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 #page-dashboard .stat-card {
   padding: 10px 12px;
   box-sizing: border-box;
-  width: 100%;
   min-width: 0;
 }
 #page-dashboard .stat-label {
@@ -1714,12 +1709,15 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   margin-top: 3px;
 }
 #page-dashboard .card {
+  width: 100%;
+  box-sizing: border-box;
   padding: 12px 10px;
   margin-bottom: 10px;
-  box-sizing: border-box;
-  width: 100%;
 }
 #page-dashboard .dash-bt-grid {
+  display: grid;
+  width: 100%;
+  box-sizing: border-box;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 #page-dashboard .section-title {
