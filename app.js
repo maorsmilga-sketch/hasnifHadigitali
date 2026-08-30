@@ -2585,8 +2585,9 @@ function loadSettlementPage() {
   setText('st-total-ido',  '₪' + fmt(teamIdo));
   setText('st-total-maor', '₪' + fmt(teamMaor));
 
-  // Transfer calculation — now balanced: teamIdo + teamMaor = 2 × profitEach
-  const transfer = profitEach - teamIdo;
+  // Transfer = how much Maor is short (positive) or over (negative).
+  // After transfer: Maor holds teamMaor + transfer = profitEach ✓
+  const transfer = profitEach - teamMaor;
   renderSettlementResult(transfer, profitEach);
 }
 
@@ -2605,17 +2606,17 @@ function renderSettlementResult(transfer, profitEach) {
     amount.style.color = 'var(--positive)';
     subHtml            = 'כל שותף ימשוך את יתרתו ישירות';
   } else if (transfer > 0) {
-    label.textContent  = 'מאור מעביר לעידו';
-    amount.textContent = '₪' + fmt(abs);
-    amount.style.color = 'var(--accent)';
-    subHtml            = `מאור מעביר לעידו <strong>₪${fmt(abs)}</strong> דרך ביט<br>` +
-                         `מאור ימשוך לעצמו <strong>₪${fmt(profitEach)}</strong> מהביט שלו`;
-  } else {
     label.textContent  = 'עידו מעביר למאור';
     amount.textContent = '₪' + fmt(abs);
     amount.style.color = 'var(--warning)';
     subHtml            = `עידו מעביר למאור <strong>₪${fmt(abs)}</strong> דרך ביט<br>` +
                          `עידו ימשוך לעצמו <strong>₪${fmt(profitEach)}</strong> מהביט שלו`;
+  } else {
+    label.textContent  = 'מאור מעביר לעידו';
+    amount.textContent = '₪' + fmt(abs);
+    amount.style.color = 'var(--accent)';
+    subHtml            = `מאור מעביר לעידו <strong>₪${fmt(abs)}</strong> דרך ביט<br>` +
+                         `מאור ימשוך לעצמו <strong>₪${fmt(profitEach)}</strong> מהביט שלו`;
   }
 
   sub.innerHTML = subHtml;
