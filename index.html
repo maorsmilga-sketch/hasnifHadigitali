@@ -259,23 +259,31 @@
             <div class="fm-grid">
               <div class="fm-cell">
                 <span class="fm-label">מאור</span>
-                <input type="number" id="bit_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-                <span class="fm-cur">₪</span>
+                <div class="fm-input-row">
+                  <input type="number" id="bit_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
               </div>
               <div class="fm-cell">
                 <span class="fm-label">עידו</span>
-                <input type="number" id="bit_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-                <span class="fm-cur">₪</span>
+                <div class="fm-input-row">
+                  <input type="number" id="bit_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
               </div>
               <div class="fm-cell">
                 <span class="fm-label">רוית</span>
-                <input type="number" id="bit_ravit" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-                <span class="fm-cur">₪</span>
+                <div class="fm-input-row">
+                  <input type="number" id="bit_ravit" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
               </div>
               <div class="fm-cell">
                 <span class="fm-label">דורין</span>
-                <input type="number" id="bit_dorin" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-                <span class="fm-cur">₪</span>
+                <div class="fm-input-row">
+                  <input type="number" id="bit_dorin" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
               </div>
             </div>
           </div>
@@ -289,16 +297,20 @@
                   <span class="fm-label">מאור</span>
                   <div class="paybox-subtitle fm-subtitle" id="paybox-maor-subtitle" contenteditable="true" spellcheck="false"></div>
                 </div>
-                <input type="number" id="paybox_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-                <span class="fm-cur">₪</span>
+                <div class="fm-input-row">
+                  <input type="number" id="paybox_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
               </div>
               <div class="fm-cell">
                 <div class="fm-label-col">
                   <span class="fm-label">עידו</span>
                   <div class="paybox-subtitle fm-subtitle" id="paybox-ido-subtitle" contenteditable="true" spellcheck="false"></div>
                 </div>
-                <input type="number" id="paybox_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-                <span class="fm-cur">₪</span>
+                <div class="fm-input-row">
+                  <input type="number" id="paybox_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
               </div>
             </div>
           </div>
@@ -309,13 +321,17 @@
             <div class="fm-grid">
               <div class="fm-cell">
                 <span class="fm-label">מאור</span>
-                <input type="number" id="cashcash_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-                <span class="fm-cur">₪</span>
+                <div class="fm-input-row">
+                  <input type="number" id="cashcash_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
               </div>
               <div class="fm-cell">
                 <span class="fm-label">עידו</span>
-                <input type="number" id="cashcash_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-                <span class="fm-cur">₪</span>
+                <div class="fm-input-row">
+                  <input type="number" id="cashcash_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
               </div>
             </div>
           </div>
@@ -326,13 +342,17 @@
             <div class="fm-grid">
               <div class="fm-cell fm-debt">
                 <span class="fm-label">מאור</span>
-                <input type="number" id="funds-debt_maor" class="readonly-field" readonly>
-                <span class="fm-cur">₪</span>
+                <div class="fm-input-row">
+                  <input type="number" id="funds-debt_maor" class="readonly-field" readonly>
+                  <span class="fm-cur">₪</span>
+                </div>
               </div>
               <div class="fm-cell fm-debt">
                 <span class="fm-label">עידו</span>
-                <input type="number" id="funds-debt_ido" class="readonly-field" readonly>
-                <span class="fm-cur">₪</span>
+                <div class="fm-input-row">
+                  <input type="number" id="funds-debt_ido" class="readonly-field" readonly>
+                  <span class="fm-cur">₪</span>
+                </div>
               </div>
             </div>
           </div>
@@ -343,9 +363,11 @@
             <div class="fm-grid">
               <div class="fm-cell fm-full-width">
                 <span class="fm-label fm-label-sm">Total rake (app)</span>
-                <input type="number" id="rake_app" placeholder="0" min="0" step="0.01"
-                       oninput="onFundsInput()" onblur="onFundsBlur()">
-                <span class="fm-cur">₪</span>
+                <div class="fm-input-row">
+                  <input type="number" id="rake_app" placeholder="0" min="0" step="0.01"
+                         oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
               </div>
             </div>
           </div>

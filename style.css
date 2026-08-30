@@ -1078,20 +1078,27 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 /* ===== FUNDS MATRIX LAYOUT ===== */
 #page-funds.page.active {
   padding-bottom: 80px;
+  overflow-x: hidden;
 }
 
 .fm-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100vw;
+  padding: 0 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 4px 0;
+  overflow-x: hidden;
 }
 
 .fm-category {
+  box-sizing: border-box;
+  width: 100%;
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(108,99,255,0.18);
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: 10px 10px;
 }
 
 .fm-cat-label {
@@ -1122,20 +1129,25 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 }
 
 .fm-grid {
+  box-sizing: border-box;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+  width: 100%;
 }
 
 .fm-cell {
+  box-sizing: border-box;
   display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 40px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 52px;
+  padding: 8px 10px;
   background: rgba(30, 27, 65, 0.6);
   border: 1px solid rgba(108, 99, 255, 0.22);
   border-radius: 8px;
-  padding: 0 10px;
+  overflow: hidden;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -1149,22 +1161,23 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 }
 
 .fm-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: rgba(170, 160, 255, 0.75);
   white-space: nowrap;
+  line-height: 1;
   flex-shrink: 0;
 }
 
 .fm-label-sm {
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .fm-label-col {
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
   gap: 1px;
+  width: 100%;
 }
 
 .fm-subtitle {
@@ -1175,9 +1188,19 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   cursor: text;
 }
 
-.fm-cell input {
-  flex: 1;
+/* Input row: input + currency side by side, contained in cell */
+.fm-input-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
   min-width: 0;
+  gap: 3px;
+}
+
+.fm-cell input {
+  width: 100%;
+  min-width: 0;
+  flex: 1;
   background: transparent;
   border: none;
   border-radius: 0;
@@ -1185,15 +1208,15 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   box-shadow: none !important;
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
-  text-align: right;
+  text-align: left;
   direction: ltr;
-  padding: 0 2px;
+  padding: 0;
 }
 
 .fm-cell input::placeholder {
-  color: rgba(120,110,180,0.4);
+  color: rgba(120,110,180,0.35);
 }
 
 .fm-cell.fm-debt input {
