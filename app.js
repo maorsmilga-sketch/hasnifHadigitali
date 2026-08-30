@@ -975,25 +975,41 @@ function rctRenderBody() {
       dInput.className = 'rct-beat-input';
       if (val) dInput.value = val;
 
-      // Long-press (350 ms) on a filled beat → open date picker to edit/clear
+      // Long-press (500 ms) on a filled beat → open date picker to edit/clear
       // Short tap on a filled beat → toggle paid/pending
       // Tap on empty beat → open date picker to set date
       let longPressTimer = null;
       let longPressFired = false;
+      let touchStartX = 0, touchStartY = 0;
 
-      wrap.addEventListener('pointerdown', e => {
-        if (dInput.contains(e.target)) return;
+      const startLongPress = (clientX, clientY) => {
         longPressFired = false;
+        touchStartX = clientX;
+        touchStartY = clientY;
         longPressTimer = setTimeout(() => {
           longPressFired = true;
           try { dInput.showPicker(); } catch (err) { dInput.focus(); }
-        }, 350);
-      });
+        }, 500);
+      };
 
       const cancelLongPress = () => { clearTimeout(longPressTimer); };
-      wrap.addEventListener('pointerup',    cancelLongPress);
-      wrap.addEventListener('pointermove',  cancelLongPress);
-      wrap.addEventListener('pointercancel', cancelLongPress);
+
+      // Touch events (mobile)
+      wrap.addEventListener('touchstart', e => {
+        if (dInput.contains(e.target)) return;
+        const t = e.touches[0];
+        startLongPress(t.clientX, t.clientY);
+      }, { passive: true });
+
+      wrap.addEventListener('touchmove', e => {
+        const t = e.touches[0];
+        const dx = Math.abs(t.clientX - touchStartX);
+        const dy = Math.abs(t.clientY - touchStartY);
+        if (dx > 10 || dy > 10) cancelLongPress();
+      }, { passive: true });
+
+      wrap.addEventListener('touchend',    cancelLongPress);
+      wrap.addEventListener('touchcancel', cancelLongPress);
 
       wrap.addEventListener('click', e => {
         if (dInput.contains(e.target)) return;
