@@ -172,6 +172,7 @@ async function mountApp() {
 
   initPayboxSubtitles();
   showHome();
+  checkRakebackReminders();
 }
 
 async function loadInitialData() {
@@ -691,6 +692,58 @@ async function addRakeback() {
     refreshBTSummary();
   } catch (e) {
     showNotif('שגיאה: ' + e.message, 'error');
+  }
+}
+
+// ============================================================
+// RAKEBACK REMINDER — per-user dismissal via localStorage
+// ============================================================
+async function checkRakebackReminders() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  // Check if this user already dismissed today's reminder
+  const todayKey = 'rct-dismissed-' + user + '-' + today();
+  if (localStorage.getItem(todayKey)) return;
+
+  // Load commitments (may not be loaded yet if user hasn't opened the blue table)
+  let state = rctState;
+  if (!state) {
+    try {
+      const rows = await dbGet('rakeback_commitments', '?id=eq.1');
+      const data = rows && rows[0] && rows[0].data ? rows[0].data : null;
+      state = (data && Array.isArray(data.people))
+        ? { people: data.people }
+        : { people: [] };
+    } catch (e) { return; }
+  }
+
+  const todayStr = today();
+  const due = (state.people || []).filter(person =>
+    Array.isArray(person.payments) &&
+    person.payments.some((d, i) => d === todayStr && !(person.paid && person.paid[i]))
+  );
+
+  if (due.length === 0) return;
+
+  // Populate the list
+  const list = document.getElementById('rct-reminder-list');
+  if (!list) return;
+  list.innerHTML = due.map(p => {
+    const pct = p.percent != null && p.percent !== '' ? Math.round(p.percent * 1000) / 10 + '%' : '';
+    return `<li>${escHtml(p.name || '—')}${pct ? `<span>${pct}</span>` : ''}</li>`;
+  }).join('');
+
+  const overlay = document.getElementById('rct-reminder-overlay');
+  if (overlay) overlay.style.display = 'flex';
+}
+
+function closeRakebackReminder(dismiss = false) {
+  const overlay = document.getElementById('rct-reminder-overlay');
+  if (overlay) overlay.style.display = 'none';
+  if (dismiss) {
+    const user = getCurrentUser();
+    if (user) localStorage.setItem('rct-dismissed-' + user + '-' + today(), '1');
   }
 }
 

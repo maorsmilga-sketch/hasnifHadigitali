@@ -723,6 +723,22 @@
         </div>
       </div>
 
+      <!-- Rakeback Reminder popup -->
+      <div id="rct-reminder-overlay" class="rct-reminder-overlay" style="display:none" onclick="closeRakebackReminder()">
+        <div class="rct-reminder-card" onclick="event.stopPropagation()">
+          <div class="rct-reminder-icon">⏰</div>
+          <div class="rct-reminder-title">תזכורת החזר גנייה</div>
+          <div class="rct-reminder-subtitle">היום יש להחזיר ל:</div>
+          <ul class="rct-reminder-list" id="rct-reminder-list"></ul>
+          <button class="rct-reminder-dismiss" onclick="closeRakebackReminder(true)">
+            ✓ &nbsp;הבנתי, אל תציג שוב היום
+          </button>
+          <button class="rct-reminder-later" onclick="closeRakebackReminder(false)">
+            אחר כך
+          </button>
+        </div>
+      </div>
+
       <!-- ===== PAGE 4: DEBTS ===== -->
       <div id="page-debts" class="page">
         <div class="page-header">
