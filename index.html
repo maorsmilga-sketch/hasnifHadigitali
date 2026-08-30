@@ -303,13 +303,13 @@
               <div class="fund-tile-currency">₪</div>
             </div>
             <div class="fund-tile">
-              <div class="fund-tile-label">💰 CashCash</div>
-              <input type="number" id="cashcash" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+              <div class="fund-tile-label">💰 CashCash עידו</div>
+              <input type="number" id="cashcash_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
               <div class="fund-tile-currency">₪</div>
             </div>
             <div class="fund-tile">
-              <div class="fund-tile-label">🏦 בנק לאומי</div>
-              <input type="number" id="bank_leumi" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+              <div class="fund-tile-label">💰 CashCash מאור</div>
+              <input type="number" id="cashcash_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
               <div class="fund-tile-currency">₪</div>
             </div>
           </div>
@@ -906,6 +906,10 @@
               <span>PayBox עידו</span>
               <span id="st-paybox-ido-val">₪0</span>
             </div>
+            <div class="settlement-team-row">
+              <span>CashCash עידו</span>
+              <span id="st-cashcash-ido">₪0</span>
+            </div>
             <div class="settlement-team-total">
               <span>סה"כ</span>
               <span id="st-total-ido">₪0</span>
@@ -926,6 +930,10 @@
               <span>PayBox מאור</span>
               <span id="st-paybox-maor-val">₪0</span>
             </div>
+            <div class="settlement-team-row">
+              <span>CashCash מאור</span>
+              <span id="st-cashcash-maor">₪0</span>
+            </div>
             <div class="settlement-team-total">
               <span>סה"כ</span>
               <span id="st-total-maor">₪0</span>
@@ -938,10 +946,6 @@
           <div class="settlement-info-row">
             <span>רווח לכל שותף</span>
             <strong id="st-profit-each">₪0</strong>
-          </div>
-          <div class="settlement-info-row" style="margin-top:14px">
-            <span>בנק לאומי (לא נכלל בהעברות)</span>
-            <strong id="st-bank-leumi">₪0</strong>
           </div>
           <div class="settlement-info-row" style="margin-top:14px;align-items:center">
             <span>לכלול יתרת PayBox בחישוב?</span>
