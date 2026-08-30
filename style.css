@@ -1600,11 +1600,99 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 
 @media (max-width: 768px) {
   .dash-bt-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .dash-bt-item:last-child {
-    grid-column: 1 / -1;
-  }
+}
+
+/* ===== DASHBOARD CLOSE-PERIOD FAB ===== */
+.dash-fab-group {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 200;
+}
+.dash-fab-close {
+  background: linear-gradient(135deg, #ff4757 0%, #c0392b 100%);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 13px 24px;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255,71,87,0.45);
+  transition: box-shadow 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.dash-fab-close:active { transform: scale(0.96); }
+.dash-fab-info {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(108,99,255,0.5);
+  background: rgba(30,27,65,0.85);
+  backdrop-filter: blur(8px);
+  color: rgba(170,160,255,0.85);
+  font-size: 13px;
+  font-weight: 700;
+  font-style: italic;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.dash-fab-info:active { background: rgba(108,99,255,0.2); }
+
+/* hide FAB when dashboard is not active */
+.page:not(.active) .dash-fab-group { display: none; }
+
+/* ===== DASHBOARD COMPACT OVERRIDES ===== */
+#page-dashboard .dash-header {
+  margin-bottom: 10px;
+}
+#page-dashboard .dash-header h1 {
+  font-size: 18px;
+  font-weight: 700;
+}
+#page-dashboard .stats-grid {
+  gap: 8px;
+  margin-bottom: 10px;
+}
+#page-dashboard .stat-card {
+  padding: 10px 12px;
+}
+#page-dashboard .stat-value {
+  font-size: 18px;
+}
+#page-dashboard .dash-card {
+  padding: 12px 10px;
+  margin-bottom: 10px;
+}
+#page-dashboard .section-title {
+  font-size: 12px;
+  margin: 0 0 8px;
+  padding-bottom: 6px;
+}
+#page-dashboard .dash-bt-grid {
+  gap: 7px;
+}
+#page-dashboard .dash-bt-item {
+  padding: 8px 6px;
+}
+#page-dashboard .dash-bt-label {
+  font-size: 10px;
+}
+#page-dashboard .dash-bt-val {
+  font-size: 13px;
+}
+#page-dashboard {
+  padding-bottom: 80px; /* room for FAB */
 }
 
 /* ===== PIN LOCK OVERLAY ===== */
