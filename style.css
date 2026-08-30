@@ -1607,6 +1607,52 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   }
 }
 
+/* ===== DASHBOARD SCOPED FIXES ===== */
+
+/* "כלליות" sits next to "משיכות" — cancel the mobile full-width rule */
+#page-dashboard .dash-bt-item:last-child {
+  grid-column: auto;
+}
+
+/* Sticky blue close-period footer */
+.dash-sticky-close {
+  display: none;
+}
+#page-dashboard.active .dash-sticky-close {
+  display: block;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding: 10px 16px 14px;
+  background: rgba(14, 12, 36, 0.93);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(33, 150, 243, 0.3);
+}
+.dash-sticky-close-btn {
+  display: block;
+  width: 100%;
+  background: linear-gradient(135deg, #1565c0 0%, #2196f3 100%);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 13px;
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(33, 150, 243, 0.4);
+  transition: transform 0.15s;
+}
+.dash-sticky-close-btn:active { transform: scale(0.98); }
+
+/* Bottom padding so sticky bar never hides content */
+#page-dashboard.active {
+  padding-bottom: 74px;
+}
+
 /* ===== PIN LOCK OVERLAY ===== */
 #pin-overlay {
   position: fixed;
