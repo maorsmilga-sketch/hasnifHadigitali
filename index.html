@@ -332,27 +332,6 @@
             </div>
           </div>
 
-          <!-- DEBTS (read-only) -->
-          <div class="fm-category">
-            <div class="fm-cat-label">⚖️ חובות <span class="fm-readonly-note">(קריאה בלבד)</span></div>
-            <div class="fm-grid">
-              <div class="fm-cell fm-debt">
-                <span class="fm-label">מאור</span>
-                <div class="fm-input-row">
-                  <input type="number" id="funds-debt_maor" class="readonly-field" readonly>
-                  <span class="fm-cur">₪</span>
-                </div>
-              </div>
-              <div class="fm-cell fm-debt">
-                <span class="fm-label">עידו</span>
-                <div class="fm-input-row">
-                  <input type="number" id="funds-debt_ido" class="readonly-field" readonly>
-                  <span class="fm-cur">₪</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- CONTROL -->
           <div class="fm-category">
             <div class="fm-cat-label">🎯 בקרה</div>
@@ -389,8 +368,8 @@
                 </div>
               </div>
             </div>
-            <div class="counter-display" style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
-              <span class="counter-label">סה"כ מוחסר מרווח:</span>
+            <div class="counter-display fm-chips-total">
+              <span class="counter-label">מוחסר מרווח:</span>
               <span class="counter-value" id="counter-total-ils">₪0</span>
             </div>
           </div>

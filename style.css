@@ -1235,6 +1235,25 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   flex-shrink: 0;
 }
 
+/* Compact chips-total row inside the Funds matrix */
+.fm-chips-total {
+  margin: 6px 0 0;
+  padding: 5px 4px 0;
+  border-top: 1px solid rgba(108,99,255,0.15);
+  background: transparent;
+  border-radius: 0;
+  gap: 6px;
+}
+.fm-chips-total .counter-label {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.fm-chips-total .counter-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--positive);
+}
+
 /* Sticky summary footer */
 .fm-sticky-footer {
   position: fixed;

@@ -374,8 +374,6 @@ async function loadFunds() {
   setVal('paybox_ido',    cp.paybox_ido  || '');
   setVal('cashcash_ido',  cp.cashcash_ido  || '');
   setVal('cashcash_maor', cp.cashcash_maor || '');
-  setVal('funds-debt_ido',  cp.debt_ido  || '');
-  setVal('funds-debt_maor', cp.debt_maor || '');
   setVal('rake_app',        cp.rake_app  || '');
 
   initPayboxSubtitles();
@@ -391,7 +389,7 @@ async function loadFunds() {
 function updateFundsSummary() {
   const g = id => parseFloat(document.getElementById(id)?.value) || 0;
   const liquid = g('bit_maor') + g('bit_ido') + g('bit_ravit') + g('bit_dorin') + g('paybox_maor') + g('paybox_ido') + g('cashcash_ido') + g('cashcash_maor');
-  const total  = liquid + g('funds-debt_ido') + g('funds-debt_maor') + otherPlayersDebtTotal();
+  const total  = liquid + n(currentPeriod?.debt_ido) + n(currentPeriod?.debt_maor) + otherPlayersDebtTotal();
 
   setText('funds-liquid', '₪' + fmt(liquid));
   setText('funds-total',  '₪' + fmt(total));
