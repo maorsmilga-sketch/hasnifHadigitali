@@ -250,111 +250,121 @@
 
       <!-- ===== PAGE 2: FUNDS ===== -->
       <div id="page-funds" class="page">
-        <div class="page-header">
-          <h1>כספים בחוץ</h1>
-          <p>עדכון יתרות ואמצעי תשלום</p>
-        </div>
 
-        <div class="card">
-          <!-- Bit section -->
-          <div class="funds-section-label">
-            <img src="Bit.png" alt="Bit" class="section-logo"> Bit
-          </div>
-          <div class="funds-grid">
-            <div class="fund-tile">
-              <div class="fund-tile-label">מאור</div>
-              <input type="number" id="bit_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-              <div class="fund-tile-currency">₪</div>
-            </div>
-            <div class="fund-tile">
-              <div class="fund-tile-label">עידו</div>
-              <input type="number" id="bit_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-              <div class="fund-tile-currency">₪</div>
-            </div>
-            <div class="fund-tile">
-              <div class="fund-tile-label">רוית</div>
-              <input type="number" id="bit_ravit" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-              <div class="fund-tile-currency">₪</div>
-            </div>
-            <div class="fund-tile">
-              <div class="fund-tile-label">דורין</div>
-              <input type="number" id="bit_dorin" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-              <div class="fund-tile-currency">₪</div>
-            </div>
-          </div>
+        <div class="fm-card">
 
-          <!-- Apps section -->
-          <div class="funds-section-label" style="margin-top:16px">📱 אפליקציות</div>
-          <div class="funds-grid">
-            <div class="fund-tile">
-              <div class="fund-tile-label">
-                <img src="PayBox.png" alt="PayBox" class="label-logo"> PayBox מאור
+          <!-- BIT -->
+          <div class="fm-category">
+            <div class="fm-cat-label"><img src="Bit.png" alt="Bit" class="fm-logo"> Bit</div>
+            <div class="fm-grid">
+              <div class="fm-cell">
+                <span class="fm-label">מאור</span>
+                <input type="number" id="bit_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                <span class="fm-cur">₪</span>
               </div>
-              <div class="paybox-subtitle" id="paybox-maor-subtitle" contenteditable="true" spellcheck="false"></div>
-              <input type="number" id="paybox_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-              <div class="fund-tile-currency">₪</div>
-            </div>
-            <div class="fund-tile">
-              <div class="fund-tile-label">
-                <img src="PayBox.png" alt="PayBox" class="label-logo"> PayBox עידו
+              <div class="fm-cell">
+                <span class="fm-label">עידו</span>
+                <input type="number" id="bit_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                <span class="fm-cur">₪</span>
               </div>
-              <div class="paybox-subtitle" id="paybox-ido-subtitle" contenteditable="true" spellcheck="false"></div>
-              <input type="number" id="paybox_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-              <div class="fund-tile-currency">₪</div>
-            </div>
-            <div class="fund-tile">
-              <div class="fund-tile-label">💰 CashCash עידו</div>
-              <input type="number" id="cashcash_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-              <div class="fund-tile-currency">₪</div>
-            </div>
-            <div class="fund-tile">
-              <div class="fund-tile-label">💰 CashCash מאור</div>
-              <input type="number" id="cashcash_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-              <div class="fund-tile-currency">₪</div>
+              <div class="fm-cell">
+                <span class="fm-label">רוית</span>
+                <input type="number" id="bit_ravit" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                <span class="fm-cur">₪</span>
+              </div>
+              <div class="fm-cell">
+                <span class="fm-label">דורין</span>
+                <input type="number" id="bit_dorin" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                <span class="fm-cur">₪</span>
+              </div>
             </div>
           </div>
 
-          <!-- Debts section -->
-          <div class="funds-section-label" style="margin-top:16px">
-            ⚖️ חובות <span style="font-size:11px;color:var(--text-muted);font-weight:400">(קריאה בלבד)</span>
-          </div>
-          <div class="funds-grid">
-            <div class="fund-tile fund-tile-readonly">
-              <div class="fund-tile-label">חוב עידו</div>
-              <input type="number" id="funds-debt_ido" class="readonly-field" readonly>
-              <div class="fund-tile-currency">₪</div>
-            </div>
-            <div class="fund-tile fund-tile-readonly">
-              <div class="fund-tile-label">חוב מאור</div>
-              <input type="number" id="funds-debt_maor" class="readonly-field" readonly>
-              <div class="fund-tile-currency">₪</div>
-            </div>
-          </div>
-
-          <!-- Rake control section -->
-          <div class="funds-section-label" style="margin-top:16px">🎯 בקרה</div>
-          <div class="funds-grid">
-            <div class="fund-tile">
-              <div class="fund-tile-label">Total rake per period (app)</div>
-              <input type="number" id="rake_app" placeholder="0" min="0" step="0.01"
-                     oninput="onFundsInput()" onblur="onFundsBlur()">
-              <div class="fund-tile-currency">₪</div>
+          <!-- PAYBOX -->
+          <div class="fm-category">
+            <div class="fm-cat-label"><img src="PayBox.png" alt="PayBox" class="fm-logo"> PayBox</div>
+            <div class="fm-grid">
+              <div class="fm-cell">
+                <div class="fm-label-col">
+                  <span class="fm-label">מאור</span>
+                  <div class="paybox-subtitle fm-subtitle" id="paybox-maor-subtitle" contenteditable="true" spellcheck="false"></div>
+                </div>
+                <input type="number" id="paybox_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                <span class="fm-cur">₪</span>
+              </div>
+              <div class="fm-cell">
+                <div class="fm-label-col">
+                  <span class="fm-label">עידו</span>
+                  <div class="paybox-subtitle fm-subtitle" id="paybox-ido-subtitle" contenteditable="true" spellcheck="false"></div>
+                </div>
+                <input type="number" id="paybox_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                <span class="fm-cur">₪</span>
+              </div>
             </div>
           </div>
 
-          <!-- Summary -->
-          <div class="summary-bar" style="margin-top:20px">
-            <div class="summary-item">
-              <span class="summary-label">כסף נזיל</span>
-              <span class="summary-value" id="funds-liquid">₪0</span>
+          <!-- CASHCASH -->
+          <div class="fm-category">
+            <div class="fm-cat-label">💰 CashCash</div>
+            <div class="fm-grid">
+              <div class="fm-cell">
+                <span class="fm-label">מאור</span>
+                <input type="number" id="cashcash_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                <span class="fm-cur">₪</span>
+              </div>
+              <div class="fm-cell">
+                <span class="fm-label">עידו</span>
+                <input type="number" id="cashcash_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                <span class="fm-cur">₪</span>
+              </div>
             </div>
-            <div class="summary-item">
-              <span class="summary-label">סה"כ בקופה</span>
-              <span class="summary-value" id="funds-total">₪0</span>
+          </div>
+
+          <!-- DEBTS (read-only) -->
+          <div class="fm-category">
+            <div class="fm-cat-label">⚖️ חובות <span class="fm-readonly-note">(קריאה בלבד)</span></div>
+            <div class="fm-grid">
+              <div class="fm-cell fm-debt">
+                <span class="fm-label">מאור</span>
+                <input type="number" id="funds-debt_maor" class="readonly-field" readonly>
+                <span class="fm-cur">₪</span>
+              </div>
+              <div class="fm-cell fm-debt">
+                <span class="fm-label">עידו</span>
+                <input type="number" id="funds-debt_ido" class="readonly-field" readonly>
+                <span class="fm-cur">₪</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTROL -->
+          <div class="fm-category">
+            <div class="fm-cat-label">🎯 בקרה</div>
+            <div class="fm-grid">
+              <div class="fm-cell fm-full-width">
+                <span class="fm-label fm-label-sm">Total rake (app)</span>
+                <input type="number" id="rake_app" placeholder="0" min="0" step="0.01"
+                       oninput="onFundsInput()" onblur="onFundsBlur()">
+                <span class="fm-cur">₪</span>
+              </div>
             </div>
           </div>
 
         </div>
+
+        <!-- Sticky summary footer -->
+        <div class="fm-sticky-footer">
+          <div class="fm-footer-item">
+            <span class="fm-footer-label">כסף נזיל</span>
+            <span class="fm-footer-val" id="funds-liquid">₪0</span>
+          </div>
+          <div class="fm-footer-divider"></div>
+          <div class="fm-footer-item">
+            <span class="fm-footer-label">סה"כ בקופה</span>
+            <span class="fm-footer-val" id="funds-total">₪0</span>
+          </div>
+        </div>
+
       </div>
 
       <!-- ===== PAGE 3: BLUE TABLE ===== -->

@@ -1075,113 +1075,196 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
 /* ===== FUNDS TILES ===== */
-.funds-section-label {
-  font-size: 14px;
+/* ===== FUNDS MATRIX LAYOUT ===== */
+#page-funds.page.active {
+  padding-bottom: 80px;
+}
+
+.fm-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.fm-category {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(108,99,255,0.18);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.fm-cat-label {
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(108,99,255,0.15);
+}
+
+.fm-logo {
+  height: 14px;
+  width: auto;
+  object-fit: contain;
+}
+
+.fm-readonly-note {
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.fm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.fm-cell {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  min-height: 40px;
+  background: rgba(30, 27, 65, 0.6);
+  border: 1px solid rgba(108, 99, 255, 0.22);
+  border-radius: 8px;
+  padding: 0 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.funds-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+.fm-cell:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(108,99,255,0.15);
 }
 
-.fund-tile {
-  background: linear-gradient(160deg, rgba(40, 36, 80, 0.7) 0%, rgba(20, 18, 45, 0.85) 100%);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1.5px solid rgba(108, 99, 255, 0.35);
-  border-top: 1.5px solid rgba(160, 150, 255, 0.5);
-  border-radius: var(--radius);
-  padding: 16px 16px 14px;
+.fm-cell.fm-full-width {
+  grid-column: 1 / -1;
+}
+
+.fm-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(170, 160, 255, 0.75);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fm-label-sm {
+  font-size: 11px;
+}
+
+.fm-label-col {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 10px;
-  position: relative;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07);
+  flex-shrink: 0;
+  gap: 1px;
 }
 
-.fund-tile:hover {
-  border-color: rgba(108, 99, 255, 0.6);
-  box-shadow: 0 6px 28px rgba(108,99,255,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+.fm-subtitle {
+  font-size: 9px;
+  color: var(--text-muted);
+  outline: none;
+  min-width: 20px;
+  cursor: text;
 }
 
-.fund-tile:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(108,99,255,0.2), 0 6px 28px rgba(108,99,255,0.25);
-}
-
-.fund-tile-readonly {
-  opacity: 0.82;
-  background: linear-gradient(160deg, rgba(30, 26, 60, 0.6) 0%, rgba(15, 14, 35, 0.75) 100%);
-}
-
-.fund-tile-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: rgba(180, 170, 255, 0.85);
-  letter-spacing: 0.3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  width: 100%;
-  text-align: center;
-}
-
-.fund-tile input {
-  width: 100%;
+.fm-cell input {
+  flex: 1;
   min-width: 0;
   background: transparent;
   border: none;
-  border-bottom: 1.5px solid rgba(108, 99, 255, 0.3);
   border-radius: 0;
-  padding: 6px 0;
+  outline: none;
+  box-shadow: none !important;
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: clamp(16px, 3vw, 21px);
+  font-size: 16px;
   font-weight: 700;
-  outline: none;
+  text-align: right;
   direction: ltr;
-  text-align: center;
-  box-shadow: none !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition: border-color 0.2s;
+  padding: 0 2px;
 }
 
-.fund-tile input:focus {
-  border-bottom-color: var(--accent);
+.fm-cell input::placeholder {
+  color: rgba(120,110,180,0.4);
 }
 
-.fund-tile input.readonly-field {
-  color: var(--text-secondary) !important;
-  cursor: default;
-  border-bottom-color: transparent;
-  background: transparent !important;
+.fm-cell.fm-debt input {
+  color: var(--negative, #ff4d6d) !important;
+}
+
+.fm-cell input.readonly-field {
+  color: var(--negative, #ff4d6d) !important;
   pointer-events: none;
-  font-weight: 700;
-  text-align: center;
+  cursor: default;
 }
 
-.fund-tile-currency {
-  font-size: 12px;
-  color: rgba(130, 120, 200, 0.7);
-  text-align: center;
-  width: 100%;
+.fm-cur {
+  font-size: 11px;
+  color: rgba(130, 120, 200, 0.55);
+  flex-shrink: 0;
 }
+
+/* Sticky summary footer */
+.fm-sticky-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: stretch;
+  background: rgba(10, 9, 28, 0.93);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(108,99,255,0.35);
+  z-index: 250;
+  padding: 8px 20px 10px;
+  gap: 0;
+}
+
+.fm-footer-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-footer-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(160,155,200,0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.fm-footer-val {
+  font-size: 22px;
+  font-weight: 800;
+  color: #00ff88;
+  text-shadow: 0 0 14px rgba(0, 255, 136, 0.45);
+  letter-spacing: -0.5px;
+}
+
+.fm-footer-divider {
+  width: 1px;
+  background: rgba(108,99,255,0.3);
+  align-self: stretch;
+  margin: 4px 0;
+}
+
+/* Legacy fund-tile kept for any other pages that may reference the class */
+.fund-tile { display: none; }
+.funds-section-label { display: none; }
+.funds-grid { display: none; }
 
 /* ===== PLAYERS ADMIN ===== */
 .admin-form-grid {
@@ -1624,6 +1707,12 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   color: var(--text-primary);
   border-bottom: 1px dashed var(--accent);
 }
+/* In matrix layout, override paybox-subtitle spacing */
+.fm-label-col .paybox-subtitle {
+  font-size: 9px;
+  margin: 0;
+  line-height: 1.2;
+}
 
 /* ===== PAYBOX USE TOGGLE (settlement page) ===== */
 .paybox-use-toggle {
@@ -1798,9 +1887,6 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   .page-header h1 { font-size: 20px; }
   .page-header { margin-bottom: 18px; }
 
-  /* Funds tiles — 2 cols on mobile */
-  .funds-grid { grid-template-columns: repeat(2, 1fr); }
-
   /* History chart — smaller on mobile */
   .chart-container { height: 200px !important; }
 
@@ -1837,17 +1923,10 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   /* Players — 1 card per row on very small screens */
   .players-mobile { grid-template-columns: 1fr; }
 
-  /* Funds tiles — still 2 cols */
-  .funds-grid { grid-template-columns: repeat(2, 1fr); }
-
   /* Hide extra cols on tiny screens */
   .col-hide-xs { display: none; }
 }
 
-/* Desktop funds grid — 4 wide enough, else wrap */
-@media (max-width: 900px) and (min-width: 769px) {
-  .funds-grid { grid-template-columns: repeat(3, 1fr); }
-}
 
 /* ===================================================
    GLOBAL 2-TAB NAV
