@@ -975,11 +975,31 @@ function rctRenderBody() {
       dInput.className = 'rct-beat-input';
       if (val) dInput.value = val;
 
-      // Click on a filled beat: toggle paid/pending; on an empty beat: open date picker
+      // Long-press (350 ms) on a filled beat → open date picker to edit/clear
+      // Short tap on a filled beat → toggle paid/pending
+      // Tap on empty beat → open date picker to set date
+      let longPressTimer = null;
+      let longPressFired = false;
+
+      wrap.addEventListener('pointerdown', e => {
+        if (dInput.contains(e.target)) return;
+        longPressFired = false;
+        longPressTimer = setTimeout(() => {
+          longPressFired = true;
+          try { dInput.showPicker(); } catch (err) { dInput.focus(); }
+        }, 350);
+      });
+
+      const cancelLongPress = () => { clearTimeout(longPressTimer); };
+      wrap.addEventListener('pointerup',    cancelLongPress);
+      wrap.addEventListener('pointermove',  cancelLongPress);
+      wrap.addEventListener('pointercancel', cancelLongPress);
+
       wrap.addEventListener('click', e => {
         if (dInput.contains(e.target)) return;
-        if (val || dInput.value) {
-          // toggle paid status
+        if (longPressFired) return; // already handled by long press
+        if (wrap.classList.contains('filled') || dInput.value) {
+          // short tap: toggle paid status
           const nowPaid = !rctState.people[rowIdx].paid?.[beatIdx];
           rctUpdateRowData(rowIdx, 'paid', nowPaid, beatIdx);
           wrap.classList.toggle('rct-beat-pending', !nowPaid);
