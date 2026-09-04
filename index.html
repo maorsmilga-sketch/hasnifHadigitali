@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20260904d">
+<link rel="stylesheet" href="style.css?v=20260904g">
 </head>
 <body>
 
@@ -156,7 +156,7 @@
           </div>
           <div class="dash-stat-row">
             <div class="stat-card warning">
-              <div class="stat-label">Counter+BadBeat</div>
+              <div class="stat-label stat-label-mixed">Counter+BadBeat</div>
               <div class="stat-value"><span class="currency">₪</span><span id="val-chips-ils">0</span></div>
             </div>
             <div class="stat-card" id="card-profit">
@@ -262,30 +262,30 @@
             <div class="fm-cat-label"><img src="Bit.png" alt="Bit" class="fm-logo"> Bit</div>
             <div class="fm-grid">
               <div class="fm-cell">
-                <span class="fm-label">מאור</span>
+                <label class="fm-label" for="bit_maor">מאור</label>
                 <div class="fm-input-row">
-                  <input type="number" id="bit_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <input type="number" id="bit_maor" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
               </div>
               <div class="fm-cell">
-                <span class="fm-label">עידו</span>
+                <label class="fm-label" for="bit_ido">עידו</label>
                 <div class="fm-input-row">
-                  <input type="number" id="bit_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <input type="number" id="bit_ido" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
               </div>
               <div class="fm-cell">
-                <span class="fm-label">רוית</span>
+                <label class="fm-label" for="bit_ravit">רוית</label>
                 <div class="fm-input-row">
-                  <input type="number" id="bit_ravit" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <input type="number" id="bit_ravit" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
               </div>
               <div class="fm-cell">
-                <span class="fm-label">דורין</span>
+                <label class="fm-label" for="bit_dorin">דורין</label>
                 <div class="fm-input-row">
-                  <input type="number" id="bit_dorin" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <input type="number" id="bit_dorin" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
               </div>
@@ -298,21 +298,21 @@
             <div class="fm-grid">
               <div class="fm-cell">
                 <div class="fm-label-col">
-                  <span class="fm-label">מאור</span>
-                  <div class="paybox-subtitle fm-subtitle" id="paybox-maor-subtitle" contenteditable="true" spellcheck="false"></div>
+                  <label class="fm-label" for="paybox_maor">מאור</label>
+                  <div class="paybox-subtitle fm-subtitle" id="paybox-maor-subtitle" contenteditable="true" spellcheck="false" role="textbox" aria-label="הערת PayBox מאור"></div>
                 </div>
                 <div class="fm-input-row">
-                  <input type="number" id="paybox_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <input type="number" id="paybox_maor" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
               </div>
               <div class="fm-cell">
                 <div class="fm-label-col">
-                  <span class="fm-label">עידו</span>
-                  <div class="paybox-subtitle fm-subtitle" id="paybox-ido-subtitle" contenteditable="true" spellcheck="false"></div>
+                  <label class="fm-label" for="paybox_ido">עידו</label>
+                  <div class="paybox-subtitle fm-subtitle" id="paybox-ido-subtitle" contenteditable="true" spellcheck="false" role="textbox" aria-label="הערת PayBox עידו"></div>
                 </div>
                 <div class="fm-input-row">
-                  <input type="number" id="paybox_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <input type="number" id="paybox_ido" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
               </div>
@@ -324,17 +324,17 @@
             <div class="fm-cat-label">🎰 ספירת צ'יפים</div>
             <div class="fm-grid">
               <div class="fm-cell">
-                <span class="fm-label" style="color:var(--positive)">צ'יפים במועדון</span>
+                <label class="fm-label fm-label-chip" for="counter-value">Counter</label>
                 <div class="fm-input-row">
-                  <input type="number" id="counter-value" placeholder="0" min="0"
+                  <input type="number" id="counter-value" placeholder="0" min="0" inputmode="decimal" enterkeyhint="done" autocomplete="off"
                          oninput="onCounterInput()" onblur="onCounterBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
               </div>
               <div class="fm-cell">
-                <span class="fm-label" style="color:#38bdf8">BadBeat</span>
+                <label class="fm-label fm-label-badbeat" for="badbeat-value">BadBeat</label>
                 <div class="fm-input-row">
-                  <input type="number" id="badbeat-value" placeholder="0" min="0"
+                  <input type="number" id="badbeat-value" placeholder="0" min="0" inputmode="decimal" enterkeyhint="done" autocomplete="off"
                          oninput="onBadBeatInput()" onblur="onBadBeatBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
@@ -351,9 +351,9 @@
             <div class="fm-cat-label">🎯 בקרה</div>
             <div class="fm-grid">
               <div class="fm-cell fm-full-width">
-                <span class="fm-label fm-label-sm">Total rake (app)</span>
+                <label class="fm-label fm-label-sm" for="rake_app">Total rake (app)</label>
                 <div class="fm-input-row">
-                  <input type="number" id="rake_app" placeholder="0" min="0" step="0.01"
+                  <input type="number" id="rake_app" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off"
                          oninput="onFundsInput()" onblur="onFundsBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
@@ -366,16 +366,16 @@
             <div class="fm-cat-label">💰 קאשקאש</div>
             <div class="fm-grid">
               <div class="fm-cell">
-                <span class="fm-label">מאור</span>
+                <label class="fm-label" for="cashcash_maor">מאור</label>
                 <div class="fm-input-row">
-                  <input type="number" id="cashcash_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <input type="number" id="cashcash_maor" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
               </div>
               <div class="fm-cell">
-                <span class="fm-label">עידו</span>
+                <label class="fm-label" for="cashcash_ido">עידו</label>
                 <div class="fm-input-row">
-                  <input type="number" id="cashcash_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <input type="number" id="cashcash_ido" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
               </div>
@@ -1062,6 +1062,15 @@
 
 </div><!-- end #management-section -->
 
+<!-- DATA LOADING OVERLAY (blocks taps until initial fetch finishes) -->
+<div id="data-loading-overlay" style="display:none" aria-live="polite" aria-busy="true">
+  <div class="data-loading-box">
+    <div class="data-loading-spinner" aria-hidden="true"></div>
+    <div class="data-loading-title">טוען נתונים</div>
+    <div class="data-loading-sub">רגע, מתחברים לקופה…</div>
+  </div>
+</div>
+
 <!-- PIN LOCK OVERLAY (global — covers full viewport regardless of active tab) -->
 <div id="pin-overlay" style="display:none">
   <div class="pin-box">
@@ -1132,6 +1141,6 @@ function showManagementSection() {
 }
 </script>
 
-<script src="app.js?v=20260904e"></script>
+<script src="app.js?v=20260904g"></script>
 </body>
 </html>

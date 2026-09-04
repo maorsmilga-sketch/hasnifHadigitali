@@ -147,11 +147,22 @@ function getDisplayName() {
   return USER_DISPLAY[getCurrentUser()] || '—';
 }
 
+function showDataLoading() {
+  const el = document.getElementById('data-loading-overlay');
+  if (el) el.style.display = 'flex';
+}
+
+function hideDataLoading() {
+  const el = document.getElementById('data-loading-overlay');
+  if (el) el.style.display = 'none';
+}
+
 function doLogout() {
   sessionStorage.removeItem('currentUser');
   currentPeriod   = null;
   players         = [];
   window._mgmtMounted = false;
+  hideDataLoading();
   document.getElementById('app').style.display = 'none';
   showLandingScreen(); // return to home landing screen
 }
@@ -160,6 +171,7 @@ function doLogout() {
 // APP MOUNT
 // ============================================================
 async function mountApp() {
+  showDataLoading();
   document.getElementById('app').style.display      = 'flex';
   document.getElementById('user-badge').textContent = getDisplayName();
   showManagementSection(); // switch to management tab immediately
@@ -172,6 +184,7 @@ async function mountApp() {
 
   initPayboxSubtitles();
   showHome();
+  hideDataLoading();
   checkRakebackReminders();
 }
 
