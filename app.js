@@ -327,6 +327,8 @@ async function loadDashboard() {
   setText('val-profit-maor',     fmt(half));
   setText('val-profit-ido-net',  '₪' + fmt(idoNet));
   setText('val-profit-maor-net', '₪' + fmt(maorNet));
+  const debtTotal = n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
+  setText('val-debt-total', fmt(debtTotal));
 
   // Rake control card
   const rakeApp     = n(cp.rake_app);
