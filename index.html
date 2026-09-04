@@ -815,8 +815,11 @@
         </div>
 
         <div class="card" style="margin-bottom:24px">
-          <div class="card-title">📋 טבלת היסטוריה</div>
-          <div class="md-list" id="history-table-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <div class="card-title" style="margin-bottom:0">📋 טבלת היסטוריה</div>
+            <button id="history-toggle-btn" onclick="(function(){var b=document.getElementById('history-table-body');var btn=document.getElementById('history-toggle-btn');var hidden=b.style.display==='none';b.style.display=hidden?'':'none';btn.textContent=hidden?'הסתר ▲':'הצג ▼';})()" style="background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.35);color:var(--accent);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">הצג ▼</button>
+          </div>
+          <div class="md-list" id="history-table-body" style="display:none">
             <div class="md-list-empty">אין נתוני היסטוריה</div>
           </div>
         </div>
