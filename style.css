@@ -1751,10 +1751,21 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   text-align: center;
   transition: border-color 0.15s, background 0.15s;
 }
+button.dash-bt-item {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  min-height: 52px;
+  cursor: pointer;
+}
+button.dash-bt-item:hover,
 .dash-bt-item[onclick]:hover {
   border-color: rgba(108, 99, 255, 0.5);
   background: var(--bg-secondary);
 }
+button.dash-bt-item:active,
 .dash-bt-item[onclick]:active {
   transform: scale(0.97);
 }
@@ -1814,6 +1825,9 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 #page-dashboard .stat-sub:empty {
   display: none;
 }
+#page-dashboard .stat-sub {
+  color: var(--text-secondary);
+}
 #page-dashboard .dash-expenses {
   margin-bottom: 8px;
 }
@@ -1821,16 +1835,35 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   margin-top: 0;
   margin-bottom: 10px;
 }
+#page-dashboard .rake-control-title {
+  margin-top: 0;
+}
+#page-dashboard #rake-control-card {
+  margin-bottom: 18px;
+}
 #page-dashboard .dash-bt-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
+#page-dashboard .dash-bt-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+#page-dashboard button.dash-bt-item:focus-visible,
 #page-dashboard .dash-bt-item[onclick]:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 #page-dashboard .dash-bt-val {
   font-variant-numeric: tabular-nums;
+}
+#page-dashboard .dash-bt-val::selection,
+#page-dashboard .stat-value::selection {
+  background: rgba(108, 99, 255, 0.35);
+}
+#page-dashboard .dash-detail-sheet {
+  max-height: 75vh;
+  overflow-y: auto;
 }
 
 /* Sticky blue close-period footer */
@@ -1844,11 +1877,11 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   left: 0;
   right: 0;
   z-index: 50;
-  padding: 10px 16px 14px;
-  background: rgba(14, 12, 36, 0.93);
+  padding: 10px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+  background: rgba(14, 12, 36, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(33, 150, 243, 0.3);
+  border-top: 1px solid var(--border);
 }
 .dash-sticky-close-btn {
   display: block;
@@ -1866,10 +1899,14 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   transition: transform 0.15s;
 }
 .dash-sticky-close-btn:active { transform: scale(0.98); }
+.dash-sticky-close-btn:focus-visible {
+  outline: 2px solid #90caf9;
+  outline-offset: 3px;
+}
 
 /* Bottom padding so sticky bar never hides content */
 #page-dashboard.active {
-  padding-bottom: 74px;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ===== DATA LOADING OVERLAY ===== */

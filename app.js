@@ -352,7 +352,7 @@ async function loadDashboard() {
   const rakeApp     = n(cp.rake_app);
   const controlCard = document.getElementById('rake-control-card');
   if (rakeApp > 0 && controlCard) {
-    controlCard.style.display = '';
+    controlCard.hidden = false;
     const gap = profit - rakeApp;
     const pct = Math.abs(gap) / rakeApp * 100;
     const gapColor = pct > 10 ? 'var(--negative)' : 'var(--positive)';
@@ -364,7 +364,7 @@ async function loadDashboard() {
       gapEl.style.color = gapColor;
     }
   } else if (controlCard) {
-    controlCard.style.display = 'none';
+    controlCard.hidden = true;
   }
 
   // Dynamic profit card colour
@@ -1523,7 +1523,7 @@ async function openDashBTDetail(type) {
   setText('dash-detail-title', cfg.title);
   const body = document.getElementById('dash-detail-body');
   openSheet('dash-detail-overlay');  // handles display:flex + .open class + animation
-  body.innerHTML = '<div class="md-list-empty">טוען...</div>';
+  body.innerHTML = '<div class="md-list-empty">טוען נתונים…</div>';
 
   try {
     const data = await dbGet(cfg.table, cfg.qs);
