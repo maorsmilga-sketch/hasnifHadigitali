@@ -77,7 +77,7 @@
         </button>
         <button type="button" class="app-icon" onclick="openPage('funds')">
           <span class="app-icon-img">💰</span>
-          <span class="app-icon-label">כספים</span>
+          <span class="app-icon-label">הזנת כספים</span>
         </button>
         <button type="button" class="app-icon" onclick="openBlueGrid()">
           <span class="app-icon-img">📋</span>
@@ -151,7 +151,7 @@
             <div class="stat-value"><span class="currency">₪</span><span id="val-total">0</span></div>
           </div>
           <div class="stat-card warning">
-            <div class="stat-label">צ'יפים בכסף</div>
+            <div class="stat-label">Counter+BadBeat</div>
             <div class="stat-value"><span class="currency">₪</span><span id="val-chips-ils">0</span></div>
           </div>
           <div class="stat-card" id="card-profit">
@@ -306,42 +306,6 @@
             </div>
           </div>
 
-          <!-- CASHCASH -->
-          <div class="fm-category">
-            <div class="fm-cat-label">💰 CashCash</div>
-            <div class="fm-grid">
-              <div class="fm-cell">
-                <span class="fm-label">מאור</span>
-                <div class="fm-input-row">
-                  <input type="number" id="cashcash_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-                  <span class="fm-cur">₪</span>
-                </div>
-              </div>
-              <div class="fm-cell">
-                <span class="fm-label">עידו</span>
-                <div class="fm-input-row">
-                  <input type="number" id="cashcash_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
-                  <span class="fm-cur">₪</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- CONTROL -->
-          <div class="fm-category">
-            <div class="fm-cat-label">🎯 בקרה</div>
-            <div class="fm-grid">
-              <div class="fm-cell fm-full-width">
-                <span class="fm-label fm-label-sm">Total rake (app)</span>
-                <div class="fm-input-row">
-                  <input type="number" id="rake_app" placeholder="0" min="0" step="0.01"
-                         oninput="onFundsInput()" onblur="onFundsBlur()">
-                  <span class="fm-cur">₪</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- CHIPS COUNTER -->
           <div class="fm-category">
             <div class="fm-cat-label">🎰 ספירת צ'יפים</div>
@@ -366,6 +330,42 @@
             <div class="counter-display fm-chips-total">
               <span class="counter-label">מוחסר מרווח:</span>
               <span class="counter-value" id="counter-total-ils">₪0</span>
+            </div>
+          </div>
+
+          <!-- CONTROL -->
+          <div class="fm-category">
+            <div class="fm-cat-label">🎯 בקרה</div>
+            <div class="fm-grid">
+              <div class="fm-cell fm-full-width">
+                <span class="fm-label fm-label-sm">Total rake (app)</span>
+                <div class="fm-input-row">
+                  <input type="number" id="rake_app" placeholder="0" min="0" step="0.01"
+                         oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CASHCASH -->
+          <div class="fm-category">
+            <div class="fm-cat-label">💰 קאשקאש</div>
+            <div class="fm-grid">
+              <div class="fm-cell">
+                <span class="fm-label">מאור</span>
+                <div class="fm-input-row">
+                  <input type="number" id="cashcash_maor" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
+              <div class="fm-cell">
+                <span class="fm-label">עידו</span>
+                <div class="fm-input-row">
+                  <input type="number" id="cashcash_ido" placeholder="0" min="0" step="0.01" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
             </div>
           </div>
 
