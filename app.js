@@ -1322,7 +1322,7 @@ async function loadWithdrawalsTable() {
       <div class="md-list-item">
         <div class="md-list-content">
           <div class="md-list-title">${playerLabel(r.players?.name, r.players?.nickname)}</div>
-          <div class="md-list-subtitle">${r.withdrawal_date || fmtDate(r.created_at)} · ${fmt(r.chips_amount)} צ'</div>
+          <div class="md-list-subtitle">${r.withdrawal_date ? fmtDate(r.withdrawal_date) : fmtDate(r.created_at)} · ${fmt(r.chips_amount)} צ'</div>
         </div>
         <div class="md-list-trailing positive-color">₪${fmt(chipsToIls(r.chips_amount))}</div>
         <button class="md-icon-btn" onclick="deleteRecord('withdrawals','${r.id}','loadWithdrawalsTable')" title="מחק">🗑️</button>
@@ -1564,7 +1564,7 @@ async function openDashBTDetail(type) {
         <div class="md-list-item">
           <div class="md-list-content">
             <div class="md-list-title">${playerLabel(r.players?.name, r.players?.nickname)}</div>
-            <div class="md-list-subtitle">${r.withdrawal_date || fmtDate(r.created_at)} · ${fmt(r.chips_amount)} צ'</div>
+            <div class="md-list-subtitle">${r.withdrawal_date ? fmtDate(r.withdrawal_date) : fmtDate(r.created_at)} · ${fmt(r.chips_amount)} צ'</div>
           </div>
           <div class="md-list-trailing positive-color">₪${fmt(chipsToIls(r.chips_amount))}</div>
         </div>`).join('');
@@ -1805,7 +1805,7 @@ function renderHistoryTable(data) {
     return `
     <div class="md-list-item" style="cursor:pointer" onclick='openPeriodDetail(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
       <div class="md-list-content">
-        <div class="md-list-title">${r.period_end || '—'}</div>
+        <div class="md-list-title">${fmtDate(r.period_end)}</div>
         <div class="md-list-subtitle">הוצ' ₪${fmt(expensesIls)} · משיכות ₪${fmt(r.total_withdrawals_ils)}${r.notes ? ' · ' + r.notes : ''}</div>
       </div>
       <div style="text-align:left;flex-shrink:0">
@@ -1875,7 +1875,7 @@ function renderProfitChart() {
   }
 
   const isPersonMode = chartMode === 'person';
-  const labels  = sorted.map(r => r.period_end || '');
+  const labels  = sorted.map(r => r.period_end ? fmtDate(r.period_end) : '');
   const profits = sorted.map(r => isPersonMode ? n(r.profit_total) / 2 : n(r.profit_total));
 
   // Cumulative sum
@@ -1991,7 +1991,7 @@ function openPeriodDetail(r) {
   const body  = document.getElementById('pd-body');
   if (!title || !body) return;
 
-  title.textContent = `פרטי תקופה — ${r.period_end || ''}`;
+  title.textContent = `פרטי תקופה — ${r.period_end ? fmtDate(r.period_end) : ''}`;
 
   const section = (icon, label, html) =>
     html ? `<div class="pd-section"><div class="pd-section-title">${icon} ${label}</div>${html}</div>` : '';
@@ -2025,7 +2025,7 @@ function openPeriodDetail(r) {
   // Withdrawals
   const wdHtml = miniTable(
     ['שחקן','סכום (₪)','תאריך'],
-    (r.detail_withdrawals || []).map(x => [x.player, `₪${fmt(x.amount_ils)}`, x.date || ''])
+    (r.detail_withdrawals || []).map(x => [x.player, `₪${fmt(x.amount_ils)}`, x.date ? fmtDate(x.date) : ''])
   );
 
   // Rakeback
@@ -2136,7 +2136,7 @@ async function openPlayerStats(playerId, playerName) {
       tableHtml = `<div class="pd-section"><div class="pd-section-title">📅 היסטוריה מפורטת</div>
         <div class="table-container"><table>
           <thead><tr><th>תאריך</th><th>קטגוריה</th><th>פרטים</th></tr></thead>
-          <tbody>${rows.map(r => `<tr><td>${r.date}</td><td>${r.category}</td><td>${r.detail}</td></tr>`).join('')}</tbody>
+          <tbody>${rows.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${r.category}</td><td>${r.detail}</td></tr>`).join('')}</tbody>
         </table></div></div>`;
     } else {
       tableHtml = '<div class="pd-empty">אין נתונים היסטוריים לשחקן זה עדיין</div>';
@@ -2769,11 +2769,14 @@ function fmt(num) {
 
 function fmtDate(str) {
   if (!str) return '—';
+  const m = String(str).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return m[3] + '-' + m[2] + '-' + m[1];
   try {
-    return new Date(str).toLocaleDateString('he-IL', {
+    const parts = new Date(str).toLocaleDateString('en-GB', {
       day: '2-digit', month: '2-digit', year: 'numeric',
       timeZone: ISRAEL_TZ
-    });
+    }).split('/');
+    return parts.length === 3 ? parts[0] + '-' + parts[1] + '-' + parts[2] : str;
   } catch { return str; }
 }
 
