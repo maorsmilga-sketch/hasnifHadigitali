@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20260731e">
+<link rel="stylesheet" href="style.css?v=20260904a">
 </head>
 <body>
 
@@ -141,42 +141,50 @@
           <h1>לוח בקרה ראשי</h1>
         </div>
 
-        <div class="stats-grid">
-          <div class="stat-card accent">
-            <div class="stat-label">כסף נזיל</div>
-            <div class="stat-value"><span class="currency">₪</span><span id="val-liquid">0</span></div>
-            <div class="stat-sub" id="val-liquid-sub"></div>
+        <div class="dash-stats">
+          <div class="dash-stat-row">
+            <div class="stat-card accent">
+              <div class="stat-label">כסף נזיל</div>
+              <div class="stat-value"><span class="currency">₪</span><span id="val-liquid">0</span></div>
+              <div class="stat-sub" id="val-liquid-sub"></div>
+            </div>
+            <div class="stat-card accent">
+              <div class="stat-label">סה"כ בקופה</div>
+              <div class="stat-value"><span class="currency">₪</span><span id="val-total">0</span></div>
+              <div class="stat-sub">כסף נזיל + חובות</div>
+            </div>
           </div>
-          <div class="stat-card accent">
-            <div class="stat-label">סה"כ בקופה</div>
-            <div class="stat-value"><span class="currency">₪</span><span id="val-total">0</span></div>
-            <div class="stat-sub">כסף נזיל + חובות</div>
+          <div class="dash-stat-row">
+            <div class="stat-card warning">
+              <div class="stat-label">Counter+BadBeat</div>
+              <div class="stat-value"><span class="currency">₪</span><span id="val-chips-ils">0</span></div>
+            </div>
+            <div class="stat-card" id="card-profit">
+              <div class="stat-label">רווח כללי</div>
+              <div class="stat-value" id="sv-profit"><span class="currency">₪</span><span id="val-profit">0</span></div>
+            </div>
           </div>
-          <div class="stat-card warning">
-            <div class="stat-label">Counter+BadBeat</div>
-            <div class="stat-value"><span class="currency">₪</span><span id="val-chips-ils">0</span></div>
+          <div class="dash-stat-row">
+            <div class="stat-card positive">
+              <div class="stat-label">רווח עידו</div>
+              <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-ido">0</span></div>
+              <div class="stat-sub">לאחר חובות: <span id="val-profit-ido-net">₪0</span></div>
+            </div>
+            <div class="stat-card positive">
+              <div class="stat-label">רווח מאור</div>
+              <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-maor">0</span></div>
+              <div class="stat-sub">לאחר חובות: <span id="val-profit-maor-net">₪0</span></div>
+            </div>
           </div>
-          <div class="stat-card" id="card-profit">
-            <div class="stat-label">רווח כללי</div>
-            <div class="stat-value" id="sv-profit"><span class="currency">₪</span><span id="val-profit">0</span></div>
-          </div>
-          <div class="stat-card positive">
-            <div class="stat-label">רווח עידו</div>
-            <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-ido">0</span></div>
-            <div class="stat-sub">לאחר חובות: <span id="val-profit-ido-net">₪0</span></div>
-          </div>
-          <div class="stat-card positive">
-            <div class="stat-label">רווח מאור</div>
-            <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-maor">0</span></div>
-            <div class="stat-sub">לאחר חובות: <span id="val-profit-maor-net">₪0</span></div>
-          </div>
-          <div class="stat-card negative">
-            <div class="stat-label">סה"כ חובות</div>
-            <div class="stat-value"><span class="currency">₪</span><span id="val-debt-total">0</span></div>
-          </div>
-          <div class="stat-card negative">
-            <div class="stat-label">סה"כ הוצאות (₪)</div>
-            <div class="stat-value"><span class="currency">₪</span><span id="val-expenses-ils">0</span></div>
+          <div class="dash-stat-row">
+            <div class="stat-card negative">
+              <div class="stat-label">סה"כ חובות</div>
+              <div class="stat-value"><span class="currency">₪</span><span id="val-debt-total">0</span></div>
+            </div>
+            <div class="stat-card negative">
+              <div class="stat-label">סה"כ הוצאות (₪)</div>
+              <div class="stat-value"><span class="currency">₪</span><span id="val-expenses-ils">0</span></div>
+            </div>
           </div>
         </div>
 
@@ -198,9 +206,8 @@
           </div>
         </div>
 
-        <div class="card">
-          <h3 class="section-title" style="margin-top:0">📊 סיכום הוצאות (תקופה נוכחית)</h3>
-          <p style="font-size:12px;color:var(--text-secondary);margin:0 0 12px;text-align:center">לחץ על שורה לפירוט רשומות</p>
+        <section class="dash-expenses" aria-label="סיכום הוצאות">
+          <h2 class="section-title">סיכום הוצאות</h2>
           <div class="dash-bt-grid">
             <div class="dash-bt-item" style="cursor:pointer" onclick="openDashBTDetail('rb')">
               <span class="dash-bt-label">💸 החזרי גנייה</span>
@@ -227,7 +234,7 @@
               <span class="dash-bt-val negative-color" id="dash-exp-sum">—</span>
             </div>
           </div>
-        </div>
+        </section>
 
         <!-- Detail modal for dashboard blue-table rows -->
         <div id="dash-detail-overlay" class="md-sheet-overlay" style="display:none" onclick="closeDashDetail()">
