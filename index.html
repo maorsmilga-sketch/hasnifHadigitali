@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20260904a">
+<link rel="stylesheet" href="style.css?v=20260904d">
 </head>
 <body>
 
@@ -1050,15 +1050,13 @@
     </div>
   </div>
 
-  <!-- PLAYER STATS MODAL -->
-  <div id="player-stats-overlay" class="confirm-overlay" style="display:none" onclick="closePlayerStats(event)">
-    <div class="detail-modal" onclick="event.stopPropagation()">
-      <div class="detail-modal-header">
-        <h3 id="ps-title">סטטיסטיקות שחקן</h3>
-        <button class="detail-modal-close" onclick="closePlayerStats()">✕</button>
-      </div>
-      <div class="detail-modal-body" id="ps-body">
-      </div>
+  <!-- PLAYER STATS SHEET -->
+  <div id="player-stats-overlay" class="md-sheet-overlay" style="display:none" onclick="closePlayerStats()">
+    <div class="md-sheet ps-sheet" onclick="event.stopPropagation()">
+      <div class="md-sheet-handle"></div>
+      <div class="md-sheet-title" id="ps-title">סטטיסטיקות שחקן</div>
+      <div id="ps-body"></div>
+      <button class="md-sheet-close" onclick="closePlayerStats()">סגור</button>
     </div>
   </div>
 
@@ -1134,6 +1132,6 @@ function showManagementSection() {
 }
 </script>
 
-<script src="app.js?v=20260731e"></script>
+<script src="app.js?v=20260904e"></script>
 </body>
 </html>

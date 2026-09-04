@@ -2084,74 +2084,166 @@ async function openPlayerStats(playerId, playerName) {
   const body  = document.getElementById('ps-body');
   if (!title || !body) return;
 
-  title.textContent = `סטטיסטיקות — ${playerName}`;
+  title.textContent = playerName || 'סטטיסטיקות שחקן';
   body.innerHTML = '<div class="pd-empty">טוען נתונים...</div>';
-  document.getElementById('player-stats-overlay').style.display = 'flex';
+  openSheet('player-stats-overlay');
 
   try {
     const allHistory = await dbGet('history',
-      '?order=period_end.desc&select=period_end,detail_rakeback,detail_tournaments,detail_bonuses,detail_referrals,detail_withdrawals');
+      '?order=period_end.desc&select=period_end,chips_per_shekel,detail_rakeback,detail_tournaments,detail_bonuses,detail_referrals,detail_withdrawals');
 
-    // Aggregate per-player data across all periods
-    const rows = [];
-    let totals = { withdrawals: 0, rakeback_chips: 0, tournament_chips: 0, bonus_chips: 0, referral_chips: 0 };
-
-    (allHistory || []).forEach(h => {
-      const date = h.period_end || '';
-      const matchName = s => s && s.toLowerCase() === playerName.toLowerCase();
-
-      (h.detail_withdrawals || []).filter(x => matchName(x.player)).forEach(x => {
-        rows.push({ date, category: '💳 משיכה', detail: `₪${fmt(x.amount_ils)}` });
-        totals.withdrawals += n(x.amount_ils);
-      });
-      (h.detail_rakeback || []).filter(x => matchName(x.player)).forEach(x => {
-        rows.push({ date, category: '💸 החזר גנייה', detail: `${fmt(x.rakeback_chips)} צ' (₪${fmt(x.rakeback_ils)})` });
-        totals.rakeback_chips += n(x.rakeback_chips);
-      });
-      (h.detail_tournaments || []).filter(x => matchName(x.player)).forEach(x => {
-        rows.push({ date, category: '🏆 טורניר', detail: `${fmt(x.prize_chips)} צ' (₪${fmt(x.prize_ils)})` });
-        totals.tournament_chips += n(x.prize_chips);
-      });
-      (h.detail_bonuses || []).filter(x => matchName(x.player)).forEach(x => {
-        const noteTxt = x.note ? ` — ${x.note}` : '';
-        rows.push({ date, category: '🎁 בונוס', detail: `${fmt(x.chips)} צ' (₪${fmt(x.ils)})${noteTxt}` });
-        totals.bonus_chips += n(x.chips);
-      });
-      (h.detail_referrals || []).filter(x => matchName(x.referring) || matchName(x.referred)).forEach(x => {
-        const role = matchName(x.referring) ? `הפנה את ${x.referred}` : `הופנה ע"י ${x.referring}`;
-        rows.push({ date, category: '🤝 חבר מביא חבר', detail: `${role} — ${fmt(x.chips)} צ'` });
-        if (matchName(x.referring)) totals.referral_chips += n(x.chips);
-      });
-    });
-
-    const totalsHtml = `<div class="pd-stat-grid">
-      <div class="pd-stat-item"><span>💳 סה"כ משיכות</span><strong>₪${fmt(totals.withdrawals)}</strong></div>
-      <div class="pd-stat-item"><span>💸 החזר גנייה</span><strong>${fmt(totals.rakeback_chips)} צ'</strong></div>
-      <div class="pd-stat-item"><span>🏆 טורנירים</span><strong>${fmt(totals.tournament_chips)} צ'</strong></div>
-      <div class="pd-stat-item"><span>🎁 בונוסים</span><strong>${fmt(totals.bonus_chips)} צ'</strong></div>
-    </div>`;
-
-    let tableHtml = '';
-    if (rows.length) {
-      tableHtml = `<div class="pd-section"><div class="pd-section-title">📅 היסטוריה מפורטת</div>
-        <div class="table-container"><table>
-          <thead><tr><th>תאריך</th><th>קטגוריה</th><th>פרטים</th></tr></thead>
-          <tbody>${rows.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${r.category}</td><td>${r.detail}</td></tr>`).join('')}</tbody>
-        </table></div></div>`;
-    } else {
-      tableHtml = '<div class="pd-empty">אין נתונים היסטוריים לשחקן זה עדיין</div>';
-    }
-
-    body.innerHTML = `<div class="pd-section">${totalsHtml}</div>` + tableHtml;
-
+    psState = { playerName, year: null, fromDate: null, toDate: null, rows: collectPlayerStatRows(allHistory || [], playerName) };
+    renderPlayerStatsBody();
   } catch (e) {
     body.innerHTML = `<div class="pd-empty">שגיאה: ${e.message}</div>`;
   }
 }
 
-function closePlayerStats(e) {
-  if (e && e.target !== document.getElementById('player-stats-overlay')) return;
-  document.getElementById('player-stats-overlay').style.display = 'none';
+let psState = { playerName: '', year: null, fromDate: null, toDate: null, rows: [] };
+
+function collectPlayerStatRows(history, playerName) {
+  const rows = [];
+  const matchName = s => s && s.toLowerCase() === playerName.toLowerCase();
+
+  history.forEach(h => {
+    const date = h.period_end || '';
+    const ratio = historyRatio(h);
+
+    (h.detail_withdrawals || []).filter(x => matchName(x.player)).forEach(x => {
+      rows.push({ date, category: 'משיכה', detail: `₪${fmt(x.amount_ils)}`, wdIls: n(x.amount_ils) });
+    });
+    (h.detail_rakeback || []).filter(x => matchName(x.player)).forEach(x => {
+      const chips = n(x.rakeback_chips);
+      const ils = (x.rakeback_ils != null && x.rakeback_ils !== '') ? n(x.rakeback_ils) : chipsToIls(chips, ratio);
+      rows.push({ date, category: 'החזר גנייה', detail: psMoneyChips(ils, chips), rbIls: ils, rbChips: chips });
+    });
+    (h.detail_tournaments || []).filter(x => matchName(x.player)).forEach(x => {
+      const chips = n(x.prize_chips);
+      const ils = (x.prize_ils != null && x.prize_ils !== '') ? n(x.prize_ils) : chipsToIls(chips, ratio);
+      rows.push({ date, category: 'טורניר', detail: psMoneyChips(ils, chips), tnIls: ils, tnChips: chips });
+    });
+    (h.detail_bonuses || []).filter(x => matchName(x.player)).forEach(x => {
+      const chips = n(x.chips);
+      const ils = (x.ils != null && x.ils !== '') ? n(x.ils) : chipsToIls(chips, ratio);
+      const noteTxt = x.note ? ` — ${x.note}` : '';
+      rows.push({ date, category: 'בונוס', detail: psMoneyChips(ils, chips) + noteTxt, bnIls: ils, bnChips: chips });
+    });
+    (h.detail_referrals || []).filter(x => matchName(x.referring) || matchName(x.referred)).forEach(x => {
+      const role = matchName(x.referring) ? `הפנה את ${x.referred}` : `הופנה ע"י ${x.referring}`;
+      rows.push({ date, category: 'חבר מביא חבר', detail: `${role} — ${fmt(x.chips)} צ'` });
+    });
+  });
+  return rows;
+}
+
+function psRowYear(date) {
+  if (!date) return null;
+  const y = parseInt(String(date).slice(0, 4), 10);
+  return Number.isFinite(y) ? y : null;
+}
+
+function psFilteredRows() {
+  return (psState.rows || []).filter(r => {
+    const d = r.date || '';
+    if (psState.fromDate && d < psState.fromDate) return false;
+    if (psState.toDate && d > psState.toDate) return false;
+    if (!psState.fromDate && !psState.toDate && psState.year != null) {
+      return psRowYear(d) === psState.year;
+    }
+    return true;
+  });
+}
+
+function psMoneyChips(ils, chips) {
+  return `₪${fmt(ils)}<small class="ps-chips"> (${fmt(chips)} צ')</small>`;
+}
+
+function setPsYear(year) {
+  if (year == null || year === '') {
+    psState.year = null;
+    psState.fromDate = null;
+    psState.toDate = null;
+  } else {
+    psState.year = Number(year);
+    psState.fromDate = year + '-01-01';
+    psState.toDate = year + '-12-31';
+  }
+  renderPlayerStatsBody();
+}
+
+function setPsRange(from, to) {
+  psState.fromDate = from || null;
+  psState.toDate = to || null;
+  const fy = psState.fromDate && psState.fromDate.slice(0, 4);
+  const ty = psState.toDate && psState.toDate.slice(0, 4);
+  psState.year = (fy && fy === ty && psState.fromDate === fy + '-01-01' && psState.toDate === ty + '-12-31')
+    ? Number(fy) : null;
+  renderPlayerStatsBody();
+}
+
+function renderPlayerStatsBody() {
+  const body = document.getElementById('ps-body');
+  if (!body) return;
+
+  const allRows = psState.rows || [];
+  const years = [...new Set(allRows.map(r => psRowYear(r.date)).filter(Boolean))].sort((a, b) => b - a);
+
+  const rows = psFilteredRows();
+  const totals = rows.reduce((t, r) => {
+    t.wdIls += n(r.wdIls);
+    t.rbIls += n(r.rbIls);
+    t.rbChips += n(r.rbChips);
+    t.tnIls += n(r.tnIls);
+    t.tnChips += n(r.tnChips);
+    t.bnIls += n(r.bnIls);
+    t.bnChips += n(r.bnChips);
+    return t;
+  }, { wdIls: 0, rbIls: 0, rbChips: 0, tnIls: 0, tnChips: 0, bnIls: 0, bnChips: 0 });
+
+  const noRange = !psState.fromDate && !psState.toDate;
+  const yearBtns = [`<button type="button" class="ps-chip${psState.year == null && noRange ? ' active' : ''}" onclick="setPsYear(null)">הכל</button>`]
+    .concat(years.map(y => `<button type="button" class="ps-chip${psState.year === y ? ' active' : ''}" onclick="setPsYear(${y})">${y}</button>`))
+    .join('');
+
+  const filtersHtml = `<div class="ps-filters">
+    <div class="ps-chip-row">${yearBtns}</div>
+    <div class="ps-range">
+      <label class="ps-range-field">מ
+        <input type="date" id="ps-from" value="${escHtml(psState.fromDate || '')}" onchange="setPsRange(this.value, document.getElementById('ps-to').value)">
+      </label>
+      <label class="ps-range-field">עד
+        <input type="date" id="ps-to" value="${escHtml(psState.toDate || '')}" onchange="setPsRange(document.getElementById('ps-from').value, this.value)">
+      </label>
+    </div>
+  </div>`;
+
+  const totalsHtml = `<div class="ps-stat-grid">
+    <div class="ps-stat"><span>סה"כ משיכות</span><strong>₪${fmt(totals.wdIls)}</strong></div>
+    <div class="ps-stat"><span>החזר גנייה</span><strong>${psMoneyChips(totals.rbIls, totals.rbChips)}</strong></div>
+    <div class="ps-stat"><span>טורנירים</span><strong>${psMoneyChips(totals.tnIls, totals.tnChips)}</strong></div>
+    <div class="ps-stat"><span>בונוסים</span><strong>${psMoneyChips(totals.bnIls, totals.bnChips)}</strong></div>
+  </div>`;
+
+  let listHtml = '';
+  if (rows.length) {
+    listHtml = `<div class="ps-history-label">היסטוריה מפורטת</div>
+      <div class="ps-history">${rows.map(r => `
+        <div class="ps-row">
+          <div class="ps-row-meta">
+            <span class="ps-date">${fmtDate(r.date)}</span>
+            <span class="ps-cat">${r.category}</span>
+          </div>
+          <div class="ps-detail">${r.detail}</div>
+        </div>`).join('')}</div>`;
+  } else {
+    listHtml = `<div class="pd-empty">${allRows.length ? 'אין נתונים לסינון שנבחר' : 'אין נתונים היסטוריים לשחקן זה עדיין'}</div>`;
+  }
+
+  body.innerHTML = filtersHtml + totalsHtml + listHtml;
+}
+
+function closePlayerStats() {
+  closeSheet('player-stats-overlay');
 }
 
 // ============================================================
