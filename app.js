@@ -320,6 +320,11 @@ async function loadDashboard() {
   const maorNet  = half - n(cp.debt_maor);
 
   setText('val-liquid',          fmt(liquid));
+  const _bitSum  = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin);
+  const _pbSum   = n(cp.paybox_maor) + n(cp.paybox_ido);
+  const _ccSum   = n(cp.cashcash_ido) + n(cp.cashcash_maor);
+  const _parts   = [_bitSum > 0 && 'ביט', _pbSum > 0 && 'פייבוקס', _ccSum > 0 && 'קאשקאש'].filter(Boolean);
+  setText('val-liquid-sub', _parts.join(' + '));
   setText('val-total',           fmt(total));
   setText('val-chips-ils',       fmt(chipsIls));
   setText('val-profit',          fmt(profit));
