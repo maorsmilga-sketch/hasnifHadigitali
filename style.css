@@ -787,7 +787,8 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
 
 .manual-input input { flex: 1; }
 
-.debt-block .manual-input {
+.debt-block .manual-input,
+.pdebt-row-controls {
   width: 100%;
   display: flex;
   gap: 8px;
@@ -811,12 +812,30 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   direction: rtl;
 }
 
-.debt-block .manual-input input:focus {
+.pdebt-row-controls input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 48px;
+  padding: 0 14px;
+  font-size: 18px;
+  font-family: var(--font);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  box-sizing: border-box;
+  outline: none;
+  direction: rtl;
+}
+
+.debt-block .manual-input input:focus,
+.pdebt-row-controls input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
 }
 
-.debt-block .manual-input .btn {
+.debt-block .manual-input .btn,
+.pdebt-row-controls .btn {
   flex: 0 0 56px;
   width: 56px;
   min-width: 56px;
@@ -824,6 +843,57 @@ tbody tr:hover { background: rgba(108,99,255,0.04); }
   padding: 0;
   font-size: 22px;
   border-radius: var(--radius-sm);
+}
+
+.pdebt-history-btn {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.pdebt-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.pdebt-row-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pdebt-row-amount {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--warning);
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.pdebt-row-amount .debt-currency {
+  font-size: 13px;
+  font-weight: 500;
+  vertical-align: super;
+  margin-left: 1px;
+}
+
+.pdebt-sheet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pdebt-sheet-actions .btn {
+  flex: 1 1 calc(50% - 5px);
+  padding: 14px;
+}
+
+#player-debt-log-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* ===== HISTORY ===== */
@@ -2683,6 +2753,17 @@ button.dash-bt-item:active,
   line-height: 1.3;
   letter-spacing: 0.3px;
   text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.letter-emph {
+  font-weight: 900;
+  font-style: normal;
+  color: var(--negative);
+}
+
+.app-icon-label .letter-emph {
+  font-size: 1.2em;
+  text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
 }
 
 /* Slide-in animation for grids and pages */

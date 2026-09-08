@@ -302,8 +302,9 @@ async function loadPageData(page) {
       case 'dashboard':   await loadDashboard();    break;
       case 'funds':       await loadFunds();        break;
       case 'blue-table':  await loadBlueTable();    break;
-      case 'debts':       await loadDebts();        break;
-      case 'history':     await loadHistory();      break;
+      case 'debts':         await loadDebts();        break;
+      case 'player-debts':  await loadPlayerDebts();  break;
+      case 'history':       await loadHistory();      break;
       case 'players':     await loadPlayers();      break;
       case 'settlement':  loadSettlementPage();     break;
     }
@@ -595,6 +596,7 @@ function initAllPlayerACs() {
   initPlayerAC('ref-to-wrap',    'ref-to',    null);
   initPlayerAC('wd-player-wrap', 'wd-player', null);
   initPlayerAC('pd-player-wrap', 'pd-player', null);
+  initPlayerAC('npd-player-wrap', 'npd-player', null);
 }
 
 // — Counter —
@@ -1791,6 +1793,188 @@ function closeDebtLog(e) {
 }
 
 // ============================================================
+// PAGE — PLAYER DEBTS (חובות לשחקנים)
+// ============================================================
+async function loadPlayerDebts() {
+  try { players = (await dbGet('players', '?order=name.asc')) || []; } catch {}
+  initAllPlayerACs();
+  renderPlayerDebtsPage();
+}
+
+function playerDebtName(p) {
+  return p.nickname || p.name;
+}
+
+function playerDebtDescription(action, name, amount, newVal) {
+  if (action === 'add')      return `נוסף ₪${fmt(amount)} לחוב ל${name} → ₪${fmt(newVal)}`;
+  if (action === 'subtract') return `הופחת ₪${fmt(amount)} מחוב ל${name} → ₪${fmt(newVal)}`;
+  if (action === 'clear')    return `חוב ל${name} סולק במלואו`;
+  return `חוב ל${name} עודכן → ₪${fmt(newVal)}`;
+}
+
+async function updateOwedToPlayer(playerId, newVal, action, inputAmount) {
+  const p = players.find(pl => pl.id === playerId);
+  if (!p) return false;
+  newVal = Math.max(0, n(newVal));
+  const oldVal = n(p.owed_to_player);
+  if (newVal === oldVal && action !== 'clear') {
+    showNotif('אין שינוי ביתרה', 'error');
+    return false;
+  }
+  const name = playerDebtName(p);
+  const description = playerDebtDescription(action, name, inputAmount, newVal);
+  try {
+    await dbPatch('players', `?id=eq.${playerId}`, { owed_to_player: newVal });
+    p.owed_to_player = newVal;
+    try {
+      await dbPost('player_debt_log', {
+        player_id: playerId,
+        action,
+        amount: n(inputAmount),
+        new_balance: newVal,
+        description,
+        created_by: getDisplayName(),
+        created_at: now()
+      });
+    } catch {}
+    const toast = action === 'clear'
+      ? `✅ חוב ל${name} סולק`
+      : `✅ חוב ל${name} עודכן → ₪${fmt(newVal)}`;
+    showNotif(toast);
+    renderPlayerDebtsPage();
+    return true;
+  } catch (e) {
+    showNotif('שגיאה בעדכון חוב: ' + e.message, 'error');
+    return false;
+  }
+}
+
+function renderPlayerDebtsPage() {
+  const container = document.getElementById('player-debts-list');
+  if (!container) return;
+  const withDebt = (players || []).filter(p => n(p.owed_to_player) > 0)
+    .sort((a, b) => n(b.owed_to_player) - n(a.owed_to_player) || playerDebtName(a).localeCompare(playerDebtName(b), 'he'));
+  if (!withDebt.length) {
+    container.innerHTML = '<div class="md-list-empty">אין לנו שחקנים עם חובות פעילים</div>';
+    return;
+  }
+  container.innerHTML = withDebt.map(p => {
+    const label = escHtml(p.nickname || p.name);
+    const sub   = (p.nickname && p.name)
+      ? `<div class="md-list-subtitle">${escHtml(p.name)}</div>`
+      : '';
+    return `
+    <div class="md-list-item pdebt-row">
+      <div class="pdebt-row-head">
+        <div class="md-list-content">
+          <div class="md-list-title">${label}</div>
+          ${sub}
+        </div>
+        <div class="pdebt-row-amount"><span class="debt-currency">₪</span>${fmt(p.owed_to_player)}</div>
+        <button type="button" class="md-icon-btn" onclick="confirmClearPlayerDebt('${p.id}')" title="סילוק מלא" aria-label="סילוק מלא">✕</button>
+      </div>
+      <div class="manual-input pdebt-row-controls">
+        <input type="number" id="pdebt-amt-${p.id}" placeholder="סכום..." step="0.01" min="0" inputmode="decimal">
+        <button type="button" class="btn btn-success btn-sm" onclick="playerDebtAdd('${p.id}')">+</button>
+        <button type="button" class="btn btn-danger btn-sm" onclick="playerDebtSub('${p.id}')">−</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function playerDebtRowAmount(playerId) {
+  const el = document.getElementById('pdebt-amt-' + playerId);
+  const amount = parseFloat(el?.value);
+  if (!amount || amount <= 0) {
+    showNotif('אנא הזן סכום תקין', 'error');
+    return null;
+  }
+  return amount;
+}
+
+async function playerDebtAdd(playerId) {
+  const amount = playerDebtRowAmount(playerId);
+  if (amount == null) return;
+  const p = players.find(pl => pl.id === playerId);
+  if (!p) return;
+  await updateOwedToPlayer(playerId, n(p.owed_to_player) + amount, 'add', amount);
+}
+
+async function playerDebtSub(playerId) {
+  const amount = playerDebtRowAmount(playerId);
+  if (amount == null) return;
+  const p = players.find(pl => pl.id === playerId);
+  if (!p) return;
+  await updateOwedToPlayer(playerId, n(p.owed_to_player) - amount, 'subtract', amount);
+}
+
+function confirmClearPlayerDebt(playerId) {
+  const p = players.find(pl => pl.id === playerId);
+  if (!p) return;
+  const name = playerDebtName(p);
+  document.getElementById('confirm-title').textContent = 'סילוק חוב';
+  document.getElementById('confirm-msg').textContent =
+    `האם לסגור את החוב ל${name} במלואו? השחקן יוסר מרשימת החובות הפעילים.`;
+  document.getElementById('confirm-ok').textContent = 'סילוק מלא';
+  document.getElementById('confirm-ok').onclick = async () => {
+    closeConfirm();
+    await updateOwedToPlayer(playerId, 0, 'clear', n(p.owed_to_player));
+  };
+  document.getElementById('confirm-overlay').style.display = 'flex';
+}
+
+async function sheetNewPlayerDebt(action) {
+  const playerId = document.getElementById('npd-player').value;
+  const inputEl  = document.getElementById('npd-player-amount');
+  const amount   = parseFloat(inputEl.value);
+  if (!playerId)              { showNotif('אנא בחר שחקן', 'error');     return; }
+  if (!amount || amount <= 0) { showNotif('אנא הזן סכום תקין', 'error'); return; }
+
+  const p = players.find(pl => pl.id === playerId);
+  if (!p) return;
+  const newVal = action === 'add'
+    ? n(p.owed_to_player) + amount
+    : n(p.owed_to_player) - amount;
+
+  const ok = await updateOwedToPlayer(playerId, newVal, action, amount);
+  if (!ok) return;
+  inputEl.value = '';
+  clearPlayerAC('npd-player');
+  closeSheet('player-debt-sheet');
+}
+
+async function openPlayerDebtLog() {
+  document.getElementById('player-debt-log-overlay').style.display = 'flex';
+  await loadPlayerDebtLogData();
+}
+
+async function loadPlayerDebtLogData() {
+  const body = document.getElementById('player-debt-log-body');
+  body.innerHTML = '<div class="md-list-empty">טוען נתונים...</div>';
+  try {
+    const data = await dbGet('player_debt_log', '?order=created_at.desc&limit=10');
+    if (!data || !data.length) {
+      body.innerHTML = '<div class="md-list-empty">אין פעולות</div>';
+      return;
+    }
+    body.innerHTML = data.map(r => `
+      <div class="md-list-item">
+        <div class="md-list-content">
+          <div class="md-list-title">${escHtml(r.description || '')}</div>
+          <div class="md-list-subtitle">${fmtDateTime(r.created_at)}${r.created_by ? ' · ' + escHtml(r.created_by) : ''}</div>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    body.innerHTML = `<div class="md-list-empty">שגיאה בטעינת הנתונים: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function closePlayerDebtLog(e) {
+  if (e && e.target !== document.getElementById('player-debt-log-overlay')) return;
+  document.getElementById('player-debt-log-overlay').style.display = 'none';
+}
+
+// ============================================================
 // PAGE 5 — HISTORY & GRAPHS
 // ============================================================
 async function loadHistory() {
@@ -2548,6 +2732,8 @@ function confirmClosePeriod() {
 
 function closeConfirm() {
   document.getElementById('confirm-overlay').style.display = 'none';
+  const ok = document.getElementById('confirm-ok');
+  if (ok) ok.textContent = 'אשר';
 }
 
 async function closePeriod(periodStart) {
@@ -2883,6 +3069,19 @@ function fmtDate(str) {
     }).split('/');
     return parts.length === 3 ? parts[0] + '-' + parts[1] + '-' + parts[2] : str;
   } catch { return str; }
+}
+
+function fmtDateTime(str) {
+  if (!str) return '—';
+  try {
+    const time = new Date(str).toLocaleTimeString('he-IL', {
+      hour: '2-digit', minute: '2-digit',
+      hour12: false, timeZone: ISRAEL_TZ
+    });
+    return fmtDate(str) + ' ' + time;
+  } catch {
+    return fmtDate(str);
+  }
 }
 
 function setText(id, val) {

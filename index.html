@@ -9,7 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20260904h">
+<link rel="stylesheet" href="style.css?v=20260908b">
 </head>
 <body>
 
@@ -86,6 +86,10 @@
         <button type="button" class="app-icon" onclick="openPage('debts')">
           <span class="app-icon-img">⚖️</span>
           <span class="app-icon-label">חובות</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openPage('player-debts')">
+          <span class="app-icon-img">💵</span>
+          <span class="app-icon-label">חובות <b class="letter-emph">ל</b>שחקנים</span>
         </button>
         <button type="button" class="app-icon" onclick="openPage('history')">
           <span class="app-icon-img">📈</span>
@@ -815,6 +819,46 @@
         <div class="debt-grid" id="other-debts-grid" style="margin-top:20px"></div>
       </div>
 
+      <!-- ===== PAGE: PLAYER DEBTS ===== -->
+      <div id="page-player-debts" class="page">
+        <div class="page-header">
+          <h1>חובות <span class="letter-emph">ל</span>שחקנים</h1>
+          <p>סכומים שהמועדון חייב לשחקנים</p>
+        </div>
+
+        <button type="button" class="btn btn-secondary pdebt-history-btn" onclick="openPlayerDebtLog()">📜 10 פעולות אחרונות</button>
+
+        <div class="md-list" id="player-debts-list">
+          <div class="md-list-empty">אין לנו שחקנים עם חובות פעילים</div>
+        </div>
+
+        <button type="button" class="md-fab" onclick="openSheet('player-debt-sheet')" title="עדכן חוב שחקן">＋</button>
+
+        <div class="md-sheet-overlay" id="player-debt-sheet" style="display:none">
+          <div class="md-sheet">
+            <div class="md-sheet-handle"></div>
+            <div class="md-sheet-title">עדכן חוב שחקן</div>
+            <div class="form-group">
+              <label>שחקן</label>
+              <div class="player-ac-wrap" id="npd-player-wrap">
+                <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                <input type="hidden" id="npd-player">
+                <ul class="player-ac-list"></ul>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>סכום (₪)</label>
+              <input type="number" id="npd-player-amount" placeholder="0" min="0" step="0.01">
+            </div>
+            <div class="pdebt-sheet-actions">
+              <button type="button" class="btn btn-success" onclick="sheetNewPlayerDebt('add')">➕ הוסף לחוב</button>
+              <button type="button" class="btn btn-danger" onclick="sheetNewPlayerDebt('subtract')">➖ הפחת מחוב</button>
+            </div>
+            <button type="button" class="md-sheet-close" onclick="closeSheet('player-debt-sheet')">ביטול</button>
+          </div>
+        </div>
+      </div>
+
       <!-- ===== PAGE 5: HISTORY ===== -->
       <div id="page-history" class="page">
         <div class="page-header">
@@ -1050,6 +1094,18 @@
     </div>
   </div>
 
+  <!-- PLAYER DEBT LOG MODAL -->
+  <div id="player-debt-log-overlay" class="confirm-overlay" style="display:none" onclick="closePlayerDebtLog(event)">
+    <div class="detail-modal" onclick="event.stopPropagation()">
+      <div class="detail-modal-header">
+        <h3>📜 10 פעולות אחרונות — חובות לשחקנים</h3>
+        <button type="button" class="detail-modal-close" onclick="closePlayerDebtLog()">✕</button>
+      </div>
+      <div class="detail-modal-body" id="player-debt-log-body">
+      </div>
+    </div>
+  </div>
+
   <!-- PLAYER STATS SHEET -->
   <div id="player-stats-overlay" class="md-sheet-overlay" style="display:none" onclick="closePlayerStats()">
     <div class="md-sheet ps-sheet" onclick="event.stopPropagation()">
@@ -1141,6 +1197,6 @@ function showManagementSection() {
 }
 </script>
 
-<script src="app.js?v=20260904h"></script>
+<script src="app.js?v=20260908b"></script>
 </body>
 </html>
