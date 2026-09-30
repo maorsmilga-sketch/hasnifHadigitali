@@ -9,7 +9,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20260908b">
+<link rel="stylesheet" href="style.css?v=20260930c">
+<link rel="stylesheet" href="management.css?v=20260930c">
 </head>
 <body>
 
@@ -64,7 +65,7 @@
       </div>
       <div class="topbar-user">
         <span class="user-badge" id="user-badge">—</span>
-        <button class="btn-logout-top" onclick="doLogout()">🚪</button>
+        <button class="btn-logout-top" onclick="doLogout()" title="התנתק" aria-label="התנתק">🚪</button>
       </div>
     </header>
 
@@ -149,45 +150,45 @@
           <div class="dash-stat-row">
             <div class="stat-card accent">
               <div class="stat-label">כסף נזיל</div>
-              <div class="stat-value"><span class="currency">₪</span><span id="val-liquid">0</span></div>
+              <div class="stat-value"><span class="currency">₪</span><span id="val-liquid">—</span></div>
               <div class="stat-sub" id="val-liquid-sub"></div>
             </div>
             <div class="stat-card accent">
               <div class="stat-label">סה"כ בקופה</div>
-              <div class="stat-value"><span class="currency">₪</span><span id="val-total">0</span></div>
+              <div class="stat-value"><span class="currency">₪</span><span id="val-total">—</span></div>
               <div class="stat-sub">כסף נזיל + חובות</div>
             </div>
           </div>
           <div class="dash-stat-row">
             <div class="stat-card warning">
               <div class="stat-label stat-label-mixed">Counter+BadBeat</div>
-              <div class="stat-value"><span class="currency">₪</span><span id="val-chips-ils">0</span></div>
+              <div class="stat-value"><span class="currency">₪</span><span id="val-chips-ils">—</span></div>
             </div>
             <div class="stat-card" id="card-profit">
               <div class="stat-label">רווח כללי</div>
-              <div class="stat-value" id="sv-profit"><span class="currency">₪</span><span id="val-profit">0</span></div>
+              <div class="stat-value" id="sv-profit"><span class="currency">₪</span><span id="val-profit">—</span></div>
             </div>
           </div>
           <div class="dash-stat-row">
             <div class="stat-card positive">
               <div class="stat-label">רווח עידו</div>
-              <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-ido">0</span></div>
-              <div class="stat-sub">לאחר חובות: <span id="val-profit-ido-net">₪0</span></div>
+              <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-ido">—</span></div>
+              <div class="stat-sub">לאחר חובות: <span id="val-profit-ido-net">—</span></div>
             </div>
             <div class="stat-card positive">
               <div class="stat-label">רווח מאור</div>
-              <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-maor">0</span></div>
-              <div class="stat-sub">לאחר חובות: <span id="val-profit-maor-net">₪0</span></div>
+              <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-maor">—</span></div>
+              <div class="stat-sub">לאחר חובות: <span id="val-profit-maor-net">—</span></div>
             </div>
           </div>
           <div class="dash-stat-row">
             <div class="stat-card negative">
               <div class="stat-label">סה"כ חובות</div>
-              <div class="stat-value"><span class="currency">₪</span><span id="val-debt-total">0</span></div>
+              <div class="stat-value"><span class="currency">₪</span><span id="val-debt-total">—</span></div>
             </div>
             <div class="stat-card negative">
               <div class="stat-label">סה"כ הוצאות (₪)</div>
-              <div class="stat-value"><span class="currency">₪</span><span id="val-expenses-ils">0</span></div>
+              <div class="stat-value"><span class="currency">₪</span><span id="val-expenses-ils">—</span></div>
             </div>
           </div>
           <div class="dash-stat-row" id="row-bank-leumi" style="display:none">
@@ -420,12 +421,12 @@
         <div class="fm-sticky-footer">
           <div class="fm-footer-item">
             <span class="fm-footer-label">כסף נזיל</span>
-            <span class="fm-footer-val" id="funds-liquid">₪0</span>
+            <span class="fm-footer-val" id="funds-liquid">—</span>
           </div>
           <div class="fm-footer-divider"></div>
           <div class="fm-footer-item">
             <span class="fm-footer-label">סה"כ בקופה</span>
-            <span class="fm-footer-val" id="funds-total">₪0</span>
+            <span class="fm-footer-val" id="funds-total">—</span>
           </div>
         </div>
 
@@ -459,7 +460,7 @@
             <div class="tab-summary" id="bt-rb-summary"></div>
 
             <!-- FAB -->
-            <button class="md-fab" onclick="openSheet('rb-sheet')" title="הוסף רשומה">＋</button>
+            <button class="md-fab" onclick="openSheet('rb-sheet')" title="הוסף רשומה" aria-label="הוסף רשומה">＋</button>
 
             <!-- Bottom Sheet -->
             <div class="md-sheet-overlay" id="rb-sheet" style="display:none">
@@ -476,7 +477,7 @@
                 </div>
                 <div class="form-group">
                   <label>כמות גנייה שנלקחה (צ'יפים)</label>
-                  <input type="number" id="rb-rake" placeholder="0" min="0" oninput="updateRakebackCalc()">
+                  <input type="number" id="rb-rake" inputmode="decimal" placeholder="0" min="0" oninput="updateRakebackCalc()">
                 </div>
                 <div class="calc-display">
                   החזר לשחקן: <strong id="rb-calc">0 צ'יפים</strong>
@@ -487,7 +488,7 @@
             </div>
 
             <!-- Card list -->
-            <div class="md-list" id="rb-table-body"><div class="md-list-empty">אין רשומות</div></div>
+            <div class="md-list" id="rb-table-body"><div class="md-list-empty" data-loading role="status">טוען רשומות…</div></div>
           </div>
 
           <!-- Sub-tab: Commitments table (payment tracking) -->
@@ -524,7 +525,7 @@
           <div class="tab-summary" id="bt-tn-summary"></div>
 
           <!-- FAB -->
-          <button class="md-fab" onclick="openSheet('tn-sheet')" title="הוסף טורניר">＋</button>
+          <button class="md-fab" onclick="openSheet('tn-sheet')" title="הוסף טורניר" aria-label="הוסף טורניר">＋</button>
 
           <!-- Bottom Sheet -->
           <div class="md-sheet-overlay" id="tn-sheet" style="display:none">
@@ -551,7 +552,7 @@
               </div>
               <div class="form-group">
                 <label>סכום פרס (צ'יפים)</label>
-                <input type="number" id="tn-prize" placeholder="0" min="0">
+                <input type="number" id="tn-prize" inputmode="decimal" placeholder="0" min="0">
               </div>
               <button class="btn btn-primary" onclick="addTournament()">הוסף רשומה</button>
               <button class="md-sheet-close" onclick="closeSheet('tn-sheet')">ביטול</button>
@@ -559,7 +560,7 @@
           </div>
 
           <!-- Card list -->
-          <div class="md-list" id="tn-table-body"><div class="md-list-empty">אין רשומות</div></div>
+          <div class="md-list" id="tn-table-body"><div class="md-list-empty" data-loading role="status">טוען רשומות…</div></div>
         </div>
 
         <!-- Tab: Bonuses -->
@@ -567,7 +568,7 @@
           <div class="tab-summary" id="bt-bn-summary"></div>
 
           <!-- FAB -->
-          <button class="md-fab" onclick="openSheet('bn-sheet')" title="הוסף בונוס">＋</button>
+          <button class="md-fab" onclick="openSheet('bn-sheet')" title="הוסף בונוס" aria-label="הוסף בונוס">＋</button>
 
           <!-- Bottom Sheet -->
           <div class="md-sheet-overlay" id="bn-sheet" style="display:none">
@@ -587,7 +588,7 @@
               </div>
               <div class="form-group">
                 <label>כמות צ'יפים</label>
-                <input type="number" id="bn-chips" placeholder="0" min="0">
+                <input type="number" id="bn-chips" inputmode="decimal" placeholder="0" min="0">
               </div>
               <div class="form-group">
                 <label>הערה</label>
@@ -599,7 +600,7 @@
           </div>
 
           <!-- Card list -->
-          <div class="md-list" id="bn-table-body"><div class="md-list-empty">אין רשומות</div></div>
+          <div class="md-list" id="bn-table-body"><div class="md-list-empty" data-loading role="status">טוען רשומות…</div></div>
         </div>
 
         <!-- Tab: Referrals -->
@@ -607,7 +608,7 @@
           <div class="tab-summary" id="bt-ref-summary"></div>
 
           <!-- FAB -->
-          <button class="md-fab" onclick="openSheet('ref-sheet')" title="הוסף חבר מביא חבר">＋</button>
+          <button class="md-fab" onclick="openSheet('ref-sheet')" title="הוסף חבר מביא חבר" aria-label="הוסף חבר מביא חבר">＋</button>
 
           <!-- Bottom Sheet -->
           <div class="md-sheet-overlay" id="ref-sheet" style="display:none">
@@ -632,7 +633,7 @@
               </div>
               <div class="form-group">
                 <label>סכום (צ'יפים)</label>
-                <input type="number" id="ref-chips" placeholder="0" min="0">
+                <input type="number" id="ref-chips" inputmode="decimal" placeholder="0" min="0">
               </div>
               <button class="btn btn-primary" onclick="addReferral()">הוסף רשומה</button>
               <button class="md-sheet-close" onclick="closeSheet('ref-sheet')">ביטול</button>
@@ -640,7 +641,7 @@
           </div>
 
           <!-- Card list -->
-          <div class="md-list" id="ref-table-body"><div class="md-list-empty">אין רשומות</div></div>
+          <div class="md-list" id="ref-table-body"><div class="md-list-empty" data-loading role="status">טוען רשומות…</div></div>
         </div>
 
         <!-- Tab: Withdrawals -->
@@ -648,7 +649,7 @@
           <div class="tab-summary" id="bt-wd-summary"></div>
 
           <!-- FAB -->
-          <button class="md-fab" onclick="openSheet('wd-sheet')" title="הוסף משיכה">＋</button>
+          <button class="md-fab" onclick="openSheet('wd-sheet')" title="הוסף משיכה" aria-label="הוסף משיכה">＋</button>
 
           <!-- Bottom Sheet -->
           <div class="md-sheet-overlay" id="wd-sheet" style="display:none">
@@ -672,7 +673,7 @@
               </div>
               <div class="form-group">
                 <label>כמות צ'יפים</label>
-                <input type="number" id="wd-chips" placeholder="0" min="0">
+                <input type="number" id="wd-chips" inputmode="decimal" placeholder="0" min="0">
               </div>
               <button class="btn btn-primary" onclick="addWithdrawal()">הוסף רשומה</button>
               <button class="md-sheet-close" onclick="closeSheet('wd-sheet')">ביטול</button>
@@ -680,7 +681,7 @@
           </div>
 
           <!-- Card list -->
-          <div class="md-list" id="wd-table-body"><div class="md-list-empty">אין רשומות</div></div>
+          <div class="md-list" id="wd-table-body"><div class="md-list-empty" data-loading role="status">טוען רשומות…</div></div>
         </div>
 
         <!-- Tab: Expenses -->
@@ -688,7 +689,7 @@
           <div class="tab-summary" id="bt-exp-summary"></div>
 
           <!-- FAB -->
-          <button class="md-fab" onclick="openSheet('exp-sheet')" title="הוסף הוצאה">＋</button>
+          <button class="md-fab" onclick="openSheet('exp-sheet')" title="הוסף הוצאה" aria-label="הוסף הוצאה">＋</button>
 
           <!-- Bottom Sheet -->
           <div class="md-sheet-overlay" id="exp-sheet" style="display:none">
@@ -701,7 +702,7 @@
               </div>
               <div class="form-group">
                 <label>סכום (₪)</label>
-                <input type="number" id="exp-amount" placeholder="0" min="0" step="0.01">
+                <input type="number" id="exp-amount" inputmode="decimal" placeholder="0" min="0" step="0.01">
               </div>
               <div class="form-group">
                 <label>מהות ההוצאה</label>
@@ -721,22 +722,22 @@
           </div>
 
           <!-- Card list -->
-          <div class="md-list" id="exp-table-body"><div class="md-list-empty">אין רשומות</div></div>
+          <div class="md-list" id="exp-table-body"><div class="md-list-empty" data-loading role="status">טוען רשומות…</div></div>
         </div>
 
         <!-- Blue Table Summary (fixed bottom) -->
         <div class="summary-bar" id="bt-summary-bar" style="margin-top:32px">
           <div class="summary-item">
             <span class="summary-label">סה"כ הוצאות (₪)</span>
-            <span class="summary-value" id="bt-total-ils">₪0</span>
+            <span class="summary-value" id="bt-total-ils">—</span>
           </div>
           <div class="summary-item">
             <span class="summary-label">סה"כ משיכות (₪)</span>
-            <span class="summary-value negative-color" id="bt-total-withdrawals">₪0</span>
+            <span class="summary-value negative-color" id="bt-total-withdrawals">—</span>
           </div>
           <div class="summary-item">
             <span class="summary-label">סה"כ הוצאות כלליות (₪)</span>
-            <span class="summary-value negative-color" id="bt-exp-total">₪0</span>
+            <span class="summary-value negative-color" id="bt-exp-total">—</span>
           </div>
         </div>
       </div>
@@ -756,7 +757,7 @@
           </div>
           <div class="form-group">
             <label>% גנייה</label>
-            <input type="number" id="qap-rb" placeholder="60" value="60" min="0" max="100">
+            <input type="number" id="qap-rb" inputmode="decimal" placeholder="60" value="60" min="0" max="100">
           </div>
           <button class="btn btn-primary" onclick="saveQuickPlayer()">שמור שחקן</button>
           <button class="md-sheet-close" onclick="closeQuickAddPlayer()">ביטול</button>
@@ -793,7 +794,7 @@
           <div class="debt-block">
             <h3>⚖️ חוב עידו</h3>
             <div class="debt-amount">
-              <span class="debt-currency">₪</span><span id="debt-ido-display">0</span>
+              <span class="debt-currency">₪</span><span id="debt-ido-display">—</span>
             </div>
             <div class="manual-input">
               <input type="number" id="debt-ido-manual" placeholder="סכום..." step="0.01">
@@ -806,7 +807,7 @@
           <div class="debt-block">
             <h3>⚖️ חוב מאור</h3>
             <div class="debt-amount">
-              <span class="debt-currency">₪</span><span id="debt-maor-display">0</span>
+              <span class="debt-currency">₪</span><span id="debt-maor-display">—</span>
             </div>
             <div class="manual-input">
               <input type="number" id="debt-maor-manual" placeholder="סכום..." step="0.01">
@@ -817,7 +818,7 @@
         </div>
 
         <!-- FAB for other player debt -->
-        <button class="md-fab" onclick="openSheet('debt-sheet')" title="עדכן חוב שחקן">＋</button>
+        <button class="md-fab" onclick="openSheet('debt-sheet')" title="עדכן חוב שחקן" aria-label="עדכן חוב שחקן">＋</button>
 
         <!-- Bottom Sheet for other player debt -->
         <div class="md-sheet-overlay" id="debt-sheet" style="display:none">
@@ -834,7 +835,7 @@
             </div>
             <div class="form-group">
               <label>סכום (₪)</label>
-              <input type="number" id="pd-player-amount" placeholder="0" min="0" step="0.01">
+              <input type="number" id="pd-player-amount" inputmode="decimal" placeholder="0" min="0" step="0.01">
             </div>
             <div style="display:flex;gap:10px">
               <button class="btn btn-success" style="flex:1;padding:14px" onclick="manualPlayerDebt(1)">➕ הוסף לחוב</button>
@@ -857,10 +858,10 @@
         <button type="button" class="btn btn-secondary pdebt-history-btn" onclick="openPlayerDebtLog()">📜 10 פעולות אחרונות</button>
 
         <div class="md-list" id="player-debts-list">
-          <div class="md-list-empty">אין לנו שחקנים עם חובות פעילים</div>
+          <div class="md-list-empty" data-loading role="status">טוען חובות…</div>
         </div>
 
-        <button type="button" class="md-fab" onclick="openSheet('player-debt-sheet')" title="עדכן חוב שחקן">＋</button>
+        <button type="button" class="md-fab" onclick="openSheet('player-debt-sheet')" title="עדכן חוב שחקן" aria-label="עדכן חוב שחקן">＋</button>
 
         <div class="md-sheet-overlay" id="player-debt-sheet" style="display:none">
           <div class="md-sheet">
@@ -876,7 +877,7 @@
             </div>
             <div class="form-group">
               <label>סכום (₪)</label>
-              <input type="number" id="npd-player-amount" placeholder="0" min="0" step="0.01">
+              <input type="number" id="npd-player-amount" inputmode="decimal" placeholder="0" min="0" step="0.01">
             </div>
             <div class="pdebt-sheet-actions">
               <button type="button" class="btn btn-success" onclick="sheetNewPlayerDebt('add')">➕ הוסף לחוב</button>
@@ -900,7 +901,7 @@
             <button id="history-toggle-btn" onclick="(function(){var b=document.getElementById('history-table-body');var btn=document.getElementById('history-toggle-btn');var hidden=b.style.display==='none';b.style.display=hidden?'':'none';btn.textContent=hidden?'הסתר ▲':'הצג ▼';})()" style="background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.35);color:var(--accent);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">הצג ▼</button>
           </div>
           <div class="md-list" id="history-table-body" style="display:none">
-            <div class="md-list-empty">אין נתוני היסטוריה</div>
+            <div class="md-list-empty" data-loading role="status">טוען היסטוריה…</div>
           </div>
         </div>
 
@@ -926,7 +927,7 @@
           </div>
           <!-- Cumulative sum -->
           <div class="chart-summary">
-            סכום מצטבר בתקופה: <strong id="chart-cumulative">₪0</strong>
+            סכום מצטבר בתקופה: <strong id="chart-cumulative">—</strong>
           </div>
         
   <div class="chart-container">
@@ -956,7 +957,7 @@
           <div class="players-list-toolbar">
             <div class="players-list-title">
               <span class="card-title" style="margin:0">👥 רשימת שחקנים</span>
-              <span class="players-count-badge" id="players-count">0</span>
+              <span class="players-count-badge" id="players-count">—</span>
             </div>
             <div class="players-list-actions">
               <div class="player-ac-wrap players-search-wrap">
@@ -981,13 +982,13 @@
                 </tr>
               </thead>
               <tbody id="players-table-body">
-                <tr><td colspan="6" class="empty-state">אין שחקנים רשומים</td></tr>
+                <tr><td colspan="6" class="empty-state" role="status">טוען שחקנים…</td></tr>
               </tbody>
             </table>
           </div>
 
           <!-- Mobile cards -->
-          <div class="players-mobile" id="players-cards-body"></div>
+          <div class="players-mobile" id="players-cards-body"><div class="md-list-empty" data-loading role="status">טוען שחקנים…</div></div>
         </div>
       </div>
 
@@ -1098,7 +1099,7 @@
     <div class="detail-modal" onclick="event.stopPropagation()">
       <div class="detail-modal-header">
         <h3 id="pd-title">פרטי תקופה</h3>
-        <button class="detail-modal-close" onclick="closePeriodDetail()">✕</button>
+        <button class="detail-modal-close" onclick="closePeriodDetail()" aria-label="סגור">✕</button>
       </div>
       <div class="detail-modal-body" id="pd-body">
       </div>
@@ -1110,7 +1111,7 @@
     <div class="detail-modal" onclick="event.stopPropagation()">
       <div class="detail-modal-header">
         <h3>📜 10 פעולות אחרונות — חובות</h3>
-        <button class="detail-modal-close" onclick="closeDebtLog()">✕</button>
+        <button class="detail-modal-close" onclick="closeDebtLog()" aria-label="סגור">✕</button>
       </div>
       <div class="chart-toggle-group" id="debt-log-filter" style="margin:0 20px 12px">
         <button class="chart-toggle-btn active" data-person="all"  onclick="setDebtLogFilter(null)">הכל</button>
@@ -1127,7 +1128,7 @@
     <div class="detail-modal" onclick="event.stopPropagation()">
       <div class="detail-modal-header">
         <h3>📜 10 פעולות אחרונות — חובות לשחקנים</h3>
-        <button type="button" class="detail-modal-close" onclick="closePlayerDebtLog()">✕</button>
+        <button type="button" class="detail-modal-close" onclick="closePlayerDebtLog()" aria-label="סגור">✕</button>
       </div>
       <div class="detail-modal-body" id="player-debt-log-body">
       </div>
