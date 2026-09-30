@@ -3118,6 +3118,32 @@ button.dash-bt-item:active,
   margin-top: 3px;
   line-height: 1.4;
 }
+
+/* Player debt log rich display */
+.debt-log-player {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.debt-log-detail {
+  font-size: 13px !important;
+  color: var(--text-primary) !important;
+  margin-top: 4px !important;
+}
+.debt-log-old {
+  color: var(--negative);
+  font-weight: 600;
+}
+.debt-log-zero {
+  color: var(--text-muted);
+}
+.debt-log-delta-pos {
+  color: var(--negative);
+  font-size: 12px;
+}
+.debt-log-delta-neg {
+  color: var(--positive);
+  font-size: 12px;
+}
 .md-list-trailing {
   font-size: 15px;
   font-weight: 700;

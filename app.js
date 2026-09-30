@@ -1898,6 +1898,7 @@ async function updateOwedToPlayer(playerId, newVal, action, inputAmount) {
         player_id: playerId,
         action,
         amount: n(inputAmount),
+        old_balance: oldVal,
         new_balance: newVal,
         description,
         created_by: getDisplayName(),
@@ -2019,18 +2020,48 @@ async function loadPlayerDebtLogData() {
   const body = document.getElementById('player-debt-log-body');
   body.innerHTML = '<div class="md-list-empty">טוען נתונים...</div>';
   try {
-    const data = await dbGet('player_debt_log', '?order=created_at.desc&limit=10');
+    const data = await dbGet('player_debt_log', '?order=created_at.desc&limit=10&select=*,players(name,nickname)');
     if (!data || !data.length) {
       body.innerHTML = '<div class="md-list-empty">אין פעולות</div>';
       return;
     }
-    body.innerHTML = data.map(r => `
+    body.innerHTML = data.map(r => {
+      const playerName = r.players
+        ? escHtml(r.players.nickname || r.players.name || '—')
+        : '—';
+
+      let mainLine;
+      if (r.old_balance != null) {
+        // Rich before/after display
+        const oldB  = n(r.old_balance);
+        const newB  = n(r.new_balance);
+        const delta = newB - oldB;
+
+        if (r.action === 'clear') {
+          mainLine = `חוב סולק — <span class="debt-log-old">₪${fmt(oldB)}</span> ← <strong>₪0</strong>`;
+        } else {
+          const oldHtml = oldB > 0
+            ? `<span class="debt-log-old">₪${fmt(oldB)}</span>`
+            : `<span class="debt-log-zero">₪0</span>`;
+          const deltaHtml = delta !== 0
+            ? ` <span class="${delta > 0 ? 'debt-log-delta-pos' : 'debt-log-delta-neg'}">(${delta > 0 ? '+' : ''}₪${fmt(delta)})</span>`
+            : '';
+          mainLine = `היה ${oldHtml} עודכן ל <strong>₪${fmt(newB)}</strong>${deltaHtml}`;
+        }
+      } else {
+        // Fallback for old records without old_balance
+        mainLine = escHtml(r.description || '');
+      }
+
+      return `
       <div class="md-list-item">
         <div class="md-list-content">
-          <div class="md-list-title">${escHtml(r.description || '')}</div>
+          <div class="md-list-title debt-log-player">${playerName}</div>
+          <div class="md-list-subtitle debt-log-detail">${mainLine}</div>
           <div class="md-list-subtitle">${fmtDateTime(r.created_at)}${r.created_by ? ' · ' + escHtml(r.created_by) : ''}</div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } catch (e) {
     body.innerHTML = `<div class="md-list-empty">שגיאה בטעינת הנתונים: ${escHtml(e.message)}</div>`;
   }
