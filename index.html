@@ -342,6 +342,12 @@
                          oninput="onBadBeatInput()" onblur="onBadBeatBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
+                <div class="fm-input-row fm-input-row-pct">
+                  <span class="fm-pct-label">שימוש:</span>
+                  <input type="number" id="badbeat-percent" placeholder="65" min="0" max="100" inputmode="decimal" enterkeyhint="done" autocomplete="off"
+                         oninput="onBadBeatPercentInput()" onblur="onBadBeatPercentBlur()">
+                  <span class="fm-cur">%</span>
+                </div>
               </div>
             </div>
             <div class="counter-display fm-chips-total">
@@ -380,6 +386,21 @@
                 <label class="fm-label" for="cashcash_ido">עידו</label>
                 <div class="fm-input-row">
                   <input type="number" id="cashcash_ido" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BANK LEUMI -->
+          <div class="fm-category">
+            <div class="fm-cat-label">🏦 בנק לאומי</div>
+            <div class="fm-grid">
+              <div class="fm-cell fm-full-width">
+                <label class="fm-label fm-label-bank" for="bank_leumi">יתרה (לתצוגה בלבד)</label>
+                <div class="fm-input-row">
+                  <input type="number" id="bank_leumi" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off"
+                         oninput="onBankLeumiInput()" onblur="onBankLeumiBlur()">
                   <span class="fm-cur">₪</span>
                 </div>
               </div>
