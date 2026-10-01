@@ -1903,13 +1903,13 @@ button.dash-bt-item:active,
 #page-dashboard .dash-stats {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(5, minmax(108px, 1fr)) auto;
+  grid-template-rows: repeat(5, minmax(108px, 1fr));
   gap: 8px;
   margin-bottom: 18px;
   width: 100%;
 }
 #page-dashboard .dash-bb-slider {
-  grid-column: 1 / -1;
+  width: 100%;
 }
 #page-dashboard .stat-card {
   min-width: 0;
@@ -2040,7 +2040,7 @@ button.dash-bt-item:active,
 
 /* Bottom padding so sticky bar never hides content */
 #page-dashboard.active {
-  padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(128px + env(safe-area-inset-bottom, 0px));
 }
 
 /* ===== DATA LOADING OVERLAY ===== */
