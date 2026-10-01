@@ -32,7 +32,7 @@ function openSheet(id) {
   const el = document.getElementById(id);
   if (!el) return;
   el.style.display = 'flex';
-  requestAnimationFrame(() => el.classList.add('open'));
+  requestAnimationFrame(() => { el.classList.add('open'); syncBackGuard(); });
 }
 function closeSheet(id) {
   const el = document.getElementById(id);
@@ -167,8 +167,7 @@ function resetSignedInState() {
   hideDataLoading();
   document.getElementById('app').style.display = 'none';
   document.getElementById('landing-user').hidden = true;
-  const frame = document.getElementById('contacts-frame');
-  if (frame) frame.src = 'about:blank';
+  setContactsFrame('about:blank');
   showLandingScreen();
 }
 
@@ -197,8 +196,15 @@ function onSignedIn(userKey) {
   document.getElementById('landing-user').hidden = false;
   document.getElementById('auth-overlay').style.display = 'none';
   if (alreadyIn) return;
+  setContactsFrame('contacts.html');
+}
+
+// location.replace keeps iframe loads out of the session history, so phone back stays in the app.
+function setContactsFrame(url) {
   const frame = document.getElementById('contacts-frame');
-  if (frame) frame.src = 'contacts.html';
+  if (!frame) return;
+  try { frame.contentWindow.location.replace(url); }
+  catch { frame.src = url; }
 }
 
 function authErrorMessage(e) {
@@ -390,6 +396,76 @@ function goBack() {
   if (navState === 'blue-tab') { openBlueGrid(); return; }
   showHome();
 }
+
+// ============================================================
+// PHONE BACK BUTTON — one guard history entry while anything is open;
+// each back press closes the top layer or steps back one screen.
+// ============================================================
+const BACK_LAYER_SELECTOR = '.md-sheet-overlay.open, .confirm-overlay, #rct-reminder-overlay';
+let backGuardSkipPop = false;
+
+function _isShown(el) {
+  return !!el && getComputedStyle(el).display !== 'none';
+}
+
+function _topBackLayer() {
+  if (_isShown(document.getElementById('auth-overlay'))) return null;
+  const layers = [...document.querySelectorAll(BACK_LAYER_SELECTOR)].filter(_isShown);
+  return layers[layers.length - 1] || null;
+}
+
+function _closeBackLayer(el) {
+  switch (el.id) {
+    case 'dash-detail-overlay':
+      if (!document.getElementById('dash-detail-back').hidden) openDashStatDetail('expenses');
+      else closeDashDetail();
+      return;
+    case 'confirm-overlay':      closeConfirm(); return;
+    case 'rct-reminder-overlay': closeRakebackReminder(); return;
+    case 'add-player-modal':
+    case 'edit-player-modal':    el.remove(); return;
+  }
+  if (el.classList.contains('md-sheet-overlay')) closeSheet(el.id);
+  else el.style.display = 'none';
+}
+
+function _currentSection() {
+  if (_isShown(document.getElementById('management-section'))) return 'management';
+  if (_isShown(document.getElementById('contacts-section')))   return 'contacts';
+  return 'landing';
+}
+
+function _atBackRoot() {
+  return !getCurrentUser() || (!_topBackLayer() && _currentSection() === 'landing');
+}
+
+function appBackStep() {
+  if (!getCurrentUser()) return;
+  const layer = _topBackLayer();
+  if (layer) { _closeBackLayer(layer); return; }
+  const section = _currentSection();
+  if (section === 'management' && navState !== 'home') { goBack(); return; }
+  if (section !== 'landing') showLandingScreen();
+}
+
+function syncBackGuard() {
+  if (backGuardSkipPop) return;
+  const guarded = history.state?.appBackGuard === true;
+  if (!_atBackRoot() && !guarded) {
+    history.pushState({ appBackGuard: true }, '');
+  } else if (_atBackRoot() && guarded) {
+    backGuardSkipPop = true;
+    history.back();
+  }
+}
+
+window.addEventListener('popstate', () => {
+  if (backGuardSkipPop) { backGuardSkipPop = false; return; }
+  appBackStep();
+  syncBackGuard();
+});
+
+document.addEventListener('click', () => setTimeout(syncBackGuard, 0), true);
 
 // Compatibility shim — existing in-page buttons call navigate()
 function navigate(page) {
