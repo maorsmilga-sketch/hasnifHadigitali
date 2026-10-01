@@ -1644,7 +1644,7 @@ async function refreshBTSummary() {
     const sumWdChips = sum(wd, 'chips_amount');
     const sumExp     = sum(exp, 'amount_ils');
     const totalChips = sumRb + sumTn + sumBn + sumRef;
-    dashExpenseSums = { rb: sumRb, tn: sumTn, bn: sumBn, ref: sumRef };
+    dashExpenseSums = { rb: sumRb, tn: sumTn, bn: sumBn, ref: sumRef, wd: sumWdChips, exp: sumExp };
 
     // Global summary bar
     setText('bt-total-ils',         '₪' + fmt(chipsToIls(totalChips)));
@@ -1659,14 +1659,6 @@ async function refreshBTSummary() {
     upd('bt-wd-summary',  `סה"כ: ₪${fmt(chipsToIls(sumWdChips))} | ${fmt(sumWdChips)} צ'`);
     upd('bt-exp-summary', `סה"כ: ₪${fmt(sumExp)}`);
     setText('bt-exp-total', '₪' + fmt(sumExp));
-
-    // Dashboard card
-    setText('dash-rb-sum',  `₪${fmt(chipsToIls(sumRb))}`);
-    setText('dash-tn-sum',  `₪${fmt(chipsToIls(sumTn))}`);
-    setText('dash-bn-sum',  `₪${fmt(chipsToIls(sumBn))}`);
-    setText('dash-ref-sum', `₪${fmt(chipsToIls(sumRef))}`);
-    setText('dash-wd-sum',  `₪${fmt(chipsToIls(sumWdChips))}`);
-    setText('dash-exp-sum', `₪${fmt(sumExp)}`);
 
     // Dashboard expenses card
     setText('val-expenses-ils', fmt(chipsToIls(totalChips)));
@@ -1689,16 +1681,20 @@ function dashMoney(v) {
   return (v < 0 ? '-' : '') + '₪' + fmt(Math.abs(v));
 }
 
-function dashRow(label, value, { op = '+', sub = '' } = {}) {
-  const opHtml = op ? `<span class="dash-calc-op">${op}</span>` : '';
+function dashRow(label, value, { op = '+', sub = '', open = '' } = {}) {
+  const opHtml  = op ? `<span class="dash-calc-op">${op}</span>` : '';
+  const tag     = open ? 'button' : 'div';
+  const attrs   = open ? ` type="button" onclick="openDashBTDetail('${open}', true)"` : '';
+  const chevron = open ? '<span class="dash-calc-chevron" aria-hidden="true">‹</span>' : '';
   return `
-    <div class="md-list-item dash-calc-row${value === 0 ? ' is-zero' : ''}">
-      <div class="md-list-content">
-        <div class="md-list-title">${escHtml(label)}</div>
-        ${sub ? `<div class="md-list-subtitle">${escHtml(sub)}</div>` : ''}
-      </div>
-      <div class="md-list-trailing">${opHtml}${dashMoney(value)}</div>
-    </div>`;
+    <${tag} class="md-list-item dash-calc-row${open ? ' dash-calc-link' : ''}${value === 0 ? ' is-zero' : ''}"${attrs}>
+      <span class="md-list-content">
+        <span class="md-list-title">${escHtml(label)}</span>
+        ${sub ? `<span class="md-list-subtitle">${escHtml(sub)}</span>` : ''}
+      </span>
+      <span class="md-list-trailing">${opHtml}${dashMoney(value)}</span>
+      ${chevron}
+    </${tag}>`;
 }
 
 function dashResult(label, value) {
@@ -1801,13 +1797,16 @@ function openDashStatDetail(type) {
   } else if (type === 'expenses') {
     title = '🧾 סה"כ הוצאות';
     const s = dashExpenseSums;
-    html = dashFormula('החזרי גנייה + טורנירים + בונוסים + חבר מביא חבר', 'משיכות והוצאות כלליות לא נכללות') +
+    html = dashFormula('החזרי גנייה + טורנירים + בונוסים + חבר מביא חבר', 'לחיצה על שורה מציגה את הרשומות שלה') +
       (s
-        ? dashRow('💸 החזרי גנייה', chipsToIls(s.rb), { op: '', sub: `${fmt(s.rb)} צ'` }) +
-          dashRow('🏆 טורנירים', chipsToIls(s.tn), { sub: `${fmt(s.tn)} צ'` }) +
-          dashRow('🎁 בונוסים', chipsToIls(s.bn), { sub: `${fmt(s.bn)} צ'` }) +
-          dashRow('🤝 חבר מביא חבר', chipsToIls(s.ref), { sub: `${fmt(s.ref)} צ'` }) +
-          dashResult('סה"כ הוצאות', chipsToIls(s.rb + s.tn + s.bn + s.ref))
+        ? dashRow('💸 החזרי גנייה', chipsToIls(s.rb), { op: '', sub: `${fmt(s.rb)} צ'`, open: 'rb' }) +
+          dashRow('🏆 טורנירים', chipsToIls(s.tn), { sub: `${fmt(s.tn)} צ'`, open: 'tn' }) +
+          dashRow('🎁 בונוסים', chipsToIls(s.bn), { sub: `${fmt(s.bn)} צ'`, open: 'bn' }) +
+          dashRow('🤝 חבר מביא חבר', chipsToIls(s.ref), { sub: `${fmt(s.ref)} צ'`, open: 'ref' }) +
+          dashResult('סה"כ הוצאות', chipsToIls(s.rb + s.tn + s.bn + s.ref)) +
+          '<div class="dash-calc-section">לא נכללות בסה"כ</div>' +
+          dashRow('💳 משיכות', chipsToIls(s.wd), { op: '', sub: `${fmt(s.wd)} צ'`, open: 'wd' }) +
+          dashRow('🧾 הוצאות כלליות', s.exp, { op: '', open: 'exp' })
         : '<div class="md-list-empty">טוען נתונים…</div>');
 
   } else if (type === 'leumi') {
@@ -1819,12 +1818,17 @@ function openDashStatDetail(type) {
     return;
   }
 
+  dashDetailSeq++;
   setText('dash-detail-title', title);
+  document.getElementById('dash-detail-back').hidden = true;
   document.getElementById('dash-detail-body').innerHTML = html;
+  document.querySelector('#dash-detail-overlay .dash-detail-sheet').scrollTop = 0;
   openSheet('dash-detail-overlay');
 }
 
-async function openDashBTDetail(type) {
+let dashDetailSeq = 0; // bumps on every sheet change so a late fetch can't overwrite newer content
+
+async function openDashBTDetail(type, fromExpenses = false) {
   const cfg = {
     rb:  { title: '💸 החזרי גנייה',   table: 'blue_table_rakeback',   qs: '?order=created_at.desc&select=*,players(name,nickname)' },
     tn:  { title: '🏆 טורנירים',       table: 'blue_table_tournaments', qs: '?order=created_at.desc&select=*,players(name,nickname)' },
@@ -1835,13 +1839,17 @@ async function openDashBTDetail(type) {
   }[type];
   if (!cfg) return;
 
+  const seq = ++dashDetailSeq;
   setText('dash-detail-title', cfg.title);
+  document.getElementById('dash-detail-back').hidden = !fromExpenses;
   const body = document.getElementById('dash-detail-body');
+  document.querySelector('#dash-detail-overlay .dash-detail-sheet').scrollTop = 0;
   openSheet('dash-detail-overlay');  // handles display:flex + .open class + animation
   body.innerHTML = '<div class="md-list-empty">טוען נתונים…</div>';
 
   try {
     const data = await dbGet(cfg.table, cfg.qs);
+    if (seq !== dashDetailSeq) return;
     if (!data || !data.length) {
       body.innerHTML = '<div class="md-list-empty">אין רשומות בתקופה הנוכחית</div>';
       return;
@@ -1907,6 +1915,7 @@ async function openDashBTDetail(type) {
         </div>`).join('');
     }
   } catch (e) {
+    if (seq !== dashDetailSeq) return;
     body.innerHTML = '<div class="md-list-empty">שגיאה בטעינת הנתונים</div>';
   }
 }

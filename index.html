@@ -17,8 +17,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20261001b">
-<link rel="stylesheet" href="management.css?v=20261001b">
+<link rel="stylesheet" href="style.css?v=20261001c">
+<link rel="stylesheet" href="management.css?v=20261001c">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 </head>
 <body>
@@ -234,41 +234,12 @@
           </div>
         </div>
 
-        <section class="dash-expenses" aria-label="סיכום הוצאות">
-          <h2 class="section-title">סיכום הוצאות</h2>
-          <div class="dash-bt-grid">
-            <button type="button" class="dash-bt-item" onclick="openDashBTDetail('rb')">
-              <span class="dash-bt-label">💸 החזרי גנייה</span>
-              <span class="dash-bt-val" id="dash-rb-sum">—</span>
-            </button>
-            <button type="button" class="dash-bt-item" onclick="openDashBTDetail('tn')">
-              <span class="dash-bt-label">🏆 טורנירים</span>
-              <span class="dash-bt-val" id="dash-tn-sum">—</span>
-            </button>
-            <button type="button" class="dash-bt-item" onclick="openDashBTDetail('bn')">
-              <span class="dash-bt-label">🎁 בונוסים</span>
-              <span class="dash-bt-val" id="dash-bn-sum">—</span>
-            </button>
-            <button type="button" class="dash-bt-item" onclick="openDashBTDetail('ref')">
-              <span class="dash-bt-label">🤝 חבר מביא חבר</span>
-              <span class="dash-bt-val" id="dash-ref-sum">—</span>
-            </button>
-            <button type="button" class="dash-bt-item" onclick="openDashBTDetail('wd')">
-              <span class="dash-bt-label">💳 משיכות</span>
-              <span class="dash-bt-val negative-color" id="dash-wd-sum">—</span>
-            </button>
-            <button type="button" class="dash-bt-item" onclick="openDashBTDetail('exp')">
-              <span class="dash-bt-label">🧾 כלליות</span>
-              <span class="dash-bt-val negative-color" id="dash-exp-sum">—</span>
-            </button>
-          </div>
-        </section>
-
         <!-- Detail modal for dashboard blue-table rows -->
         <div id="dash-detail-overlay" class="md-sheet-overlay" style="display:none" onclick="closeDashDetail()">
           <div class="md-sheet dash-detail-sheet" onclick="event.stopPropagation()">
             <div class="md-sheet-handle"></div>
             <div class="md-sheet-title" id="dash-detail-title">פירוט</div>
+            <button type="button" class="dash-detail-back" id="dash-detail-back" hidden onclick="openDashStatDetail('expenses')">&#8592; חזרה לסיכום הוצאות</button>
             <div id="dash-detail-body" class="md-list"></div>
             <button type="button" class="md-sheet-close" onclick="closeDashDetail()">סגור</button>
           </div>
@@ -1231,7 +1202,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261001c"></script>
+<script src="app.js?v=20261001d"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

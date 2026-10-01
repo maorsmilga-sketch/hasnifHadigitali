@@ -299,7 +299,6 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
 
 /* ===== SURFACES ===== */
 #management-section .card,
-#management-section .dash-expenses,
 #management-section .fm-category,
 #management-section .debt-block,
 #management-section .summary-bar {
@@ -1112,6 +1111,67 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
 #management-section .dash-calc-row .md-list-trailing {
   direction: ltr;
 }
+#management-section .dash-calc-row :is(.md-list-title, .md-list-subtitle) {
+  display: block;
+}
+#management-section button.dash-calc-link {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: transform 0.15s var(--m-ease), background-color 0.18s, border-color 0.18s;
+}
+#management-section button.dash-calc-link:active {
+  transform: scale(0.98);
+  border-color: rgba(128,120,255,0.45);
+}
+#management-section button.dash-calc-link:focus-visible {
+  outline: none;
+  border-color: var(--m-focus);
+  box-shadow: var(--m-ring);
+}
+@media (hover: hover) {
+  #management-section button.dash-calc-link:hover {
+    background: var(--m-field-hover);
+    border-color: rgba(160,150,255,0.34);
+  }
+}
+#management-section .dash-calc-chevron {
+  flex-shrink: 0;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--text-muted);
+}
+#management-section .dash-calc-section {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
+}
+#management-section .dash-detail-back {
+  align-self: center;
+  display: block;
+  margin: -6px auto 14px;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--m-stroke-strong);
+  box-shadow: var(--m-highlight);
+  cursor: pointer;
+  transition: background-color 0.18s, transform 0.15s var(--m-ease);
+}
+#management-section .dash-detail-back[hidden] { display: none; }
+#management-section .dash-detail-back:active { transform: scale(0.96); background: rgba(255,255,255,0.12); }
+#management-section .dash-detail-back:focus-visible { outline: none; box-shadow: var(--m-ring); }
 #management-section .dash-calc-op {
   display: inline-block;
   min-width: 1.1em;
@@ -1160,15 +1220,6 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
 #management-section .stat-sub {
   font-size: 12px;
   line-height: 1.4;
-}
-
-#management-section .dash-expenses {
-  padding: 14px;
-  margin-bottom: 16px;
-}
-
-#management-section #page-dashboard .dash-expenses .section-title {
-  margin-bottom: 12px;
 }
 
 #management-section .dash-bt-item {

@@ -1959,16 +1959,6 @@ button.dash-bt-item:active,
   text-align: center;
   width: 100%;
 }
-#page-dashboard .dash-expenses {
-  margin-bottom: 8px;
-}
-#page-dashboard .dash-expenses .section-title {
-  margin-top: 0;
-  margin-bottom: 10px;
-  text-align: center;
-  border-bottom: none;
-  padding-bottom: 0;
-}
 #page-dashboard .rake-control-title {
   text-align: center;
 }
