@@ -166,6 +166,7 @@ function resetSignedInState() {
   window._mgmtMounted = false;
   hideDataLoading();
   document.getElementById('app').style.display = 'none';
+  document.getElementById('landing-user').hidden = true;
   const frame = document.getElementById('contacts-frame');
   if (frame) frame.src = 'about:blank';
   showLandingScreen();
@@ -192,6 +193,8 @@ function onSignedIn(userKey) {
   const alreadyIn = currentUserKey === userKey;
   currentUserKey = userKey;
   document.getElementById('user-badge').textContent = USER_DISPLAY[userKey] || userKey;
+  document.getElementById('landing-user-name').textContent = USER_DISPLAY[userKey] || userKey;
+  document.getElementById('landing-user').hidden = false;
   document.getElementById('auth-overlay').style.display = 'none';
   if (alreadyIn) return;
   const frame = document.getElementById('contacts-frame');

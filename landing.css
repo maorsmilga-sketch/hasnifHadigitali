@@ -1,0 +1,295 @@
+/* =====================================================
+   הסניף הדיגיטלי — Home shell (glass redesign)
+   Same visual language as management.css, scoped to the
+   landing screen, the contacts top bar and the sign-in
+   overlay so nothing here reaches the management area.
+   ===================================================== */
+
+/* ===== TOKENS ===== */
+#landing-screen,
+#contacts-section,
+#auth-overlay {
+  --text-primary:   #eeeefa;
+  --text-secondary: #aeaecb;
+  --text-muted:     #8d8daa;
+
+  --l-surface:       linear-gradient(180deg, rgba(255,255,255,0.068) 0%, rgba(255,255,255,0.036) 100%);
+  --l-stroke:        rgba(255,255,255,0.085);
+  --l-stroke-strong: rgba(255,255,255,0.15);
+  --l-highlight:     inset 0 1px 0 rgba(255,255,255,0.07);
+  --l-shadow:        0 1px 2px rgba(0,0,0,0.22), 0 10px 28px rgba(0,0,0,0.26);
+  --l-float-filter:  saturate(170%) blur(22px);
+  --l-ring:          0 0 0 3px rgba(128,120,255,0.36);
+  --l-focus:         #aba5ff;
+  --l-bar:           56px;
+  --l-safe-t:        env(safe-area-inset-top, 0px);
+  --l-safe-b:        env(safe-area-inset-bottom, 0px);
+  --l-ease:          cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  color-scheme: dark;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ambient backdrop shared by the home screen and the sign-in screen */
+#landing-screen,
+#auth-overlay {
+  background:
+    radial-gradient(120% 55% at 100% -5%, rgba(108,99,255,0.20) 0%, transparent 58%),
+    radial-gradient(90% 45% at -10% 38%, rgba(0,212,170,0.07) 0%, transparent 60%),
+    radial-gradient(110% 55% at 50% 110%, rgba(108,99,255,0.11) 0%, transparent 60%),
+    #0b0b16;
+}
+
+/* ===== LANDING SCREEN ===== */
+#landing-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  justify-content: center;
+  padding: calc(32px + var(--l-safe-t)) 20px calc(40px + var(--l-safe-b));
+  animation: landingFade 0.24s var(--l-ease) both;
+}
+
+@keyframes landingFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+#landing-screen .landing-logo {
+  gap: 14px;
+  margin-bottom: 36px;
+}
+
+#landing-screen .landing-logo-img {
+  width: 120px;
+  height: 120px;
+  filter: drop-shadow(0 0 28px rgba(108,99,255,0.42)) drop-shadow(0 0 10px rgba(0,200,100,0.2));
+}
+
+#landing-screen .landing-title {
+  font-size: 28px;
+  letter-spacing: 0;
+  filter: drop-shadow(0 0 8px rgba(74,222,128,0.28));
+}
+
+#landing-screen .landing-grid {
+  width: 100%;
+  max-width: 440px;
+  gap: 12px;
+}
+
+#landing-screen .app-icon {
+  gap: 12px;
+  min-height: 184px;
+  padding: 24px 14px 20px;
+  border-radius: 24px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-stroke);
+  box-shadow: var(--l-highlight), var(--l-shadow);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: transform 0.18s var(--l-ease), border-color 0.18s, background-color 0.18s;
+}
+
+#landing-screen .app-icon::before {
+  background: radial-gradient(90% 60% at 50% 0%, rgba(160,150,255,0.10) 0%, transparent 70%);
+}
+
+#landing-screen .app-icon:hover {
+  transform: none;
+  box-shadow: var(--l-highlight), var(--l-shadow);
+}
+
+#landing-screen .app-icon:active {
+  transform: scale(0.97);
+  box-shadow: var(--l-highlight), 0 4px 14px rgba(0,0,0,0.3);
+}
+
+#landing-screen .app-icon:focus-visible {
+  outline: none;
+  border-color: var(--l-focus);
+  box-shadow: var(--l-ring), var(--l-shadow);
+}
+
+#landing-screen .app-icon-img {
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  border-radius: 22px;
+  font-size: 40px;
+  background: rgba(255,255,255,0.065);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 4px 12px rgba(0,0,0,0.25);
+  filter: none;
+}
+
+#landing-screen .app-icon-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ecebff;
+  letter-spacing: 0;
+  text-shadow: none;
+}
+
+#landing-screen .app-icon-sub {
+  margin-top: -6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+@media (hover: hover) {
+  #landing-screen .app-icon:hover {
+    transform: translateY(-2px);
+    border-color: rgba(160,150,255,0.34);
+  }
+}
+
+/* Signed-in account + logout */
+#landing-screen .landing-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.045);
+  border: 1px solid var(--l-stroke);
+  box-shadow: var(--l-highlight);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+#landing-screen .landing-user[hidden] { display: none; }
+
+#landing-screen .landing-user-name {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: rgba(108,99,255,0.16);
+  border: 1px solid rgba(128,120,255,0.3);
+  color: #cdc9ff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#landing-screen .landing-logout {
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffb3ba;
+  background: rgba(255,71,87,0.1);
+  border: 1px solid rgba(255,71,87,0.26);
+  cursor: pointer;
+  transition: background-color 0.18s, transform 0.15s var(--l-ease);
+}
+#landing-screen .landing-logout:active { transform: scale(0.96); }
+#landing-screen .landing-logout:focus-visible { outline: none; box-shadow: var(--l-ring); }
+
+/* ===== CONTACTS TOP BAR ===== */
+#contacts-section .contacts-topbar {
+  height: calc(var(--l-bar) + var(--l-safe-t));
+  padding: var(--l-safe-t) max(14px, env(safe-area-inset-right, 0px)) 0 max(14px, env(safe-area-inset-left, 0px));
+  gap: 10px;
+  background: rgba(11,11,22,0.66);
+  backdrop-filter: var(--l-float-filter);
+  -webkit-backdrop-filter: var(--l-float-filter);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+}
+
+#contacts-section .contacts-topbar .back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--l-stroke-strong);
+  box-shadow: var(--l-highlight);
+  transition: background-color 0.18s, transform 0.15s var(--l-ease);
+}
+#contacts-section .contacts-topbar .back-btn:active { transform: scale(0.96); background: rgba(255,255,255,0.12); }
+#contacts-section .contacts-topbar .back-btn:focus-visible { outline: none; box-shadow: var(--l-ring); }
+
+#contacts-section .contacts-topbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ecebff;
+}
+
+#contacts-section #contacts-frame {
+  height: calc(100vh - var(--l-bar) - var(--l-safe-t));
+  height: calc(100dvh - var(--l-bar) - var(--l-safe-t));
+}
+
+/* ===== SIGN-IN SCREEN ===== */
+#auth-overlay .auth-box {
+  max-width: 360px;
+  padding: 32px 24px 28px;
+  margin: 0 20px;
+  border-radius: 24px;
+  background: var(--l-surface);
+  border: 1px solid var(--l-stroke);
+  box-shadow: var(--l-highlight), var(--l-shadow);
+}
+
+#auth-overlay .auth-logo {
+  width: 88px;
+  height: 88px;
+  filter: drop-shadow(0 0 22px rgba(108,99,255,0.4)) drop-shadow(0 0 8px rgba(0,200,100,0.2));
+}
+
+#auth-overlay .auth-title {
+  font-size: 22px;
+  letter-spacing: 0;
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 40%, #86efac 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px rgba(74,222,128,0.28));
+}
+
+#auth-overlay .auth-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+#auth-overlay .google-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--l-ring);
+}
+
+/* ===== SMALL PHONES ===== */
+@media (max-width: 360px) {
+  #landing-screen { padding-inline: 12px; }
+  #landing-screen .landing-logo-img { width: 100px; height: 100px; }
+  #landing-screen .landing-title { font-size: 24px; }
+  #landing-screen .landing-grid { gap: 10px; }
+  #landing-screen .app-icon { min-height: 160px; padding: 18px 8px 16px; gap: 10px; }
+  #landing-screen .app-icon-img { width: 60px; height: 60px; border-radius: 18px; font-size: 32px; }
+  #landing-screen .app-icon-label { font-size: 14px; }
+  #landing-screen .app-icon-sub { font-size: 11px; }
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  #landing-screen,
+  #landing-screen *,
+  #contacts-section .contacts-topbar *,
+  #auth-overlay,
+  #auth-overlay * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
