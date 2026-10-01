@@ -809,11 +809,12 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
 }
 
 #management-section .md-sheet {
+  display: flex;
+  flex-direction: column;
   max-width: 560px;
   margin-inline: auto;
-  max-height: 90vh;
-  max-height: 90dvh;
-  padding: 10px 18px calc(22px + var(--m-safe-b));
+  max-height: calc(100dvh - var(--keyboard-inset, 0px) - 12px);
+  padding: 10px 18px 0;
   border-radius: 26px 26px 0 0;
   background: rgba(24,23,45,0.94);
   border: 1px solid var(--m-stroke-strong);
@@ -821,6 +822,8 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
   box-shadow: 0 -18px 50px rgba(0,0,0,0.5), var(--m-highlight);
   overscroll-behavior: contain;
   transition: transform 0.34s var(--m-ease);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 #management-section .md-sheet-handle {
@@ -844,16 +847,32 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
 }
 
 #management-section .md-sheet-close {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  flex-shrink: 0;
+  width: 100%;
   min-height: 50px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--m-stroke-strong);
+  margin-top: 12px;
+  padding: 14px 18px calc(14px + var(--m-safe-b));
+  border-radius: 14px 14px 0 0;
+  background: rgba(24,23,45,0.98);
+  border: none;
+  border-top: 1px solid var(--m-stroke-strong);
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.35);
   color: var(--text-primary);
   font-size: 15px;
   transition: background-color 0.18s;
 }
 
 #management-section .md-sheet-close:active { background: rgba(255,255,255,0.1); }
+
+#management-section .md-sheet.dash-detail-sheet #dash-detail-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 8px;
+}
 
 #management-section .calc-display {
   display: block;
@@ -1259,8 +1278,67 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
 }
 
 /* Fixed "close period" action */
+#management-section #page-funds.page.active .fm-card,
+#management-section #page-funds.page.active {
+  padding-bottom: calc(var(--keyboard-inset, 0px) + var(--m-safe-b) + 16px);
+}
+
 #management-section #page-dashboard.active {
-  padding-bottom: calc(100px + var(--m-safe-b));
+  padding-bottom: calc(100px + var(--m-safe-b) + var(--keyboard-inset, 0px));
+}
+
+/* BadBeat % slider (below bank leumi row — layout only, not tied to leumi data) */
+#page-dashboard .dash-stat-row .stat-card:only-child {
+  grid-column: 1 / -1;
+}
+
+#management-section .dash-bb-slider {
+  margin-top: 4px;
+  padding: 14px 16px calc(12px + var(--m-safe-b));
+  border-radius: 18px;
+  background: var(--m-surface);
+  border: 1px solid var(--m-stroke);
+  box-shadow: var(--m-highlight);
+}
+
+#management-section .dash-bb-slider-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+#management-section .dash-bb-slider-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+#management-section .dash-bb-slider-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #c4c0ff;
+}
+
+#management-section .dash-bb-slider-input {
+  display: block;
+  width: 100%;
+  height: 36px;
+  margin: 0;
+  accent-color: #8b83ff;
+  cursor: pointer;
+  touch-action: pan-x;
+}
+
+#management-section .dash-bb-slider-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.85;
 }
 
 #management-section #page-dashboard.active .dash-sticky-close {

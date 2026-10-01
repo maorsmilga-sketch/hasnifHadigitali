@@ -504,8 +504,10 @@ async function loadDashboard() {
 
   const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor);
   const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-  const chipsIls = chipsToIls(n(cp.counter) + n(cp.badbeat) * getBBPercent() / 100);
-  const profit   = total - chipsIls;    // רווח כללי = סה"כ בקופה פחות (צ'יפים + BadBeat×אחוז%)
+  const counterIls   = chipsToIls(n(cp.counter));
+  const badbeatFull  = chipsToIls(n(cp.badbeat));
+  const chipsIls     = counterIls + chipsToIls(n(cp.badbeat) * getBBPercent() / 100);
+  const profit       = total - chipsIls;    // רווח כללי = סה"כ בקופה פחות (Counter + BadBeat×אחוז%)
   const half     = profit / 2;
   const idoNet   = half - n(cp.debt_ido);
   const maorNet  = half - n(cp.debt_maor);
@@ -517,7 +519,10 @@ async function loadDashboard() {
   const _parts   = [_bitSum > 0 && 'ביט', _pbSum > 0 && 'פייבוקס', _ccSum > 0 && 'קאשקאש'].filter(Boolean);
   setText('val-liquid-sub', _parts.join(' + '));
   setText('val-total',           fmt(total));
-  setText('val-chips-ils',       fmt(chipsIls));
+  setText('val-counter-ils',     fmt(counterIls));
+  setText('val-counter-sub',     n(cp.counter) ? `${fmt(cp.counter)} צ'` : '');
+  setText('val-badbeat-full-ils', fmt(badbeatFull));
+  setText('val-badbeat-full-sub', n(cp.badbeat) ? `${fmt(cp.badbeat)} צ' · ללא אחוז` : '');
   setText('val-profit',          fmt(profit));
   setText('val-profit-ido',      fmt(half));
   setText('val-profit-maor',     fmt(half));
@@ -563,6 +568,16 @@ async function loadDashboard() {
 
   // Blue table summary for dashboard card
   refreshBTSummary();
+  syncDashBBSlider();
+}
+
+function syncDashBBSlider() {
+  const slider = document.getElementById('dash-bb-percent');
+  const label  = document.getElementById('dash-bb-percent-val');
+  if (!slider) return;
+  const pct = getBBPercent();
+  slider.value = String(Math.round(pct));
+  if (label) label.textContent = Math.round(pct) + '%';
 }
 
 // ============================================================
@@ -587,8 +602,6 @@ async function loadFunds() {
   // Counter + BadBeat
   setVal('counter-value', cp.counter || '');
   setVal('badbeat-value', cp.badbeat || '');
-  const savedPct = cp.badbeat_percent;
-  setVal('badbeat-percent', savedPct != null ? savedPct : 65);
   setVal('bank_leumi', cp.bank_leumi || '');
   updateCounterDisplay();
   updateBadBeatDisplay();
@@ -816,21 +829,63 @@ function onCounterBlur() {
 
 // — BadBeat —
 function getBBPercent() {
-  // Returns the effective BadBeat usage percent (0–100).
-  // Falls back to 65 when the DB value is null (e.g. before the migration runs).
   const v = currentPeriod?.badbeat_percent;
   if (v == null) return 65;
-  return Math.min(100, Math.max(0, v));
+  return Math.min(100, Math.max(0, n(v)));
 }
 
 function updateBadBeatDisplay() {
   const bb  = parseFloat(document.getElementById('badbeat-value')?.value) || 0;
   const ctr = parseFloat(document.getElementById('counter-value')?.value) || 0;
-  const rawPct = document.getElementById('badbeat-percent')?.value;
-  const pct = (rawPct !== '' && rawPct != null && rawPct !== undefined)
-    ? Math.min(100, Math.max(0, parseFloat(rawPct) || 0))
-    : getBBPercent();
+  const pct = getBBPercent();
   setText('counter-total-ils', '₪' + fmt(chipsToIls(ctr + bb * pct / 100)));
+}
+
+function onDashBBSliderInput() {
+  const slider = document.getElementById('dash-bb-percent');
+  if (!slider || !currentPeriod) return;
+  const pct = Math.min(100, Math.max(0, parseFloat(slider.value) || 0));
+  currentPeriod.badbeat_percent = pct;
+  const label = document.getElementById('dash-bb-percent-val');
+  if (label) label.textContent = Math.round(pct) + '%';
+  updateBadBeatDisplay();
+  refreshDashboardProfitCards();
+}
+
+function refreshDashboardProfitCards() {
+  const cp = currentPeriod || {};
+  const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor);
+  const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
+  const counterIls  = chipsToIls(n(cp.counter));
+  const badbeatFull = chipsToIls(n(cp.badbeat));
+  const chipsIls    = counterIls + chipsToIls(n(cp.badbeat) * getBBPercent() / 100);
+  const profit      = total - chipsIls;
+  const half        = profit / 2;
+  setText('val-profit', fmt(profit));
+  setText('val-profit-ido', fmt(half));
+  setText('val-profit-maor', fmt(half));
+  setText('val-profit-ido-net', '₪' + fmt(half - n(cp.debt_ido)));
+  setText('val-profit-maor-net', '₪' + fmt(half - n(cp.debt_maor)));
+  const profitEl = document.getElementById('sv-profit');
+  if (profitEl) profitEl.className = 'stat-value ' + (profit >= 0 ? 'positive' : 'negative');
+  const profitCard = document.getElementById('card-profit');
+  if (profitCard) profitCard.className = 'stat-card ' + (profit >= 0 ? 'positive' : 'negative');
+  const rakeApp = n(cp.rake_app);
+  const controlCard = document.getElementById('rake-control-card');
+  if (rakeApp > 0 && controlCard) {
+    const gap = profit - rakeApp;
+    const pctGap = Math.abs(gap) / rakeApp * 100;
+    setText('ctrl-profit', '₪' + fmt(profit));
+    const gapEl = document.getElementById('ctrl-gap');
+    if (gapEl) {
+      gapEl.textContent = (gap >= 0 ? '+' : '') + '₪' + fmt(gap) + ' (' + pctGap.toFixed(1) + '%)';
+      gapEl.style.color = pctGap > 10 ? 'var(--negative)' : 'var(--positive)';
+    }
+  }
+}
+
+async function onDashBBSliderChange() {
+  await persistBadBeatPercent(getBBPercent());
 }
 
 async function saveBadBeat() {
@@ -855,28 +910,15 @@ function onBadBeatBlur() {
   saveBadBeat();
 }
 
-async function saveBadBeatPercent() {
-  const rawVal = document.getElementById('badbeat-percent')?.value;
-  if (rawVal === '' || rawVal == null) return; // don't overwrite with null
-  const val = Math.min(100, Math.max(0, parseFloat(rawVal) || 0));
+async function persistBadBeatPercent(val) {
+  const pct = Math.min(100, Math.max(0, n(val)));
+  if (!currentPeriod) return;
   try {
-    await dbPatch('current_period', '?id=eq.1', { badbeat_percent: val, updated_at: now() });
-    currentPeriod.badbeat_percent = val;
-    loadDashboard();
+    await dbPatch('current_period', '?id=eq.1', { badbeat_percent: pct, updated_at: now() });
+    currentPeriod.badbeat_percent = pct;
   } catch (e) {
     showNotif('שגיאה בשמירת אחוז BadBeat: ' + e.message, 'error');
   }
-}
-
-let badBeatPercentSaveTimer = null;
-function onBadBeatPercentInput() {
-  updateBadBeatDisplay();
-  clearTimeout(badBeatPercentSaveTimer);
-  badBeatPercentSaveTimer = setTimeout(saveBadBeatPercent, 700);
-}
-function onBadBeatPercentBlur() {
-  clearTimeout(badBeatPercentSaveTimer);
-  saveBadBeatPercent();
 }
 
 // — Bank Leumi —
@@ -1845,12 +1887,17 @@ function openDashStatDetail(type) {
       dashDebtRows(v) +
       dashResult('סה"כ בקופה', v.total);
 
-  } else if (type === 'chips') {
-    title = '🎰 Counter+BadBeat';
-    html = dashFormula(`Counter + BadBeat × ${fmt(v.bbPct)}%`, `יחס המרה: ${CHIPS_PER_SHEKEL} צ' = ₪1`) +
+  } else if (type === 'counter') {
+    title = '🎰 Counter';
+    html = dashFormula(`Counter → ש"ח`, `יחס המרה: ${CHIPS_PER_SHEKEL} צ' = ₪1`) +
       dashRow('Counter', v.counterIls, { op: '', sub: `${fmt(v.cp.counter)} צ'` }) +
-      dashRow(`BadBeat × ${fmt(v.bbPct)}%`, v.badbeatIls, { sub: dashBadbeatCalcSub(v.cp, v.bbPct) }) +
-      dashResult('Counter+BadBeat', v.chipsIls);
+      dashResult('Counter בש"ח', v.counterIls);
+
+  } else if (type === 'badbeat-full') {
+    title = '🎰 BadBeat (מלא)';
+    html = dashFormula('BadBeat → ש"ח (ללא הפחתת אחוז)', `יחס המרה: ${CHIPS_PER_SHEKEL} צ' = ₪1 · האחוז מהסרגל משפיע רק על הרווח`) +
+      dashRow('BadBeat', chipsToIls(n(v.cp.badbeat)), { op: '', sub: `${fmt(v.cp.badbeat)} צ'` }) +
+      dashResult('BadBeat בש"ח', chipsToIls(n(v.cp.badbeat)));
 
   } else if (type === 'profit') {
     title = '📈 רווח כללי';
@@ -3175,6 +3222,7 @@ function closeConfirm() {
 async function closePeriod(periodStart) {
   showNotif('⏳ מבצע סגירת תקופה...', 'info');
   try {
+    await persistBadBeatPercent(getBBPercent());
     // 1. Fetch full detail from all blue tables (with player names)
     const [rb, tn, bn, ref, wd, exp] = await Promise.all([
       dbGet('blue_table_rakeback',   '?select=*,players(name,nickname)&order=created_at.asc'),
@@ -3546,8 +3594,37 @@ function playerLabel(name, nickname) {
 // ============================================================
 // INIT
 // ============================================================
+function initMobileKeyboardFix() {
+  const root = document.getElementById('management-section');
+  const setInset = () => {
+    const vv = window.visualViewport;
+    const kb = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
+    document.documentElement.style.setProperty('--keyboard-inset', kb + 'px');
+  };
+  window.visualViewport?.addEventListener('resize', setInset);
+  window.visualViewport?.addEventListener('scroll', setInset);
+  setInset();
+
+  if (!root) return;
+  root.addEventListener('focusin', (e) => {
+    const t = e.target;
+    if (!(t instanceof HTMLElement) || !t.matches('input, textarea, select')) return;
+    const scrollHost = t.closest('.md-sheet, .fm-card, .page.active, .confirm-dialog') || t;
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        t.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+        if (scrollHost !== t && scrollHost instanceof HTMLElement) {
+          const top = t.getBoundingClientRect().top - scrollHost.getBoundingClientRect().top + scrollHost.scrollTop - 72;
+          scrollHost.scrollTop = Math.max(0, top);
+        }
+      }, 320);
+    });
+  }, true);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initAuth();
+  initMobileKeyboardFix();
 
   const backBtn = document.getElementById('back-btn');
   if (backBtn) backBtn.addEventListener('click', goBack);

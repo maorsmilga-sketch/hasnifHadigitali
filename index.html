@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261001c">
-<link rel="stylesheet" href="management.css?v=20261001c">
+<link rel="stylesheet" href="management.css?v=20261001h">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 </head>
 <body>
@@ -176,10 +176,18 @@
             </button>
           </div>
           <div class="dash-stat-row">
-            <button type="button" class="stat-card warning" onclick="openDashStatDetail('chips')">
-              <span class="stat-label stat-label-mixed">Counter+BadBeat</span>
-              <span class="stat-value"><span class="currency">₪</span><span id="val-chips-ils">—</span></span>
+            <button type="button" class="stat-card warning" onclick="openDashStatDetail('counter')">
+              <span class="stat-label">Counter</span>
+              <span class="stat-value"><span class="currency">₪</span><span id="val-counter-ils">—</span></span>
+              <span class="stat-sub" id="val-counter-sub"></span>
             </button>
+            <button type="button" class="stat-card warning" onclick="openDashStatDetail('badbeat-full')">
+              <span class="stat-label">BadBeat</span>
+              <span class="stat-value"><span class="currency">₪</span><span id="val-badbeat-full-ils">—</span></span>
+              <span class="stat-sub" id="val-badbeat-full-sub"></span>
+            </button>
+          </div>
+          <div class="dash-stat-row">
             <button type="button" class="stat-card" id="card-profit" onclick="openDashStatDetail('profit')">
               <span class="stat-label">רווח כללי</span>
               <span class="stat-value" id="sv-profit"><span class="currency">₪</span><span id="val-profit">—</span></span>
@@ -213,6 +221,16 @@
               <span class="stat-value"><span class="currency">₪</span><span id="val-bank-leumi">0</span></span>
               <span class="stat-sub">יתרה — לתצוגה בלבד</span>
             </button>
+          </div>
+          <div class="dash-bb-slider" id="dash-bb-slider">
+            <div class="dash-bb-slider-head">
+              <span class="dash-bb-slider-label">אחוז BadBeat בחישוב הרווח</span>
+              <span class="dash-bb-slider-value" id="dash-bb-percent-val">65%</span>
+            </div>
+            <input type="range" class="dash-bb-slider-input" id="dash-bb-percent" min="0" max="100" step="1"
+                   aria-valuemin="0" aria-valuemax="100" aria-labelledby="dash-bb-slider"
+                   oninput="onDashBBSliderInput()" onchange="onDashBBSliderChange()">
+            <div class="dash-bb-slider-ticks" aria-hidden="true"><span>0%</span><span>100%</span></div>
           </div>
         </div>
 
@@ -336,12 +354,6 @@
                   <input type="number" id="badbeat-value" placeholder="0" min="0" inputmode="decimal" enterkeyhint="done" autocomplete="off"
                          oninput="onBadBeatInput()" onblur="onBadBeatBlur()">
                   <span class="fm-cur">₪</span>
-                </div>
-                <div class="fm-input-row fm-input-row-pct">
-                  <span class="fm-pct-label">שימוש:</span>
-                  <input type="number" id="badbeat-percent" placeholder="65" min="0" max="100" inputmode="decimal" enterkeyhint="done" autocomplete="off"
-                         oninput="onBadBeatPercentInput()" onblur="onBadBeatPercentBlur()">
-                  <span class="fm-cur">%</span>
                 </div>
               </div>
             </div>
@@ -1202,7 +1214,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261001g"></script>
+<script src="app.js?v=20261001h"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
