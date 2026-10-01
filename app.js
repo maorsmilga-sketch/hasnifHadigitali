@@ -1848,9 +1848,10 @@ function openDashStatDetail(type) {
 
   } else if (type === 'profit') {
     title = '📈 רווח כללי';
-    html = dashFormula('סה"כ בקופה − (Counter+BadBeat)') +
+    html = dashFormula(`סה"כ בקופה − Counter − BadBeat × ${fmt(v.bbPct)}%`, `יחס המרה: ${CHIPS_PER_SHEKEL} צ' = ₪1`) +
       dashRow('סה"כ בקופה', v.total, { op: '' }) +
-      dashRow('Counter+BadBeat', v.chipsIls, { op: '−' }) +
+      dashRow('Counter', v.counterIls, { op: '−', sub: `${fmt(v.cp.counter)} צ'` }) +
+      dashRow(`BadBeat × ${fmt(v.bbPct)}%`, v.badbeatIls, { op: '−', sub: `${fmt(v.bbPct)}% מתוך ${fmt(v.cp.badbeat)} צ'` }) +
       dashResult('רווח כללי', v.profit);
 
   } else if (type === 'profit-ido' || type === 'profit-maor') {
