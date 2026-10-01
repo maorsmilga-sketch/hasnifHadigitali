@@ -1972,7 +1972,9 @@ button.dash-bt-item:active,
 #page-dashboard .rake-control-title {
   margin-top: 0;
 }
-#page-dashboard #dash-control-card,
+#page-dashboard .dash-close-period-wrap {
+  margin: 4px 0 18px;
+}
 #page-dashboard #rake-control-card {
   margin-bottom: 18px;
 }

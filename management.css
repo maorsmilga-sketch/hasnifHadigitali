@@ -1273,9 +1273,12 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
   font-variant-numeric: tabular-nums;
 }
 
-#management-section #dash-control-card,
 #management-section #rake-control-card {
   padding: 14px;
+}
+
+#management-section .dash-close-period-wrap {
+  margin: 4px 0 14px;
 }
 
 #management-section .dash-close-period-btn {
