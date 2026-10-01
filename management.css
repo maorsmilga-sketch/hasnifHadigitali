@@ -1058,6 +1058,9 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
 
 /* ===== DASHBOARD ===== */
 #management-section #page-dashboard .dash-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(5, minmax(108px, 1fr)) auto;
   gap: 8px;
 }
 
@@ -1069,7 +1072,8 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
 }
 
 #management-section #page-dashboard .stat-card {
-  min-height: 92px;
+  min-height: 108px;
+  height: 100%;
   padding: 16px 10px 14px;
 }
 
@@ -1288,11 +1292,8 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
 }
 
 /* BadBeat % slider (below bank leumi row — layout only, not tied to leumi data) */
-#page-dashboard .dash-stat-row .stat-card:only-child {
-  grid-column: 1 / -1;
-}
-
 #management-section .dash-bb-slider {
+  grid-column: 1 / -1;
   margin-top: 4px;
   padding: 14px 16px calc(12px + var(--m-safe-b));
   border-radius: 18px;

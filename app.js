@@ -531,11 +531,7 @@ async function loadDashboard() {
   const debtTotal = n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
   setText('val-debt-total', fmt(debtTotal));
 
-  // Bank Leumi — show row only when value > 0
-  const bankLeumi = n(cp.bank_leumi);
-  const bankRow = document.getElementById('row-bank-leumi');
-  if (bankRow) bankRow.style.display = bankLeumi > 0 ? '' : 'none';
-  setText('val-bank-leumi', fmt(bankLeumi));
+  setText('val-bank-leumi', fmt(n(cp.bank_leumi)));
 
   // Rake control card
   const rakeApp     = n(cp.rake_app);
