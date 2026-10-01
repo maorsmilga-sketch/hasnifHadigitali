@@ -1926,6 +1926,20 @@ button.dash-bt-item:active,
 #page-dashboard .stat-card:hover {
   transform: none;
 }
+#page-dashboard button.stat-card {
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+#page-dashboard button.stat-card:active {
+  transform: scale(0.98);
+}
+#page-dashboard button.stat-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 #page-dashboard .stat-label {
   margin-bottom: 8px;
   text-align: center;

@@ -1644,6 +1644,7 @@ async function refreshBTSummary() {
     const sumWdChips = sum(wd, 'chips_amount');
     const sumExp     = sum(exp, 'amount_ils');
     const totalChips = sumRb + sumTn + sumBn + sumRef;
+    dashExpenseSums = { rb: sumRb, tn: sumTn, bn: sumBn, ref: sumRef };
 
     // Global summary bar
     setText('bt-total-ils',         '₪' + fmt(chipsToIls(totalChips)));
@@ -1677,6 +1678,150 @@ async function refreshBTSummary() {
 // ============================================================
 function closeDashDetail() {
   closeSheet('dash-detail-overlay');
+}
+
+// ============================================================
+// DASHBOARD — Stat card breakdown (what each number is made of)
+// ============================================================
+let dashExpenseSums = null; // chips per expense type, filled by refreshBTSummary()
+
+function dashMoney(v) {
+  return (v < 0 ? '-' : '') + '₪' + fmt(Math.abs(v));
+}
+
+function dashRow(label, value, { op = '+', sub = '' } = {}) {
+  const opHtml = op ? `<span class="dash-calc-op">${op}</span>` : '';
+  return `
+    <div class="md-list-item dash-calc-row${value === 0 ? ' is-zero' : ''}">
+      <div class="md-list-content">
+        <div class="md-list-title">${escHtml(label)}</div>
+        ${sub ? `<div class="md-list-subtitle">${escHtml(sub)}</div>` : ''}
+      </div>
+      <div class="md-list-trailing">${opHtml}${dashMoney(value)}</div>
+    </div>`;
+}
+
+function dashResult(label, value) {
+  const color = value >= 0 ? 'positive-color' : 'negative-color';
+  return `
+    <div class="md-list-item dash-calc-row dash-calc-result">
+      <div class="md-list-content"><div class="md-list-title">${escHtml(label)}</div></div>
+      <div class="md-list-trailing ${color}"><span class="dash-calc-op">=</span>${dashMoney(value)}</div>
+    </div>`;
+}
+
+function dashFormula(text, note = '') {
+  return `
+    <div class="dash-formula">
+      <div class="dash-formula-label">נוסחה</div>
+      <div class="dash-formula-text">${escHtml(text)}</div>
+      ${note ? `<div class="dash-formula-note">${escHtml(note)}</div>` : ''}
+    </div>`;
+}
+
+function dashStatValues() {
+  const cp = currentPeriod || {};
+  const playerDebts = (players || []).filter(p => n(p.debt) > 0);
+  const liquidParts = [
+    ['Bit מאור',      n(cp.bit_maor)],
+    ['Bit עידו',      n(cp.bit_ido)],
+    ['Bit רוית',      n(cp.bit_ravit)],
+    ['Bit דורין',     n(cp.bit_dorin)],
+    ['PayBox מאור',   n(cp.paybox_maor), getPayboxSubtitle('maor')],
+    ['PayBox עידו',   n(cp.paybox_ido),  getPayboxSubtitle('ido')],
+    ['CashCash עידו', n(cp.cashcash_ido)],
+    ['CashCash מאור', n(cp.cashcash_maor)]
+  ];
+  const liquid      = liquidParts.reduce((s, p) => s + p[1], 0);
+  const otherDebts  = otherPlayersDebtTotal();
+  const debtTotal   = n(cp.debt_ido) + n(cp.debt_maor) + otherDebts;
+  const total       = liquid + debtTotal;
+  const bbPct       = getBBPercent();
+  const counterIls  = chipsToIls(n(cp.counter));
+  const badbeatIls  = chipsToIls(n(cp.badbeat) * bbPct / 100);
+  const chipsIls    = counterIls + badbeatIls;
+  const profit      = total - chipsIls;
+  return { cp, playerDebts, liquidParts, liquid, debtTotal, total, bbPct, counterIls, badbeatIls, chipsIls, profit, half: profit / 2 };
+}
+
+function dashDebtRows(v, firstOp = '+') {
+  return dashRow('חוב עידו', n(v.cp.debt_ido), { op: firstOp }) +
+         dashRow('חוב מאור', n(v.cp.debt_maor)) +
+         v.playerDebts.map(p => dashRow('חוב ' + (p.nickname || p.name), n(p.debt), { sub: 'חוב שחקן' })).join('');
+}
+
+function openDashStatDetail(type) {
+  const v = dashStatValues();
+  let title = '', html = '';
+
+  if (type === 'liquid') {
+    title = '💰 כסף נזיל';
+    html = dashFormula('Bit + PayBox + CashCash', 'בנק לאומי לא נכלל — הוא לתצוגה בלבד') +
+      v.liquidParts.map(([label, val, sub], i) => dashRow(label, val, { op: i ? '+' : '', sub })).join('') +
+      dashResult('כסף נזיל', v.liquid);
+
+  } else if (type === 'total') {
+    title = '🏦 סה"כ בקופה';
+    html = dashFormula('כסף נזיל + חוב עידו + חוב מאור + חובות שחקנים') +
+      dashRow('כסף נזיל', v.liquid, { op: '' }) +
+      dashDebtRows(v) +
+      dashResult('סה"כ בקופה', v.total);
+
+  } else if (type === 'chips') {
+    title = '🎰 Counter+BadBeat';
+    html = dashFormula(`Counter + BadBeat × ${fmt(v.bbPct)}%`, `יחס המרה: ${CHIPS_PER_SHEKEL} צ' = ₪1`) +
+      dashRow('Counter', v.counterIls, { op: '', sub: `${fmt(v.cp.counter)} צ'` }) +
+      dashRow(`BadBeat × ${fmt(v.bbPct)}%`, v.badbeatIls, { sub: `${fmt(v.bbPct)}% מתוך ${fmt(v.cp.badbeat)} צ'` }) +
+      dashResult('Counter+BadBeat', v.chipsIls);
+
+  } else if (type === 'profit') {
+    title = '📈 רווח כללי';
+    html = dashFormula('סה"כ בקופה − (Counter+BadBeat)') +
+      dashRow('סה"כ בקופה', v.total, { op: '' }) +
+      dashRow('Counter+BadBeat', v.chipsIls, { op: '−' }) +
+      dashResult('רווח כללי', v.profit);
+
+  } else if (type === 'profit-ido' || type === 'profit-maor') {
+    const isIdo = type === 'profit-ido';
+    const name  = isIdo ? 'עידו' : 'מאור';
+    const debt  = n(isIdo ? v.cp.debt_ido : v.cp.debt_maor);
+    title = '👤 רווח ' + name;
+    html = dashFormula(`רווח כללי ÷ 2, ולאחר חובות: פחות חוב ${name}`) +
+      dashRow('רווח כללי', v.profit, { op: '' }) +
+      dashResult(`רווח ${name} (÷ 2)`, v.half) +
+      dashRow('חוב ' + name, debt, { op: '−' }) +
+      dashResult(`רווח ${name} לאחר חובות`, v.half - debt);
+
+  } else if (type === 'debts') {
+    title = '⚖️ סה"כ חובות';
+    html = dashFormula('חוב עידו + חוב מאור + חובות שחקנים') +
+      dashDebtRows(v, '') +
+      dashResult('סה"כ חובות', v.debtTotal);
+
+  } else if (type === 'expenses') {
+    title = '🧾 סה"כ הוצאות';
+    const s = dashExpenseSums;
+    html = dashFormula('החזרי גנייה + טורנירים + בונוסים + חבר מביא חבר', 'משיכות והוצאות כלליות לא נכללות') +
+      (s
+        ? dashRow('💸 החזרי גנייה', chipsToIls(s.rb), { op: '', sub: `${fmt(s.rb)} צ'` }) +
+          dashRow('🏆 טורנירים', chipsToIls(s.tn), { sub: `${fmt(s.tn)} צ'` }) +
+          dashRow('🎁 בונוסים', chipsToIls(s.bn), { sub: `${fmt(s.bn)} צ'` }) +
+          dashRow('🤝 חבר מביא חבר', chipsToIls(s.ref), { sub: `${fmt(s.ref)} צ'` }) +
+          dashResult('סה"כ הוצאות', chipsToIls(s.rb + s.tn + s.bn + s.ref))
+        : '<div class="md-list-empty">טוען נתונים…</div>');
+
+  } else if (type === 'leumi') {
+    title = '🏦 בנק לאומי';
+    html = dashFormula('יתרה שמוזנת ידנית', 'לתצוגה בלבד — לא נכללת בכסף נזיל, בסה"כ בקופה או ברווח') +
+      dashResult('יתרה', n(v.cp.bank_leumi));
+
+  } else {
+    return;
+  }
+
+  setText('dash-detail-title', title);
+  document.getElementById('dash-detail-body').innerHTML = html;
+  openSheet('dash-detail-overlay');
 }
 
 async function openDashBTDetail(type) {

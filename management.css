@@ -1055,6 +1055,81 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
   padding: 16px 10px 14px;
 }
 
+#management-section #page-dashboard button.stat-card {
+  transition: transform 0.15s var(--m-ease), border-color 0.18s;
+}
+#management-section #page-dashboard button.stat-card:active {
+  transform: scale(0.98);
+  border-color: rgba(128,120,255,0.45);
+}
+#management-section #page-dashboard button.stat-card:focus-visible {
+  outline: none;
+  border-color: var(--m-focus);
+  box-shadow: var(--m-ring), var(--m-shadow);
+}
+@media (hover: hover) {
+  #management-section #page-dashboard button.stat-card:hover {
+    border-color: rgba(160,150,255,0.34);
+  }
+}
+
+/* Stat card breakdown sheet */
+#management-section .dash-formula {
+  margin-bottom: 4px;
+  padding: 12px 14px;
+  border-radius: var(--m-r-md);
+  background: rgba(108,99,255,0.10);
+  border: 1px solid rgba(128,120,255,0.28);
+  box-shadow: var(--m-highlight);
+  text-align: center;
+}
+#management-section .dash-formula-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #cdc9ff;
+  margin-bottom: 4px;
+}
+#management-section .dash-formula-text {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+#management-section .dash-formula-note {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+#management-section .dash-calc-row {
+  min-height: 52px;
+  padding-block: 10px;
+}
+#management-section .dash-calc-row.is-zero .md-list-title,
+#management-section .dash-calc-row.is-zero .md-list-trailing {
+  color: var(--text-muted);
+}
+#management-section .dash-calc-row .md-list-trailing {
+  direction: ltr;
+}
+#management-section .dash-calc-op {
+  display: inline-block;
+  min-width: 1.1em;
+  margin-inline-end: 4px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+#management-section .dash-calc-result {
+  background: rgba(255,255,255,0.075);
+  border-color: var(--m-stroke-strong);
+}
+#management-section .dash-calc-result .md-list-title {
+  font-weight: 800;
+}
+#management-section .dash-calc-result .md-list-trailing {
+  font-size: 17px;
+}
+
 #management-section .stat-card::after {
   inset: 0 24% auto 24%;
   height: 2px;

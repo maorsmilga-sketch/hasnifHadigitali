@@ -17,8 +17,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20261001a">
-<link rel="stylesheet" href="management.css?v=20260930c">
+<link rel="stylesheet" href="style.css?v=20261001b">
+<link rel="stylesheet" href="management.css?v=20261001b">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 </head>
 <body>
@@ -164,55 +164,55 @@
 
         <div class="dash-stats">
           <div class="dash-stat-row">
-            <div class="stat-card accent">
-              <div class="stat-label">כסף נזיל</div>
-              <div class="stat-value"><span class="currency">₪</span><span id="val-liquid">—</span></div>
-              <div class="stat-sub" id="val-liquid-sub"></div>
-            </div>
-            <div class="stat-card accent">
-              <div class="stat-label">סה"כ בקופה</div>
-              <div class="stat-value"><span class="currency">₪</span><span id="val-total">—</span></div>
-              <div class="stat-sub">כסף נזיל + חובות</div>
-            </div>
+            <button type="button" class="stat-card accent" onclick="openDashStatDetail('liquid')">
+              <span class="stat-label">כסף נזיל</span>
+              <span class="stat-value"><span class="currency">₪</span><span id="val-liquid">—</span></span>
+              <span class="stat-sub" id="val-liquid-sub"></span>
+            </button>
+            <button type="button" class="stat-card accent" onclick="openDashStatDetail('total')">
+              <span class="stat-label">סה"כ בקופה</span>
+              <span class="stat-value"><span class="currency">₪</span><span id="val-total">—</span></span>
+              <span class="stat-sub">כסף נזיל + חובות</span>
+            </button>
           </div>
           <div class="dash-stat-row">
-            <div class="stat-card warning">
-              <div class="stat-label stat-label-mixed">Counter+BadBeat</div>
-              <div class="stat-value"><span class="currency">₪</span><span id="val-chips-ils">—</span></div>
-            </div>
-            <div class="stat-card" id="card-profit">
-              <div class="stat-label">רווח כללי</div>
-              <div class="stat-value" id="sv-profit"><span class="currency">₪</span><span id="val-profit">—</span></div>
-            </div>
+            <button type="button" class="stat-card warning" onclick="openDashStatDetail('chips')">
+              <span class="stat-label stat-label-mixed">Counter+BadBeat</span>
+              <span class="stat-value"><span class="currency">₪</span><span id="val-chips-ils">—</span></span>
+            </button>
+            <button type="button" class="stat-card" id="card-profit" onclick="openDashStatDetail('profit')">
+              <span class="stat-label">רווח כללי</span>
+              <span class="stat-value" id="sv-profit"><span class="currency">₪</span><span id="val-profit">—</span></span>
+            </button>
           </div>
           <div class="dash-stat-row">
-            <div class="stat-card positive">
-              <div class="stat-label">רווח עידו</div>
-              <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-ido">—</span></div>
-              <div class="stat-sub">לאחר חובות: <span id="val-profit-ido-net">—</span></div>
-            </div>
-            <div class="stat-card positive">
-              <div class="stat-label">רווח מאור</div>
-              <div class="stat-value positive"><span class="currency">₪</span><span id="val-profit-maor">—</span></div>
-              <div class="stat-sub">לאחר חובות: <span id="val-profit-maor-net">—</span></div>
-            </div>
+            <button type="button" class="stat-card positive" onclick="openDashStatDetail('profit-ido')">
+              <span class="stat-label">רווח עידו</span>
+              <span class="stat-value positive"><span class="currency">₪</span><span id="val-profit-ido">—</span></span>
+              <span class="stat-sub">לאחר חובות: <span id="val-profit-ido-net">—</span></span>
+            </button>
+            <button type="button" class="stat-card positive" onclick="openDashStatDetail('profit-maor')">
+              <span class="stat-label">רווח מאור</span>
+              <span class="stat-value positive"><span class="currency">₪</span><span id="val-profit-maor">—</span></span>
+              <span class="stat-sub">לאחר חובות: <span id="val-profit-maor-net">—</span></span>
+            </button>
           </div>
           <div class="dash-stat-row">
-            <div class="stat-card negative">
-              <div class="stat-label">סה"כ חובות</div>
-              <div class="stat-value"><span class="currency">₪</span><span id="val-debt-total">—</span></div>
-            </div>
-            <div class="stat-card negative">
-              <div class="stat-label">סה"כ הוצאות (₪)</div>
-              <div class="stat-value"><span class="currency">₪</span><span id="val-expenses-ils">—</span></div>
-            </div>
+            <button type="button" class="stat-card negative" onclick="openDashStatDetail('debts')">
+              <span class="stat-label">סה"כ חובות</span>
+              <span class="stat-value"><span class="currency">₪</span><span id="val-debt-total">—</span></span>
+            </button>
+            <button type="button" class="stat-card negative" onclick="openDashStatDetail('expenses')">
+              <span class="stat-label">סה"כ הוצאות (₪)</span>
+              <span class="stat-value"><span class="currency">₪</span><span id="val-expenses-ils">—</span></span>
+            </button>
           </div>
           <div class="dash-stat-row" id="row-bank-leumi" style="display:none">
-            <div class="stat-card accent" style="grid-column:1/-1">
-              <div class="stat-label">🏦 בנק לאומי</div>
-              <div class="stat-value"><span class="currency">₪</span><span id="val-bank-leumi">0</span></div>
-              <div class="stat-sub">יתרה — לתצוגה בלבד</div>
-            </div>
+            <button type="button" class="stat-card accent" style="grid-column:1/-1" onclick="openDashStatDetail('leumi')">
+              <span class="stat-label">🏦 בנק לאומי</span>
+              <span class="stat-value"><span class="currency">₪</span><span id="val-bank-leumi">0</span></span>
+              <span class="stat-sub">יתרה — לתצוגה בלבד</span>
+            </button>
           </div>
         </div>
 
@@ -1231,7 +1231,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261001b"></script>
+<script src="app.js?v=20261001c"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
