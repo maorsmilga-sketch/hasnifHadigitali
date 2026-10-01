@@ -116,26 +116,8 @@ ALTER TABLE current_period ADD COLUMN IF NOT EXISTS bank_leumi numeric DEFAULT 0
 
 ### 3. הגדרת RLS (Row Level Security)
 
-כדי שה-anon key יוכל לקרוא ולכתוב, בצע אחת מהאפשרויות:
-
-**אפשרות א׳ — כיבוי RLS (לשימוש פנימי בלבד):**
-```sql
-ALTER TABLE players             DISABLE ROW LEVEL SECURITY;
-ALTER TABLE current_period      DISABLE ROW LEVEL SECURITY;
-ALTER TABLE blue_table_rakeback DISABLE ROW LEVEL SECURITY;
-ALTER TABLE blue_table_tournaments DISABLE ROW LEVEL SECURITY;
-ALTER TABLE blue_table_bonuses  DISABLE ROW LEVEL SECURITY;
-ALTER TABLE blue_table_referrals DISABLE ROW LEVEL SECURITY;
-ALTER TABLE withdrawals         DISABLE ROW LEVEL SECURITY;
-ALTER TABLE history             DISABLE ROW LEVEL SECURITY;
-```
-
-**אפשרות ב׳ — מדיניות פתוחה (allow all for anon):**
-```sql
--- חזור על זה לכל טבלה:
-CREATE POLICY "allow_all" ON players FOR ALL TO anon USING (true) WITH CHECK (true);
--- (ועוד 7 פעמים לכל שאר הטבלאות)
-```
+הגישה לטבלאות מוגבלת למשתמשים מחוברים שהמייל שלהם נמצא בטבלה `allowed_users`.
+הרץ ב-SQL Editor את הקובץ `supabase_google_auth_rls_migration.sql` (בסוף הקובץ יש גם SQL לביטול).
 
 ### 4. עדכון app.js
 
@@ -148,16 +130,12 @@ const SUPABASE_ANON_KEY = 'eyJ...your-anon-key...';
 
 הפרטים זמינים ב-Supabase Dashboard ← Settings ← API.
 
-### 5. עדכון סיסמאות
+### 5. התחברות עם Google
 
-באותו הקובץ `app.js`, עדכן:
-
-```javascript
-const USERS = {
-  ido:  'הסיסמא_של_עידו',
-  maor: 'הסיסמא_של_מאור'
-};
-```
+- **Firebase Console ← Authentication ← Sign-in method:** הפעל Google, והוסף את דומיין האתר ב-Authorized domains.
+- **Supabase ← Authentication ← Providers ← Google:** הדבק את ה-Web client ID של Firebase והפעל Skip nonce checks.
+- **Firebase ← Realtime Database ← Rules:** הדבק את `firebase.database.rules.json`.
+- רשימת המיילים המורשים מופיעה ב-`auth.js`, ב-`allowed_users` וב-rules של Firebase — יש לעדכן את שלושתם יחד.
 
 ---
 
@@ -196,6 +174,6 @@ const USERS = {
 
 ## 🔐 הרשאות
 
-- עידו ומאור בלבד — הסיסמאות מוגדרות ב-`app.js`
-- Session נשמר ב-`sessionStorage` (מתנקה עם סגירת הדפדפן)
-- אין שימוש ב-Supabase Auth
+- התחברות עם Google בלבד (Firebase Auth); הטוקן של Google מועבר ל-Supabase דרך `signInWithIdToken`
+- רק `reuvenido@gmail.com` ו-`maorsmilga@gmail.com` מורשים — האכיפה בצד השרת (RLS ב-Supabase ו-Rules ב-Firebase)
+- ההתחברות נשמרת בדפדפן עד לחיצה על התנתקות
