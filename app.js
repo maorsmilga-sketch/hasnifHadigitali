@@ -1816,6 +1816,12 @@ function dashStatValues() {
   return { cp, playerDebts, liquidParts, liquid, debtTotal, total, bbPct, counterIls, badbeatIls, chipsIls, profit, half: profit / 2 };
 }
 
+function dashBadbeatCalcSub(cp, bbPct) {
+  const raw = n(cp.badbeat);
+  const partChips = raw * bbPct / 100;
+  return `ערך BadBeat: ${fmt(raw)} צ' · ${fmt(raw)} × ${fmt(bbPct)}% = ${fmt(partChips)} צ'`;
+}
+
 function dashDebtRows(v, firstOp = '+') {
   return dashRow('חוב עידו', n(v.cp.debt_ido), { op: firstOp }) +
          dashRow('חוב מאור', n(v.cp.debt_maor)) +
@@ -1843,7 +1849,7 @@ function openDashStatDetail(type) {
     title = '🎰 Counter+BadBeat';
     html = dashFormula(`Counter + BadBeat × ${fmt(v.bbPct)}%`, `יחס המרה: ${CHIPS_PER_SHEKEL} צ' = ₪1`) +
       dashRow('Counter', v.counterIls, { op: '', sub: `${fmt(v.cp.counter)} צ'` }) +
-      dashRow(`BadBeat × ${fmt(v.bbPct)}%`, v.badbeatIls, { sub: `${fmt(v.bbPct)}% מתוך ${fmt(v.cp.badbeat)} צ'` }) +
+      dashRow(`BadBeat × ${fmt(v.bbPct)}%`, v.badbeatIls, { sub: dashBadbeatCalcSub(v.cp, v.bbPct) }) +
       dashResult('Counter+BadBeat', v.chipsIls);
 
   } else if (type === 'profit') {
@@ -1851,7 +1857,7 @@ function openDashStatDetail(type) {
     html = dashFormula(`סה"כ בקופה − Counter − BadBeat × ${fmt(v.bbPct)}%`, `יחס המרה: ${CHIPS_PER_SHEKEL} צ' = ₪1`) +
       dashRow('סה"כ בקופה', v.total, { op: '' }) +
       dashRow('Counter', v.counterIls, { op: '−', sub: `${fmt(v.cp.counter)} צ'` }) +
-      dashRow(`BadBeat × ${fmt(v.bbPct)}%`, v.badbeatIls, { op: '−', sub: `${fmt(v.bbPct)}% מתוך ${fmt(v.cp.badbeat)} צ'` }) +
+      dashRow(`BadBeat × ${fmt(v.bbPct)}%`, v.badbeatIls, { op: '−', sub: dashBadbeatCalcSub(v.cp, v.bbPct) }) +
       dashResult('רווח כללי', v.profit);
 
   } else if (type === 'profit-ido' || type === 'profit-maor') {
