@@ -10,14 +10,9 @@ const SUPABASE_ANON_KEY = 'sb_publishable_9TvfEI2S3K_M95-LBzikvg_r63QVQXc';
 
 const USER_DISPLAY = { ido: 'עידו', maor: 'מאור' };
 
-// Each pattern (sequence of 3x3 grid node indices, 0-8 reading order) maps to a user
-// — a drawn pattern is the only authentication method
-const PATTERNS = {
-  ido:  [2, 5, 8, 7, 6],
-  maor: [4, 5, 7, 8]
-};
-const MIN_PATTERN_LENGTH = 4;
-const PIN_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+});
 
 // Chip-to-ILS ratio: 1 chip = ₪1 (current periods and new history records)
 const CHIPS_PER_SHEKEL      = 1;
@@ -56,19 +51,20 @@ let historyData     = [];
 let chartMode       = 'person'; // 'person' | 'total'
 let chartMonths     = null;     // null = all, or number of months
 let chartYear       = null;     // null = no year filter, or a calendar year (e.g. 2026)
-let patternEntry     = [];
-let patternDragging  = false;
-let pinLocked        = false;
-let pinInactiveTimer = null;
+let currentUserKey  = null;
+let authBusy        = false;
 const acPlayerData  = {}; // { hiddenInputId: playerObject } — tracks autocomplete selections
 
 // ============================================================
 // SUPABASE REST HELPERS
 // ============================================================
-function sbHeaders(prefer = 'return=representation') {
+async function sbHeaders(prefer = 'return=representation') {
+  const { data } = await sbClient.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) throw new Error('נדרשת התחברות מחדש');
   return {
     'apikey':        SUPABASE_ANON_KEY,
-    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    'Authorization': `Bearer ${token}`,
     'Content-Type':  'application/json',
     'Prefer':        prefer
   };
@@ -86,7 +82,7 @@ async function sbErrMsg(res) {
 async function dbGet(table, query = '') {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
     method: 'GET',
-    headers: sbHeaders()
+    headers: await sbHeaders()
   });
   if (!res.ok) throw new Error(await sbErrMsg(res));
   return res.json();
@@ -95,7 +91,7 @@ async function dbGet(table, query = '') {
 async function dbPost(table, body) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
     method: 'POST',
-    headers: sbHeaders(),
+    headers: await sbHeaders(),
     body: JSON.stringify(body)
   });
   if (!res.ok) throw new Error(await sbErrMsg(res));
@@ -106,7 +102,7 @@ async function dbPost(table, body) {
 async function dbPatch(table, query, body) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
     method: 'PATCH',
-    headers: sbHeaders(),
+    headers: await sbHeaders(),
     body: JSON.stringify(body)
   });
   if (!res.ok) throw new Error(await sbErrMsg(res));
@@ -117,7 +113,7 @@ async function dbPatch(table, query, body) {
 async function dbDelete(table, query) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
     method: 'DELETE',
-    headers: sbHeaders('return=minimal')
+    headers: await sbHeaders('return=minimal')
   });
   if (!res.ok) throw new Error(await sbErrMsg(res));
   return true;
@@ -137,10 +133,10 @@ function showNotif(msg, type = 'success') {
 }
 
 // ============================================================
-// AUTH — PIN only, no login page
+// AUTH — Google sign-in via Firebase, token forwarded to Supabase
 // ============================================================
 function getCurrentUser() {
-  return sessionStorage.getItem('currentUser');
+  return currentUserKey;
 }
 
 function getDisplayName() {
@@ -157,14 +153,116 @@ function hideDataLoading() {
   if (el) el.style.display = 'none';
 }
 
-function doLogout() {
-  sessionStorage.removeItem('currentUser');
+async function doLogout() {
+  resetSignedInState();
+  showAuthOverlay();
+  await signOutEverywhere();
+}
+
+function resetSignedInState() {
+  currentUserKey  = null;
   currentPeriod   = null;
   players         = [];
   window._mgmtMounted = false;
   hideDataLoading();
   document.getElementById('app').style.display = 'none';
-  showLandingScreen(); // return to home landing screen
+  const frame = document.getElementById('contacts-frame');
+  if (frame) frame.src = 'about:blank';
+  showLandingScreen();
+}
+
+async function signOutEverywhere() {
+  await Promise.allSettled([firebase.auth().signOut(), sbClient.auth.signOut()]);
+}
+
+function setAuthMessage(subtitle, error = '') {
+  document.getElementById('auth-subtitle').textContent = subtitle;
+  document.getElementById('auth-error').textContent    = error;
+}
+
+function showAuthOverlay(error = '') {
+  setAuthMessage('התחבר עם חשבון Google מורשה', error);
+  const btn = document.getElementById('google-signin-btn');
+  btn.hidden   = false;
+  btn.disabled = false;
+  document.getElementById('auth-overlay').style.display = 'flex';
+}
+
+function onSignedIn(userKey) {
+  const alreadyIn = currentUserKey === userKey;
+  currentUserKey = userKey;
+  document.getElementById('user-badge').textContent = USER_DISPLAY[userKey] || userKey;
+  document.getElementById('auth-overlay').style.display = 'none';
+  if (alreadyIn) return;
+  const frame = document.getElementById('contacts-frame');
+  if (frame) frame.src = 'contacts.html';
+}
+
+function authErrorMessage(e) {
+  const code = e?.code || e?.message || '';
+  if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return '';
+  if (code === 'unauthorized')         return 'החשבון הזה לא מורשה לגשת למערכת';
+  if (code === 'auth/popup-blocked')   return 'הדפדפן חסם את חלון ההתחברות — אפשר חלונות קופצים ונסה שוב';
+  if (code === 'auth/unauthorized-domain') return 'הדומיין של האתר לא מאושר ב-Firebase (Authorized domains)';
+  return 'ההתחברות נכשלה: ' + (e?.message || code);
+}
+
+async function signInWithGoogle() {
+  if (authBusy) return;
+  authBusy = true;
+  const btn = document.getElementById('google-signin-btn');
+  btn.disabled = true;
+  setAuthMessage('מתחבר…');
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    const result = await firebase.auth().signInWithPopup(provider);
+    const userKey = allowedUserKey(result.user);
+    if (!userKey) throw new Error('unauthorized');
+    const idToken = result.credential?.idToken;
+    if (!idToken) throw new Error('Google לא החזיר טוקן התחברות');
+    const { error } = await sbClient.auth.signInWithIdToken({ provider: 'google', token: idToken });
+    if (error) throw error;
+    onSignedIn(userKey);
+  } catch (e) {
+    await signOutEverywhere();
+    showAuthOverlay(authErrorMessage(e));
+  } finally {
+    authBusy = false;
+  }
+}
+
+function initAuth() {
+  firebase.auth().onAuthStateChanged(async user => {
+    if (authBusy) return;
+    if (!user) {
+      if (currentUserKey) resetSignedInState();
+      showAuthOverlay();
+      return;
+    }
+    const userKey = allowedUserKey(user);
+    if (!userKey) {
+      await signOutEverywhere();
+      showAuthOverlay('החשבון הזה לא מורשה לגשת למערכת');
+      return;
+    }
+    // A Supabase session can only be created from a fresh Google token,
+    // so if it is missing the user has to go through the popup again.
+    const { data } = await sbClient.auth.getSession();
+    const sbEmail = (data.session?.user?.email || '').toLowerCase();
+    if (sbEmail !== user.email.toLowerCase()) {
+      showAuthOverlay();
+      return;
+    }
+    onSignedIn(userKey);
+  });
+
+  sbClient.auth.onAuthStateChange(event => {
+    if (event === 'SIGNED_OUT' && currentUserKey && !authBusy) {
+      resetSignedInState();
+      showAuthOverlay('פג תוקף ההתחברות, התחבר שוב');
+    }
+  });
 }
 
 // ============================================================
@@ -3206,185 +3304,11 @@ function playerLabel(name, nickname) {
 }
 
 // ============================================================
-// PIN LOCK (pattern-based)
-// ============================================================
-function showPinLock() {
-  patternEntry = [];
-  pinLocked = true;
-  clearPatternVisual();
-  clearPinError();
-  document.getElementById('pin-overlay').style.display = 'flex';
-}
-
-function hidePinLock() {
-  pinLocked = false;
-  document.getElementById('pin-overlay').style.display = 'none';
-  resetInactivityTimer();
-  // After successful auth, handle any pending tab switch
-  if (window._pendingTabSwitch === 'management') {
-    window._pendingTabSwitch = null;
-    if (!window._mgmtMounted) {
-      window._mgmtMounted = true;
-      mountApp();
-    } else {
-      showManagementSection();
-    }
-  }
-}
-
-function patternNodeCenters() {
-  const wrapRect = document.getElementById('pattern-wrap').getBoundingClientRect();
-  const nodes = document.querySelectorAll('.pattern-node');
-  return Array.from(nodes).map(el => {
-    const r = el.getBoundingClientRect();
-    return { x: r.left + r.width / 2 - wrapRect.left, y: r.top + r.height / 2 - wrapRect.top };
-  });
-}
-
-function markNodeActive(idx) {
-  const node = document.querySelector(`.pattern-node[data-idx="${idx}"]`);
-  if (node) node.classList.add('active');
-}
-
-function clearPatternVisual() {
-  document.querySelectorAll('.pattern-node').forEach(n => n.classList.remove('active', 'error'));
-  const svg = document.getElementById('pattern-svg');
-  if (svg) { svg.innerHTML = ''; svg.classList.remove('error'); }
-}
-
-function drawPatternLines(centers, livePoint) {
-  const svg = document.getElementById('pattern-svg');
-  if (!svg) return;
-  let html = '';
-  for (let i = 1; i < patternEntry.length; i++) {
-    const a = centers[patternEntry[i - 1]], b = centers[patternEntry[i]];
-    html += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>`;
-  }
-  if (patternDragging && patternEntry.length && livePoint) {
-    const a = centers[patternEntry[patternEntry.length - 1]];
-    html += `<line x1="${a.x}" y1="${a.y}" x2="${livePoint.x}" y2="${livePoint.y}"/>`;
-  }
-  svg.innerHTML = html;
-}
-
-function checkPattern() {
-  if (patternEntry.length >= MIN_PATTERN_LENGTH) {
-    const match = Object.keys(PATTERNS).find(user =>
-      PATTERNS[user].length === patternEntry.length &&
-      PATTERNS[user].every((v, i) => v === patternEntry[i])
-    );
-    if (match) {
-      sessionStorage.setItem('currentUser', match);
-      document.getElementById('user-badge').textContent = USER_DISPLAY[match] || match;
-      hidePinLock();
-      return;
-    }
-  }
-  // Wrong pattern — flash red, clear
-  document.querySelectorAll('.pattern-node.active').forEach(n => n.classList.add('error'));
-  document.getElementById('pattern-svg')?.classList.add('error');
-  document.getElementById('pin-error').textContent = 'תבנית שגויה, נסה שוב';
-  setTimeout(() => {
-    patternEntry = [];
-    clearPatternVisual();
-  }, 700);
-}
-
-function initPatternLock() {
-  const wrap = document.getElementById('pattern-wrap');
-  if (!wrap || wrap.dataset.acInit) return;
-  wrap.dataset.acInit = '1';
-
-  let centers = [];
-  let wrapRect = null;
-
-  function pointFromEvent(e) {
-    return { x: e.clientX - wrapRect.left, y: e.clientY - wrapRect.top };
-  }
-
-  function nearestNode(pt) {
-    let best = -1, bestDist = 26;
-    centers.forEach((c, i) => {
-      const d = Math.hypot(c.x - pt.x, c.y - pt.y);
-      if (d < bestDist) { bestDist = d; best = i; }
-    });
-    return best;
-  }
-
-  function handleMove(e) {
-    if (!patternDragging) return;
-    const pt = pointFromEvent(e);
-    const idx = nearestNode(pt);
-    if (idx >= 0 && !patternEntry.includes(idx)) {
-      patternEntry.push(idx);
-      markNodeActive(idx);
-    }
-    drawPatternLines(centers, pt);
-  }
-
-  wrap.addEventListener('pointerdown', e => {
-    wrap.setPointerCapture(e.pointerId);
-    wrapRect = wrap.getBoundingClientRect();
-    centers = patternNodeCenters();
-    patternDragging = true;
-    patternEntry = [];
-    clearPatternVisual();
-    handleMove(e);
-  });
-  wrap.addEventListener('pointermove', handleMove);
-  wrap.addEventListener('pointerup', () => {
-    if (!patternDragging) return;
-    patternDragging = false;
-    checkPattern();
-  });
-  wrap.addEventListener('pointercancel', () => { patternDragging = false; });
-}
-
-function clearPinError() {
-  const el = document.getElementById('pin-error');
-  if (el) el.textContent = '';
-}
-
-function resetInactivityTimer() {
-  clearTimeout(pinInactiveTimer);
-  if (getCurrentUser()) {
-    pinInactiveTimer = setTimeout(showPinLock, PIN_TIMEOUT_MS);
-  }
-}
-
-function initPinLock() {
-  initPatternLock();
-
-  // Reset timer on any user interaction
-  ['click','touchstart','keydown','scroll'].forEach(evt =>
-    document.addEventListener(evt, resetInactivityTimer, { passive: true })
-  );
-
-  // Lock when tab/app goes to background then returns after timeout
-  let hiddenAt = null;
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      hiddenAt = Date.now();
-    } else {
-      if (hiddenAt && (Date.now() - hiddenAt) >= PIN_TIMEOUT_MS && getCurrentUser()) {
-        showPinLock();
-      }
-      hiddenAt = null;
-    }
-  });
-
-  resetInactivityTimer();
-}
-
-// ============================================================
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Contacts tab is the default landing page — no auto-mount or PIN on load.
-  // Management is accessed via the tab switcher which handles auth.
-  initPinLock(); // register inactivity + visibility listeners
+  initAuth();
 
-  // Wire the app-grid back button
   const backBtn = document.getElementById('back-btn');
   if (backBtn) backBtn.addEventListener('click', goBack);
 });
