@@ -17,8 +17,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20261001j">
-<link rel="stylesheet" href="management.css?v=20261001j">
+<link rel="stylesheet" href="style.css?v=20261001k">
+<link rel="stylesheet" href="management.css?v=20261001k">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 </head>
 <body>
@@ -213,6 +213,11 @@
               <span class="stat-value"><span class="currency">₪</span><span id="val-expenses-ils">—</span></span>
               <span class="stat-sub">&nbsp;</span>
             </button>
+        </div>
+
+        <div class="card" id="dash-control-card">
+          <h3 class="section-title rake-control-title">🎛️ בקרה</h3>
+          <button type="button" class="dash-close-period-btn" onclick="navigate('settlement')">🔒 סגור תקופה</button>
         </div>
 
         <div class="card" id="rake-control-card" hidden>
