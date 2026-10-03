@@ -2109,41 +2109,166 @@ function otherPlayersDebtTotal() {
   return (players || []).reduce((s, p) => s + (n(p.debt) > 0 ? n(p.debt) : 0), 0);
 }
 
-function renderOtherPlayerDebts() {
-  const container = document.getElementById('other-debts-grid');
-  if (!container) return;
-  const withDebt = (players || []).filter(p => n(p.debt) > 0);
-  container.innerHTML = withDebt.map(p => `
-    <div class="debt-block">
-      <h3>⚖️ חוב ${escHtml(p.nickname || p.name)}</h3>
-      <div class="debt-amount">
-        <span class="debt-currency">₪</span>${fmt(p.debt)}
-      </div>
-    </div>`).join('');
+function cofferPlayerDebtName(p) {
+  return p.nickname || p.name;
 }
 
-async function manualPlayerDebt(sign) {
-  const playerId = document.getElementById('pd-player').value;
-  const inputEl  = document.getElementById('pd-player-amount');
-  const amount   = parseFloat(inputEl.value);
-  if (!playerId)              { showNotif('אנא בחר שחקן', 'error');        return; }
-  if (!amount || amount <= 0) { showNotif('אנא הזן סכום תקין', 'error');    return; }
+function cofferDebtDescription(action, name, amount, newVal) {
+  if (action === 'add')      return `נוסף ₪${fmt(amount)} לחוב ${name} → ₪${fmt(newVal)}`;
+  if (action === 'subtract') return `הופחת ₪${fmt(amount)} מחוב ${name} → ₪${fmt(newVal)}`;
+  if (action === 'clear')    return `חוב ${name} סולק במלואו`;
+  return `חוב ${name} עודכן → ₪${fmt(newVal)}`;
+}
 
+async function updatePlayerCofferDebt(playerId, newVal, action, inputAmount) {
   const p = players.find(pl => pl.id === playerId);
-  if (!p) return;
-  const newVal = Math.max(0, n(p.debt) + sign * amount);
-
+  if (!p) return false;
+  newVal = Math.max(0, n(newVal));
+  const oldVal = n(p.debt);
+  if (newVal === oldVal && action !== 'clear') {
+    showNotif('אין שינוי ביתרה', 'error');
+    return false;
+  }
+  const name = cofferPlayerDebtName(p);
+  const description = cofferDebtDescription(action, name, inputAmount, newVal);
   try {
     await dbPatch('players', `?id=eq.${playerId}`, { debt: newVal });
     p.debt = newVal;
-    inputEl.value = '';
-    clearPlayerAC('pd-player');
-    showNotif(`✅ חוב ${p.nickname || p.name} עודכן → ₪${fmt(newVal)}`);
-    closeSheet('debt-sheet');
+    try {
+      await dbPost('coffer_debt_log', {
+        player_id: playerId,
+        action,
+        amount: n(inputAmount),
+        old_balance: oldVal,
+        new_balance: newVal,
+        description,
+        created_by: getDisplayName(),
+        created_at: now()
+      });
+    } catch {}
+    const toast = action === 'clear'
+      ? `✅ חוב ${name} סולק`
+      : `✅ חוב ${name} עודכן → ₪${fmt(newVal)}`;
+    showNotif(toast);
     renderOtherPlayerDebts();
+    loadDashboard();
+    return true;
   } catch (e) {
     showNotif('שגיאה בעדכון חוב: ' + e.message, 'error');
+    return false;
   }
+}
+
+function renderOtherPlayerDebts() {
+  const container = document.getElementById('other-debts-grid');
+  if (!container) return;
+  const withDebt = (players || []).filter(p => n(p.debt) > 0)
+    .sort((a, b) => n(b.debt) - n(a.debt) || cofferPlayerDebtName(a).localeCompare(cofferPlayerDebtName(b), 'he'));
+  if (!withDebt.length) {
+    container.innerHTML = '<div class="md-list-empty">אין שחקנים עם חובות פעילים</div>';
+    return;
+  }
+  container.innerHTML = withDebt.map(p => {
+    const label = escHtml(cofferPlayerDebtName(p));
+    const sub   = (p.nickname && p.name)
+      ? `<div class="md-list-subtitle">${escHtml(p.name)}</div>`
+      : '';
+    return `
+    <div class="md-list-item pdebt-row">
+      <div class="pdebt-row-head">
+        <div class="md-list-content">
+          <div class="md-list-title">${label}</div>
+          ${sub}
+        </div>
+        <div class="pdebt-row-amount"><span class="debt-currency">₪</span>${fmt(p.debt)}</div>
+        <button type="button" class="md-icon-btn" onclick="confirmClearCofferPlayerDebt('${p.id}')" title="סילוק מלא" aria-label="סילוק מלא">✕</button>
+      </div>
+      <div class="manual-input pdebt-row-controls">
+        <input type="number" id="cdebt-amt-${p.id}" placeholder="סכום..." step="0.01" min="0" inputmode="decimal">
+        <button type="button" class="btn btn-success btn-sm" onclick="cofferPlayerDebtAdd('${p.id}')">+</button>
+        <button type="button" class="btn btn-danger btn-sm" onclick="cofferPlayerDebtSub('${p.id}')">−</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function cofferPlayerDebtRowAmount(playerId) {
+  const el = document.getElementById('cdebt-amt-' + playerId);
+  const amount = parseFloat(el?.value);
+  if (!amount || amount <= 0) {
+    showNotif('אנא הזן סכום תקין', 'error');
+    return null;
+  }
+  return amount;
+}
+
+async function cofferPlayerDebtAdd(playerId) {
+  const amount = cofferPlayerDebtRowAmount(playerId);
+  if (amount == null) return;
+  const p = players.find(pl => pl.id === playerId);
+  if (!p) return;
+  await updatePlayerCofferDebt(playerId, n(p.debt) + amount, 'add', amount);
+}
+
+async function cofferPlayerDebtSub(playerId) {
+  const amount = cofferPlayerDebtRowAmount(playerId);
+  if (amount == null) return;
+  const p = players.find(pl => pl.id === playerId);
+  if (!p) return;
+  await updatePlayerCofferDebt(playerId, n(p.debt) - amount, 'subtract', amount);
+}
+
+function confirmClearCofferPlayerDebt(playerId) {
+  const p = players.find(pl => pl.id === playerId);
+  if (!p) return;
+  const name = cofferPlayerDebtName(p);
+  document.getElementById('confirm-title').textContent = 'סילוק חוב';
+  document.getElementById('confirm-msg').textContent =
+    `האם לסגור את החוב של ${name} במלואו? השחקן יוסר מרשימת החובות הפעילים.`;
+  document.getElementById('confirm-ok').textContent = 'סילוק מלא';
+  document.getElementById('confirm-ok').onclick = async () => {
+    closeConfirm();
+    await updatePlayerCofferDebt(playerId, 0, 'clear', n(p.debt));
+  };
+  document.getElementById('confirm-overlay').style.display = 'flex';
+}
+
+async function sheetCofferPlayerDebt(action) {
+  const playerId = document.getElementById('pd-player').value;
+  const inputEl  = document.getElementById('pd-player-amount');
+  const amount   = parseFloat(inputEl.value);
+  if (!playerId)              { showNotif('אנא בחר שחקן', 'error');     return; }
+  if (!amount || amount <= 0) { showNotif('אנא הזן סכום תקין', 'error'); return; }
+
+  const p = players.find(pl => pl.id === playerId);
+  if (!p) return;
+  const newVal = action === 'add'
+    ? n(p.debt) + amount
+    : n(p.debt) - amount;
+
+  const ok = await updatePlayerCofferDebt(playerId, newVal, action, amount);
+  if (!ok) return;
+  inputEl.value = '';
+  clearPlayerAC('pd-player');
+  closeSheet('debt-sheet');
+}
+
+function confirmClearPartnerDebt(person) {
+  const label = person === 'ido' ? 'עידו' : 'מאור';
+  const current = n(currentPeriod[`debt_${person}`]);
+  if (current <= 0) {
+    showNotif(`אין חוב פעיל ל${label}`, 'error');
+    return;
+  }
+  document.getElementById('confirm-title').textContent = 'סילוק חוב';
+  document.getElementById('confirm-msg').textContent =
+    `האם לסגור את חוב ${label} במלואו (₪${fmt(current)})?`;
+  document.getElementById('confirm-ok').textContent = 'סילוק מלא';
+  document.getElementById('confirm-ok').onclick = async () => {
+    closeConfirm();
+    await _updateDebt(person, 0);
+  };
+  document.getElementById('confirm-overlay').style.display = 'flex';
 }
 
 async function quickDebt(person, amount) {
@@ -2181,13 +2306,14 @@ async function _updateDebt(person, newVal) {
         await dbPost('debt_log', { person, amount: delta, created_by: getDisplayName(), created_at: now() });
       } catch {}
     }
+    loadDashboard();
   } catch (e) {
     showNotif('שגיאה בעדכון חוב: ' + e.message, 'error');
   }
 }
 
 // — Debt log —
-let debtLogFilter = null; // null = all, 'ido', 'maor'
+let debtLogFilter = null; // null = all, 'ido', 'maor', 'players'
 
 async function openDebtLog() {
   debtLogFilter = null;
@@ -2203,35 +2329,90 @@ function setDebtLogFilter(person) {
   loadDebtLogData();
 }
 
+function renderCofferDebtLogLine(r) {
+  const oldB  = n(r.old_balance);
+  const newB  = n(r.new_balance);
+  const delta = newB - oldB;
+  if (r.action === 'clear') {
+    return `חוב סולק — <span class="debt-log-old">₪${fmt(oldB)}</span> ← <strong>₪0</strong>`;
+  }
+  const oldHtml = oldB > 0
+    ? `<span class="debt-log-old">₪${fmt(oldB)}</span>`
+    : `<span class="debt-log-zero">₪0</span>`;
+  const deltaHtml = delta !== 0
+    ? ` <span class="${delta > 0 ? 'debt-log-delta-pos' : 'debt-log-delta-neg'}">(${delta > 0 ? '+' : ''}₪${fmt(delta)})</span>`
+    : '';
+  return `היה ${oldHtml} עודכן ל <strong>₪${fmt(newB)}</strong>${deltaHtml}`;
+}
+
+function renderPartnerDebtLogLine(r) {
+  const amt   = n(r.amount);
+  const sign  = amt >= 0 ? '+' : '';
+  const color = amt >= 0 ? 'debt-log-delta-pos' : 'debt-log-delta-neg';
+  return `<span class="${color}">${sign}₪${fmt(amt)}</span> לחוב ${r.person === 'ido' ? 'עידו' : 'מאור'}`;
+}
+
 async function loadDebtLogData() {
   const body = document.getElementById('debt-log-body');
-  body.innerHTML = '<div class="pd-empty">טוען נתונים...</div>';
+  body.innerHTML = '<div class="md-list-empty">טוען נתונים...</div>';
 
   try {
-    const query = debtLogFilter
-      ? `?person=eq.${debtLogFilter}&order=created_at.desc&limit=10`
-      : '?order=created_at.desc&limit=10';
-    const data = await dbGet('debt_log', query);
-    if (!data || !data.length) {
-      body.innerHTML = '<p class="pd-empty">אין פעולות</p>';
+    let entries = [];
+
+    if (debtLogFilter !== 'players') {
+      const partnerQ = debtLogFilter
+        ? `?person=eq.${debtLogFilter}&order=created_at.desc&limit=10`
+        : '?order=created_at.desc&limit=10';
+      const partnerRows = await dbGet('debt_log', partnerQ);
+      entries = entries.concat((partnerRows || []).map(r => ({ kind: 'partner', at: r.created_at, row: r })));
+    }
+
+    if (!debtLogFilter || debtLogFilter === 'players') {
+      try {
+        const playerRows = await dbGet('coffer_debt_log', '?order=created_at.desc&limit=10&select=*,players(name,nickname)');
+        entries = entries.concat((playerRows || []).map(r => ({ kind: 'player', at: r.created_at, row: r })));
+      } catch (playerErr) {
+        if (debtLogFilter === 'players') throw playerErr;
+      }
+    }
+
+    entries.sort((a, b) => new Date(b.at) - new Date(a.at));
+    entries = entries.slice(0, 10);
+
+    if (!entries.length) {
+      body.innerHTML = '<div class="md-list-empty">אין פעולות</div>';
       return;
     }
-    body.innerHTML = `<div class="table-container"><table>
-      <thead><tr><th>תאריך</th><th>שם</th><th>סכום</th><th>הוזן ע"י</th></tr></thead>
-      <tbody>${data.map(r => {
-        const amt   = n(r.amount);
-        const color = amt >= 0 ? 'negative-color' : 'positive-color';
-        const sign  = amt >= 0 ? '+' : '';
-        return `<tr>
-          <td>${fmtDate(r.created_at)}</td>
-          <td>${r.person === 'ido' ? 'עידו' : 'מאור'}</td>
-          <td class="${color}"><strong>${sign}₪${fmt(amt)}</strong></td>
-          <td>${r.created_by || '—'}</td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table></div>`;
+
+    body.innerHTML = entries.map(({ kind, row: r }) => {
+      if (kind === 'partner') {
+        const name = r.person === 'ido' ? 'עידו' : 'מאור';
+        return `
+        <div class="md-list-item">
+          <div class="md-list-content">
+            <div class="md-list-title debt-log-player">${name}</div>
+            <div class="md-list-subtitle debt-log-detail">${renderPartnerDebtLogLine(r)}</div>
+            <div class="md-list-subtitle">${fmtDateTime(r.created_at)}${r.created_by ? ' · ' + escHtml(r.created_by) : ''}</div>
+          </div>
+        </div>`;
+      }
+      const playerName = r.players
+        ? escHtml(r.players.nickname || r.players.name || '—')
+        : '—';
+      const mainLine = r.old_balance != null
+        ? renderCofferDebtLogLine(r)
+        : escHtml(r.description || '');
+      return `
+      <div class="md-list-item">
+        <div class="md-list-content">
+          <div class="md-list-title debt-log-player">${playerName}</div>
+          <div class="md-list-subtitle debt-log-detail">${mainLine}</div>
+          <div class="md-list-subtitle">${fmtDateTime(r.created_at)}${r.created_by ? ' · ' + escHtml(r.created_by) : ''}</div>
+        </div>
+      </div>`;
+    }).join('');
   } catch (e) {
-    body.innerHTML = `<p class="pd-empty">שגיאה בטעינת הנתונים: ${e.message}</p>`;
+    body.innerHTML = `<div class="md-list-empty">שגיאה בטעינת הנתונים: ${escHtml(e.message)}</div>`;
   }
 }
 

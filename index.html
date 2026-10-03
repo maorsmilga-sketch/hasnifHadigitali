@@ -786,9 +786,10 @@
               <span class="debt-currency">₪</span><span id="debt-ido-display">—</span>
             </div>
             <div class="manual-input">
-              <input type="number" id="debt-ido-manual" placeholder="סכום..." step="0.01">
+              <input type="number" id="debt-ido-manual" placeholder="סכום..." step="0.01" min="0" inputmode="decimal">
               <button class="btn btn-success btn-sm" onclick="manualDebt('ido',1)">+</button>
               <button class="btn btn-danger btn-sm" onclick="manualDebt('ido',-1)">−</button>
+              <button type="button" class="md-icon-btn debt-clear-btn" onclick="confirmClearPartnerDebt('ido')" title="סילוק מלא" aria-label="סילוק מלא">✕</button>
             </div>
           </div>
 
@@ -799,9 +800,10 @@
               <span class="debt-currency">₪</span><span id="debt-maor-display">—</span>
             </div>
             <div class="manual-input">
-              <input type="number" id="debt-maor-manual" placeholder="סכום..." step="0.01">
+              <input type="number" id="debt-maor-manual" placeholder="סכום..." step="0.01" min="0" inputmode="decimal">
               <button class="btn btn-success btn-sm" onclick="manualDebt('maor',1)">+</button>
               <button class="btn btn-danger btn-sm" onclick="manualDebt('maor',-1)">−</button>
+              <button type="button" class="md-icon-btn debt-clear-btn" onclick="confirmClearPartnerDebt('maor')" title="סילוק מלא" aria-label="סילוק מלא">✕</button>
             </div>
           </div>
         </div>
@@ -826,15 +828,15 @@
               <label>סכום (₪)</label>
               <input type="number" id="pd-player-amount" inputmode="decimal" placeholder="0" min="0" step="0.01">
             </div>
-            <div style="display:flex;gap:10px">
-              <button class="btn btn-success" style="flex:1;padding:14px" onclick="manualPlayerDebt(1)">➕ הוסף לחוב</button>
-              <button class="btn btn-danger" style="flex:1;padding:14px" onclick="manualPlayerDebt(-1)">➖ הפחת מחוב</button>
+            <div class="pdebt-sheet-actions">
+              <button type="button" class="btn btn-success" onclick="sheetCofferPlayerDebt('add')">➕ הוסף לחוב</button>
+              <button type="button" class="btn btn-danger" onclick="sheetCofferPlayerDebt('subtract')">➖ הפחת מחוב</button>
             </div>
             <button class="md-sheet-close" onclick="closeSheet('debt-sheet')">ביטול</button>
           </div>
         </div>
 
-        <div class="debt-grid" id="other-debts-grid" style="margin-top:20px"></div>
+        <div class="md-list coffer-debts-list" id="other-debts-grid" style="margin-top:20px"></div>
       </div>
 
       <!-- ===== PAGE: PLAYER DEBTS ===== -->
@@ -1103,9 +1105,10 @@
         <button class="detail-modal-close" onclick="closeDebtLog()" aria-label="סגור">✕</button>
       </div>
       <div class="chart-toggle-group" id="debt-log-filter" style="margin:0 20px 12px">
-        <button class="chart-toggle-btn active" data-person="all"  onclick="setDebtLogFilter(null)">הכל</button>
-        <button class="chart-toggle-btn"        data-person="ido"  onclick="setDebtLogFilter('ido')">עידו</button>
-        <button class="chart-toggle-btn"        data-person="maor" onclick="setDebtLogFilter('maor')">מאור</button>
+        <button class="chart-toggle-btn active" data-person="all"     onclick="setDebtLogFilter(null)">הכל</button>
+        <button class="chart-toggle-btn"        data-person="ido"     onclick="setDebtLogFilter('ido')">עידו</button>
+        <button class="chart-toggle-btn"        data-person="maor"    onclick="setDebtLogFilter('maor')">מאור</button>
+        <button class="chart-toggle-btn"        data-person="players" onclick="setDebtLogFilter('players')">שחקנים</button>
       </div>
       <div class="detail-modal-body" id="debt-log-body">
       </div>
@@ -1204,7 +1207,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261002a"></script>
+<script src="app.js?v=20261003a"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
