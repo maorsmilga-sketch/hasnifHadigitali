@@ -3608,8 +3608,6 @@ function initPayboxSubtitles() {
 // ============================================================
 // PAGE 7 — SETTLEMENT (התקזזות)
 // ============================================================
-let settlementUsePaybox = true;
-
 function loadSettlementPage() {
   const cp = currentPeriod || {};
 
@@ -3626,11 +3624,7 @@ function loadSettlementPage() {
   setText('st-bit-maor',  '₪' + fmt(bitMaor));
   setText('st-bit-ravit', '₪' + fmt(bitRavit));
 
-  // PayBox rows — fixed per team, visibility controlled by settlementUsePaybox toggle
-  const rowIdo  = document.getElementById('st-paybox-ido-row');
-  const rowMaor = document.getElementById('st-paybox-maor-row');
-  if (rowIdo)  rowIdo.style.display  = settlementUsePaybox ? 'flex' : 'none';
-  if (rowMaor) rowMaor.style.display = settlementUsePaybox ? 'flex' : 'none';
+  // PayBox rows — fixed per team, always included (like Bit)
   setText('st-paybox-ido-val',  '₪' + fmt(payboxIdo));
   setText('st-paybox-maor-val', '₪' + fmt(payboxMaor));
 
@@ -3645,22 +3639,26 @@ function loadSettlementPage() {
 
   setText('st-profit-each', '₪' + fmt(profitEach));
 
-  // Team totals — Bit + PayBox + CashCash per team
-  const pbIdoExtra  = settlementUsePaybox ? payboxIdo  : 0;
-  const pbMaorExtra = settlementUsePaybox ? payboxMaor : 0;
-  const teamIdo  = bitIdo  + bitDorin + pbIdoExtra  + n(cp.cashcash_ido);
-  const teamMaor = bitMaor + bitRavit + pbMaorExtra + n(cp.cashcash_maor);
+  // Team totals — Bit + PayBox + CashCash per team (PayBox always included)
+  const teamIdo  = bitIdo  + bitDorin + payboxIdo  + n(cp.cashcash_ido);
+  const teamMaor = bitMaor + bitRavit + payboxMaor + n(cp.cashcash_maor);
 
   setText('st-total-ido',  '₪' + fmt(teamIdo));
   setText('st-total-maor', '₪' + fmt(teamMaor));
 
+  // Available for withdrawal per team — Bit + PayBox only (confirmed rule:
+  // if each partner can cover his share from his own Bit/PayBox, no transfer).
+  const availIdo  = bitIdo + bitDorin + payboxIdo;
+  const availMaor = bitMaor + bitRavit + payboxMaor;
+  const bothCovered = availIdo >= profitEach && availMaor >= profitEach;
+
   // Transfer = how much Maor is short (positive) or over (negative).
   // After transfer: Maor holds teamMaor + transfer = profitEach ✓
   const transfer = profitEach - teamMaor;
-  renderSettlementResult(transfer, profitEach);
+  renderSettlementResult(transfer, profitEach, bothCovered);
 }
 
-function renderSettlementResult(transfer, profitEach) {
+function renderSettlementResult(transfer, profitEach, bothCovered) {
   const label  = document.getElementById('st-result-label');
   const amount = document.getElementById('st-result-amount');
   const sub    = document.getElementById('st-result-sub');
@@ -3669,7 +3667,13 @@ function renderSettlementResult(transfer, profitEach) {
   const abs = Math.abs(transfer);
 
   let subHtml = '';
-  if (abs < 0.5) {
+  if (bothCovered) {
+    label.textContent  = 'אין צורך בהעברות';
+    amount.textContent = '✓';
+    amount.style.color = 'var(--positive)';
+    subHtml            = `לכל שותף יש מספיק בביט ובפייבוקס שלו<br>` +
+                         `כל שותף מושך <strong>₪${fmt(profitEach)}</strong> מהיתרות שלו, והשאר נשאר בקופה`;
+  } else if (abs < 0.5) {
     label.textContent  = 'אין צורך בהעברות';
     amount.textContent = '✓';
     amount.style.color = 'var(--positive)';
@@ -3689,13 +3693,6 @@ function renderSettlementResult(transfer, profitEach) {
   }
 
   sub.innerHTML = subHtml;
-}
-
-function setPayboxUsage(useIt) {
-  settlementUsePaybox = useIt;
-  document.getElementById('paybox-use-yes').classList.toggle('active',  useIt);
-  document.getElementById('paybox-use-no').classList.toggle('active',  !useIt);
-  loadSettlementPage();
 }
 
 // ============================================================

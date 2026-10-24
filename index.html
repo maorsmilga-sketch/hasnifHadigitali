@@ -1043,18 +1043,11 @@
           </div>
         </div>
 
-        <!-- Profit & PayBox toggle -->
+        <!-- Profit per partner -->
         <div class="card" style="margin-bottom:20px">
           <div class="settlement-info-row">
             <span>רווח לכל שותף</span>
             <strong id="st-profit-each">₪0</strong>
-          </div>
-          <div class="settlement-info-row" style="margin-top:14px;align-items:center">
-            <span>לכלול יתרת PayBox בחישוב?</span>
-            <div class="paybox-use-toggle">
-              <button class="paybox-use-btn active" id="paybox-use-yes" onclick="setPayboxUsage(true)">כן</button>
-              <button class="paybox-use-btn" id="paybox-use-no" onclick="setPayboxUsage(false)">לא</button>
-            </div>
           </div>
         </div>
 
@@ -1209,7 +1202,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261024a"></script>
+<script src="app.js?v=20261024b"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
@@ -1217,4 +1210,3 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
-
