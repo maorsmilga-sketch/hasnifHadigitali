@@ -194,7 +194,8 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
 }
 #management-section .btn-logout-top:active { transform: scale(0.95); }
 
-#management-section #back-btn {
+#management-section #back-btn,
+#management-section #home-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -210,7 +211,7 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
   transition: background-color 0.18s, transform 0.15s var(--m-ease);
 }
 #management-section #back-btn[hidden] { display: none; }
-#management-section #back-btn:active { transform: scale(0.96); background: rgba(255,255,255,0.12); }
+#management-section #back-btn:active, #management-section #home-btn:active { transform: scale(0.96); background: rgba(255,255,255,0.12); }
 
 /* ===== MANAGEMENT MENU (icon grids) ===== */
 #management-section .app-grid-screen {
@@ -1814,7 +1815,7 @@ body:has(#management-section[style*="block"]) #notification {
   #management-section #topbar .topbar-brand { gap: 6px; }
   #management-section .topbar-logo { width: 30px; height: 30px; }
   #management-section .topbar-title { font-size: 15px; }
-  #management-section #back-btn { padding: 0 11px; font-size: 13px; }
+  #management-section #back-btn, #management-section #home-btn { padding: 0 11px; font-size: 13px; }
   #management-section .user-badge { max-width: 64px; padding: 0 8px; font-size: 11px; }
   #management-section .btn-logout-top { width: 38px; }
 
