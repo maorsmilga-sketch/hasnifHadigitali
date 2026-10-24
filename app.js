@@ -1059,6 +1059,24 @@ let rctState     = null;
 let rctSaveTimer = null;
 let rctInited    = false;
 const RCT_MIN_COLS = 11;
+const RCT_VISIBLE_COLS = 3;   // payment columns shown by default (the latest ones)
+let rctShowAllCols = false;   // display-only toggle: reveal earlier payment columns
+
+// First payment column index currently visible (earlier columns are hidden by default)
+function rctFirstVisibleCol() {
+  if (rctShowAllCols) return 0;
+  return Math.max(0, rctState.paymentCols - RCT_VISIBLE_COLS);
+}
+
+// Show/hide the toggle button and keep its label in sync with the hidden range
+function rctRenderToggleColsBtn() {
+  const btn = document.getElementById('rct-toggleColsBtn');
+  if (!btn || !rctState) return;
+  const hiddenCount = rctState.paymentCols - RCT_VISIBLE_COLS;
+  if (hiddenCount <= 0) { btn.style.display = 'none'; return; }
+  btn.style.display = '';
+  btn.textContent = (rctShowAllCols ? 'הסתר פעימות 1-' : 'הצג פעימות 1-') + hiddenCount;
+}
 
 function switchRakebackSubTab(name) {
   const rec = document.getElementById('rb-sub-records');
@@ -1076,6 +1094,10 @@ async function initRakebackCommitments() {
   document.getElementById('rct-addColBtn').addEventListener('click', rctAddPaymentColumn);
   document.getElementById('rct-delColBtn').addEventListener('click', rctRemovePaymentColumn);
   document.getElementById('rct-exportExcelBtn').addEventListener('click', rctExportExcel);
+  document.getElementById('rct-toggleColsBtn').addEventListener('click', () => {
+    rctShowAllCols = !rctShowAllCols;
+    rctRenderAll();
+  });
   await rctLoadState();
   rctRenderAll();
 }
@@ -1151,7 +1173,7 @@ function rctRenderHeader() {
   const headRow = document.getElementById('rct-headRow');
   headRow.querySelectorAll('th[data-paycol]').forEach(th => th.remove());
   const progressTh = document.getElementById('rct-progress-th');
-  for (let i = 0; i < rctState.paymentCols; i++) {
+  for (let i = rctFirstVisibleCol(); i < rctState.paymentCols; i++) {
     const th = document.createElement('th');
     th.setAttribute('data-paycol', i);
     th.textContent = (i + 1);
@@ -1215,7 +1237,7 @@ function rctRenderBody() {
     const tr = document.createElement('tr');
     tr.className = 'rct-empty-row';
     const td = document.createElement('td');
-    td.colSpan = 4 + rctState.paymentCols;
+    td.colSpan = 4 + (rctState.paymentCols - rctFirstVisibleCol());
     td.textContent = 'אין שמות בטבלה עדיין — לחצו על "＋ שם" כדי להתחיל';
     tr.appendChild(td);
     tbody.appendChild(tr);
@@ -1253,8 +1275,8 @@ function rctRenderBody() {
     tdPercent.appendChild(percentInput);
     tr.appendChild(tdPercent);
 
-    // Payment beats
-    for (let i = 0; i < rctState.paymentCols; i++) {
+    // Payment beats (only the visible range — earlier columns hidden by default)
+    for (let i = rctFirstVisibleCol(); i < rctState.paymentCols; i++) {
       const td = document.createElement('td');
       const val  = person.payments[i];
       const isPaid = !!(person.paid && person.paid[i]);
@@ -1390,6 +1412,7 @@ function rctRenderAll() {
   rctRenderHeader();
   rctRenderBody();
   rctUpdateFooter();
+  rctRenderToggleColsBtn();
 }
 
 function rctAddRow() {
