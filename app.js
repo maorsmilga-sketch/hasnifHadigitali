@@ -3652,13 +3652,21 @@ function loadSettlementPage() {
   const availMaor = bitMaor + bitRavit + payboxMaor;
   const bothCovered = availIdo >= profitEach && availMaor >= profitEach;
 
-  // Transfer = how much Maor is short (positive) or over (negative).
-  // After transfer: Maor holds teamMaor + transfer = profitEach ✓
-  const transfer = profitEach - teamMaor;
-  renderSettlementResult(transfer, profitEach, bothCovered);
+  // A transfer is proposed only to cover the short partner's shortfall, and
+  // only when the giving partner keeps at least his own share afterwards
+  // (total Bit+PayBox >= 2 x share). Otherwise no transfer can make both
+  // whole, so none is proposed.
+  const totalAvail = availIdo + availMaor;
+  const canCover   = totalAvail >= profitEach * 2;
+  let transfer = 0;
+  if (!bothCovered && canCover) {
+    transfer = availMaor < profitEach ? profitEach - availMaor      // Ido covers Maor's shortfall
+                                      : -(profitEach - availIdo);   // Maor covers Ido's shortfall
+  }
+  renderSettlementResult(transfer, profitEach, bothCovered, canCover, totalAvail);
 }
 
-function renderSettlementResult(transfer, profitEach, bothCovered) {
+function renderSettlementResult(transfer, profitEach, bothCovered, canCover, totalAvail) {
   const label  = document.getElementById('st-result-label');
   const amount = document.getElementById('st-result-amount');
   const sub    = document.getElementById('st-result-sub');
@@ -3673,6 +3681,12 @@ function renderSettlementResult(transfer, profitEach, bothCovered) {
     amount.style.color = 'var(--positive)';
     subHtml            = `לכל שותף יש מספיק בביט ובפייבוקס שלו<br>` +
                          `כל שותף מושך <strong>₪${fmt(profitEach)}</strong> מהיתרות שלו, והשאר נשאר בקופה`;
+  } else if (!canCover) {
+    label.textContent  = 'אין מספיק בביט ובפייבוקס לשני החלקים';
+    amount.textContent = '⚠️';
+    amount.style.color = 'var(--warning)';
+    subHtml            = `זמין בביט ובפייבוקס: <strong>₪${fmt(totalAvail)}</strong> מתוך <strong>₪${fmt(profitEach * 2)}</strong> לשני השותפים<br>` +
+                         `ההפרש נמצא ב-CashCash ובחובות שלא נגבו — לא מוצעת העברה`;
   } else if (abs < 0.5) {
     label.textContent  = 'אין צורך בהעברות';
     amount.textContent = '✓';
