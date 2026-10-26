@@ -293,6 +293,7 @@ async function mountApp() {
   showHome();
   hideDataLoading();
   checkRakebackReminders();
+  checkDebtDueReminders();
 }
 
 async function loadInitialData() {
@@ -401,7 +402,7 @@ function goBack() {
 // PHONE BACK BUTTON — one guard history entry while anything is open;
 // each back press closes the top layer or steps back one screen.
 // ============================================================
-const BACK_LAYER_SELECTOR = '.md-sheet-overlay.open, .confirm-overlay, #rct-reminder-overlay';
+const BACK_LAYER_SELECTOR = '.md-sheet-overlay.open, .confirm-overlay, #rct-reminder-overlay, #pdd-reminder-overlay';
 let backGuardSkipPop = false;
 
 function _isShown(el) {
@@ -422,6 +423,7 @@ function _closeBackLayer(el) {
       return;
     case 'confirm-overlay':      closeConfirm(); return;
     case 'rct-reminder-overlay': closeRakebackReminder(); return;
+    case 'pdd-reminder-overlay': closeDebtDueReminder(); return;
     case 'add-player-modal':
     case 'edit-player-modal':    el.remove(); return;
   }
@@ -1048,6 +1050,46 @@ function closeRakebackReminder(dismiss = false) {
   if (dismiss) {
     const user = getCurrentUser();
     if (user) localStorage.setItem('rct-dismissed-' + user + '-' + today(), '1');
+  }
+}
+
+// ============================================================
+// PLAYER DEBT DUE REMINDER — popup on a player's promised settlement date.
+// Same per-user daily dismissal pattern as the rakeback reminder.
+// ============================================================
+async function checkDebtDueReminders() {
+  const user = getCurrentUser();
+  if (!user) return;
+
+  // Check if this user already dismissed today's reminder
+  const todayKey = 'pdd-dismissed-' + user + '-' + today();
+  if (localStorage.getItem(todayKey)) return;
+
+  // Players are loaded by loadInitialData; fetch only if that failed
+  if (!players || !players.length) {
+    try { players = (await dbGet('players', '?order=name.asc')) || []; } catch (e) { return; }
+  }
+
+  const todayStr = today();
+  const due = (players || []).filter(p => p.debt_due_date === todayStr && n(p.debt) > 0 && !isOwnerPlayer(p));
+  if (!due.length) return;
+
+  const list = document.getElementById('pdd-reminder-list');
+  if (!list) return;
+  list.innerHTML = due.map(p =>
+    `<li>${escHtml(cofferPlayerDebtName(p))}<span>₪${fmt(p.debt)}</span></li>`
+  ).join('');
+
+  const overlay = document.getElementById('pdd-reminder-overlay');
+  if (overlay) overlay.style.display = 'flex';
+}
+
+function closeDebtDueReminder(dismiss = false) {
+  const overlay = document.getElementById('pdd-reminder-overlay');
+  if (overlay) overlay.style.display = 'none';
+  if (dismiss) {
+    const user = getCurrentUser();
+    if (user) localStorage.setItem('pdd-dismissed-' + user + '-' + today(), '1');
   }
 }
 
@@ -2150,6 +2192,13 @@ function cofferPlayerDebtName(p) {
   return p.nickname || p.name;
 }
 
+// Owners' debts are tracked on current_period, not as player rows — exclude them
+// from player debt metadata (date/note) and due-date reminders.
+function isOwnerPlayer(p) {
+  const owners = ['מאור', 'עידו'];
+  return owners.includes((p.name || '').trim()) || owners.includes((p.nickname || '').trim());
+}
+
 function cofferDebtDescription(action, name, amount, newVal) {
   if (action === 'add')      return `נוסף ₪${fmt(amount)} לחוב ${name} → ₪${fmt(newVal)}`;
   if (action === 'subtract') return `הופחת ₪${fmt(amount)} מחוב ${name} → ₪${fmt(newVal)}`;
@@ -2210,14 +2259,24 @@ function renderOtherPlayerDebts() {
     const sub   = (p.nickname && p.name)
       ? `<div class="md-list-subtitle">${escHtml(p.name)}</div>`
       : '';
+    const metaParts = [];
+    if (!isOwnerPlayer(p)) {
+      if (p.debt_due_date) metaParts.push(`📅 יסגור עד ${fmtDate(p.debt_due_date)}`);
+      if (p.note) metaParts.push(escHtml(p.note));
+    }
+    const meta = metaParts.length
+      ? `<div class="md-list-subtitle pdebt-meta">${metaParts.join(' · ')}</div>`
+      : '';
     return `
     <div class="md-list-item pdebt-row">
       <div class="pdebt-row-head">
         <div class="md-list-content">
           <div class="md-list-title">${label}</div>
           ${sub}
+          ${meta}
         </div>
         <div class="pdebt-row-amount"><span class="debt-currency">₪</span>${fmt(p.debt)}</div>
+        ${isOwnerPlayer(p) ? '' : `<button type="button" class="md-icon-btn" onclick="openPlayerDebtMeta('${p.id}')" title="תאריך סילוק והערה" aria-label="תאריך סילוק והערה">✏️</button>`}
         <button type="button" class="md-icon-btn" onclick="confirmClearCofferPlayerDebt('${p.id}')" title="סילוק מלא" aria-label="סילוק מלא">✕</button>
       </div>
       <div class="manual-input pdebt-row-controls">
@@ -2227,6 +2286,41 @@ function renderOtherPlayerDebts() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ============================================================
+// PLAYER DEBT SETTLEMENT DATE + NOTE (optional, per player)
+// ============================================================
+let _pdebtMetaPlayerId = null;
+
+function openPlayerDebtMeta(playerId) {
+  const p = (players || []).find(pl => pl.id === playerId);
+  if (!p) return;
+  _pdebtMetaPlayerId = playerId;
+  setText('pdm-player-name', cofferPlayerDebtName(p));
+  setVal('pdm-date', p.debt_due_date || '');
+  setVal('pdm-note', p.note || '');
+  openSheet('pdebt-meta-sheet');
+}
+
+async function savePlayerDebtMeta() {
+  const playerId = _pdebtMetaPlayerId;
+  if (!playerId) return;
+  const dateVal = (document.getElementById('pdm-date')?.value || '').trim();
+  const noteVal = (document.getElementById('pdm-note')?.value || '').trim();
+  try {
+    await dbPatch('players', `?id=eq.${playerId}`, {
+      debt_due_date: dateVal || null,
+      note:          noteVal || null
+    });
+    const p = (players || []).find(pl => pl.id === playerId);
+    if (p) { p.debt_due_date = dateVal || null; p.note = noteVal || null; }
+    renderOtherPlayerDebts();
+    closeSheet('pdebt-meta-sheet');
+    showNotif('✅ נשמר');
+  } catch (e) {
+    showNotif('שגיאה: ' + e.message, 'error');
+  }
 }
 
 function cofferPlayerDebtRowAmount(playerId) {

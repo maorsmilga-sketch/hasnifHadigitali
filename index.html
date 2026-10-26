@@ -780,6 +780,22 @@
         </div>
       </div>
 
+      <!-- Player Debt Due Reminder popup -->
+      <div id="pdd-reminder-overlay" class="rct-reminder-overlay" style="display:none" onclick="closeDebtDueReminder()">
+        <div class="rct-reminder-card" onclick="event.stopPropagation()">
+          <div class="rct-reminder-icon">📅</div>
+          <div class="rct-reminder-title">תזכורת סילוק חוב</div>
+          <div class="rct-reminder-subtitle">היום התחייבו להחזיר:</div>
+          <ul class="rct-reminder-list" id="pdd-reminder-list"></ul>
+          <button class="rct-reminder-dismiss" onclick="closeDebtDueReminder(true)">
+            ✓ &nbsp;הבנתי, אל תציג שוב היום
+          </button>
+          <button class="rct-reminder-later" onclick="closeDebtDueReminder(false)">
+            אחר כך
+          </button>
+        </div>
+      </div>
+
       <!-- ===== PAGE 4: DEBTS ===== -->
       <div id="page-debts" class="page">
         <div class="page-header">
@@ -847,6 +863,25 @@
               <button type="button" class="btn btn-danger" onclick="sheetCofferPlayerDebt('subtract')">➖ הפחת מחוב</button>
             </div>
             <button class="md-sheet-close" onclick="closeSheet('debt-sheet')">ביטול</button>
+          </div>
+        </div>
+
+        <!-- Bottom Sheet for player debt settlement date + note -->
+        <div class="md-sheet-overlay" id="pdebt-meta-sheet" style="display:none">
+          <div class="md-sheet">
+            <div class="md-sheet-handle"></div>
+            <div class="md-sheet-title">תאריך סילוק והערה</div>
+            <div class="md-list-subtitle" id="pdm-player-name" style="margin-bottom:8px"></div>
+            <div class="form-group">
+              <label>תאריך שהשחקן הבטיח לסגור (רשות)</label>
+              <input type="date" id="pdm-date">
+            </div>
+            <div class="form-group">
+              <label>הערה (רשות)</label>
+              <input type="text" id="pdm-note" placeholder="למשל: מחכה למשכורת...">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="savePlayerDebtMeta()">שמור</button>
+            <button type="button" class="md-sheet-close" onclick="closeSheet('pdebt-meta-sheet')">ביטול</button>
           </div>
         </div>
 
