@@ -17,8 +17,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20261002a">
-<link rel="stylesheet" href="management.css?v=20261024a">
+<link rel="stylesheet" href="style.css?v=20261026a">
+<link rel="stylesheet" href="management.css?v=20261026a">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 </head>
 <body>
@@ -459,10 +459,13 @@
                 <div class="md-sheet-title">הוסף החזר גנייה</div>
                 <div class="form-group">
                   <label>שחקן</label>
-                  <div class="player-ac-wrap" id="rb-player-wrap">
-                    <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
-                    <input type="hidden" id="rb-player">
-                    <ul class="player-ac-list"></ul>
+                  <div style="display:flex;align-items:flex-start;gap:8px">
+                    <div class="player-ac-wrap" id="rb-player-wrap" style="flex:1">
+                      <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                      <input type="hidden" id="rb-player">
+                      <ul class="player-ac-list"></ul>
+                    </div>
+                    <button type="button" class="md-icon-btn quick-add-player-btn quick-add-player-btn--labeled" onclick="openQuickAddPlayer('rb')" title="הוסף שחקן חדש">➕ שחקן חדש</button>
                   </div>
                 </div>
                 <div class="form-group">
@@ -608,18 +611,24 @@
               <div class="md-sheet-title">חבר מביא חבר</div>
               <div class="form-group">
                 <label>שחקן מביא</label>
-                <div class="player-ac-wrap" id="ref-from-wrap">
-                  <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
-                  <input type="hidden" id="ref-from">
-                  <ul class="player-ac-list"></ul>
+                <div style="display:flex;align-items:flex-start;gap:8px">
+                  <div class="player-ac-wrap" id="ref-from-wrap" style="flex:1">
+                    <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                    <input type="hidden" id="ref-from">
+                    <ul class="player-ac-list"></ul>
+                  </div>
+                  <button type="button" class="md-icon-btn quick-add-player-btn quick-add-player-btn--labeled" onclick="openQuickAddPlayer('ref-from')" title="הוסף שחקן חדש">➕ שחקן חדש</button>
                 </div>
               </div>
               <div class="form-group">
                 <label>שחקן מובא</label>
-                <div class="player-ac-wrap" id="ref-to-wrap">
-                  <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
-                  <input type="hidden" id="ref-to">
-                  <ul class="player-ac-list"></ul>
+                <div style="display:flex;align-items:flex-start;gap:8px">
+                  <div class="player-ac-wrap" id="ref-to-wrap" style="flex:1">
+                    <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                    <input type="hidden" id="ref-to">
+                    <ul class="player-ac-list"></ul>
+                  </div>
+                  <button type="button" class="md-icon-btn quick-add-player-btn quick-add-player-btn--labeled" onclick="openQuickAddPlayer('ref-to')" title="הוסף שחקן חדש">➕ שחקן חדש</button>
                 </div>
               </div>
               <div class="form-group">
@@ -820,10 +829,13 @@
             <div class="md-sheet-title">עדכן חוב שחקן</div>
             <div class="form-group">
               <label>שחקן</label>
-              <div class="player-ac-wrap" id="pd-player-wrap">
-                <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
-                <input type="hidden" id="pd-player">
-                <ul class="player-ac-list"></ul>
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <div class="player-ac-wrap" id="pd-player-wrap" style="flex:1">
+                  <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                  <input type="hidden" id="pd-player">
+                  <ul class="player-ac-list"></ul>
+                </div>
+                <button type="button" class="md-icon-btn quick-add-player-btn quick-add-player-btn--labeled" onclick="openQuickAddPlayer('pd')" title="הוסף שחקן חדש">➕ שחקן חדש</button>
               </div>
             </div>
             <div class="form-group">
@@ -862,10 +874,13 @@
             <div class="md-sheet-title">עדכן חוב שחקן</div>
             <div class="form-group">
               <label>שחקן</label>
-              <div class="player-ac-wrap" id="npd-player-wrap">
-                <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
-                <input type="hidden" id="npd-player">
-                <ul class="player-ac-list"></ul>
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <div class="player-ac-wrap" id="npd-player-wrap" style="flex:1">
+                  <input type="text" class="player-ac-input" placeholder="חפש שחקן..." autocomplete="off">
+                  <input type="hidden" id="npd-player">
+                  <ul class="player-ac-list"></ul>
+                </div>
+                <button type="button" class="md-icon-btn quick-add-player-btn quick-add-player-btn--labeled" onclick="openQuickAddPlayer('npd')" title="הוסף שחקן חדש">➕ שחקן חדש</button>
               </div>
             </div>
             <div class="form-group">
@@ -1202,7 +1217,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261024c"></script>
+<script src="app.js?v=20261026a"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

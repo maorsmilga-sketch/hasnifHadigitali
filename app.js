@@ -2070,9 +2070,21 @@ async function openDashBTDetail(type, fromExpenses = false) {
 }
 
 // ============================================================
-// QUICK ADD-PLAYER (inline shortcut from tn/bn/wd sheets)
+// QUICK ADD-PLAYER (inline shortcut from tn/bn/wd/rb/ref/pd/npd sheets)
 // ============================================================
-let _quickAddPlayerTarget = null; // 'tn' | 'bn' | 'wd'
+let _quickAddPlayerTarget = null; // key of QUICK_ADD_PLAYER_INPUTS
+
+// Maps each quick-add target to the hidden input id of the field to auto-select
+const QUICK_ADD_PLAYER_INPUTS = {
+  'tn': 'tn-player',
+  'bn': 'bn-player',
+  'wd': 'wd-player',
+  'rb': 'rb-player',
+  'ref-from': 'ref-from',
+  'ref-to': 'ref-to',
+  'pd': 'pd-player',
+  'npd': 'npd-player'
+};
 
 function openQuickAddPlayer(target) {
   _quickAddPlayerTarget = target;
@@ -2099,12 +2111,14 @@ async function saveQuickPlayer() {
 
       // Auto-select the new player in the source form
       const t = _quickAddPlayerTarget;
-      if (t) {
-        const wrap = document.getElementById(`${t}-player-wrap`);
+      const inputId = t && QUICK_ADD_PLAYER_INPUTS[t];
+      if (inputId) {
+        const wrap = document.getElementById(`${inputId}-wrap`);
         if (wrap) {
           wrap.querySelector('.player-ac-input').value = nickname || name;
-          document.getElementById(`${t}-player`).value = result[0].id;
-          acPlayerData[`${t}-player`] = result[0];
+          document.getElementById(inputId).value = result[0].id;
+          acPlayerData[inputId] = result[0];
+          if (inputId === 'rb-player') updateRakebackCalc();
         }
       }
     }

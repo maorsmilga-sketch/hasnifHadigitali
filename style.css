@@ -3195,6 +3195,16 @@ button.dash-bt-item:active,
   color: var(--positive);
   margin-top: 2px;
 }
+
+.quick-add-player-btn--labeled {
+  width: auto;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
 .quick-add-player-btn:hover { background: rgba(74,222,128,0.1); }
 .quick-add-player-btn:active { background: rgba(74,222,128,0.2); }
 

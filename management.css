@@ -733,6 +733,16 @@ html:has(#management-section[style*="block"] #page-dashboard.active) {
   border-color: rgba(0,212,170,0.22);
 }
 
+#management-section .quick-add-player-btn--labeled {
+  width: auto;
+  min-width: 0;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 #management-section .tab-summary {
   margin-bottom: 12px;
   padding: 10px 16px;
