@@ -2292,22 +2292,34 @@ function renderOtherPlayerDebts() {
 // PLAYER DEBT SETTLEMENT DATE + NOTE (optional, per player)
 // ============================================================
 let _pdebtMetaPlayerId = null;
+let _pdebtMetaSaving = false;
+let _cofferDebtSheetSaving = false;
 
-function openPlayerDebtMeta(playerId) {
+function openPlayerDebtMeta(playerId, afterDebtAdd = false) {
   const p = (players || []).find(pl => pl.id === playerId);
   if (!p) return;
+  if (_pdebtMetaSaving) return;
   _pdebtMetaPlayerId = playerId;
+  setText('pdm-title', 'תאריך סילוק והערה');
   setText('pdm-player-name', cofferPlayerDebtName(p));
+  setText('pdm-status', afterDebtAdd ? 'החוב נשמר. אפשר להוסיף תאריך והערה, או לסגור ללא שינוי.' : '');
+  document.getElementById('pdm-status').hidden = !afterDebtAdd;
+  document.getElementById('pdm-skip').style.display = afterDebtAdd ? '' : 'none';
+  setText('pdm-close', afterDebtAdd ? 'סגור' : 'ביטול');
   setVal('pdm-date', p.debt_due_date || '');
   setVal('pdm-note', p.note || '');
   openSheet('pdebt-meta-sheet');
 }
 
 async function savePlayerDebtMeta() {
+  if (_pdebtMetaSaving) return;
   const playerId = _pdebtMetaPlayerId;
   if (!playerId) return;
   const dateVal = (document.getElementById('pdm-date')?.value || '').trim();
   const noteVal = (document.getElementById('pdm-note')?.value || '').trim();
+  _pdebtMetaSaving = true;
+  const buttons = document.querySelectorAll('#pdebt-meta-sheet button');
+  buttons.forEach(btn => btn.disabled = true);
   try {
     await dbPatch('players', `?id=eq.${playerId}`, {
       debt_due_date: dateVal || null,
@@ -2320,6 +2332,9 @@ async function savePlayerDebtMeta() {
     showNotif('✅ נשמר');
   } catch (e) {
     showNotif('שגיאה: ' + e.message, 'error');
+  } finally {
+    _pdebtMetaSaving = false;
+    buttons.forEach(btn => btn.disabled = false);
   }
 }
 
@@ -2365,6 +2380,7 @@ function confirmClearCofferPlayerDebt(playerId) {
 }
 
 async function sheetCofferPlayerDebt(action) {
+  if (_cofferDebtSheetSaving) return;
   const playerId = document.getElementById('pd-player').value;
   const inputEl  = document.getElementById('pd-player-amount');
   const amount   = parseFloat(inputEl.value);
@@ -2377,11 +2393,20 @@ async function sheetCofferPlayerDebt(action) {
     ? n(p.debt) + amount
     : n(p.debt) - amount;
 
-  const ok = await updatePlayerCofferDebt(playerId, newVal, action, amount);
-  if (!ok) return;
-  inputEl.value = '';
-  clearPlayerAC('pd-player');
-  closeSheet('debt-sheet');
+  _cofferDebtSheetSaving = true;
+  const buttons = document.querySelectorAll('#debt-sheet button');
+  buttons.forEach(btn => btn.disabled = true);
+  try {
+    const ok = await updatePlayerCofferDebt(playerId, newVal, action, amount);
+    if (!ok) return;
+    inputEl.value = '';
+    clearPlayerAC('pd-player');
+    closeSheet('debt-sheet');
+    if (action === 'add' && !isOwnerPlayer(p)) openPlayerDebtMeta(playerId, true);
+  } finally {
+    _cofferDebtSheetSaving = false;
+    buttons.forEach(btn => btn.disabled = false);
+  }
 }
 
 function confirmClearPartnerDebt(person) {

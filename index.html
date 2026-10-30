@@ -870,8 +870,9 @@
         <div class="md-sheet-overlay" id="pdebt-meta-sheet" style="display:none">
           <div class="md-sheet">
             <div class="md-sheet-handle"></div>
-            <div class="md-sheet-title">תאריך סילוק והערה</div>
+            <div class="md-sheet-title" id="pdm-title">תאריך סילוק והערה</div>
             <div class="md-list-subtitle" id="pdm-player-name" style="margin-bottom:8px"></div>
+            <div class="md-list-subtitle" id="pdm-status" hidden style="margin-bottom:16px"></div>
             <div class="form-group">
               <label>תאריך שהשחקן הבטיח לסגור (רשות)</label>
               <input type="date" id="pdm-date">
@@ -880,8 +881,11 @@
               <label>הערה (רשות)</label>
               <input type="text" id="pdm-note" placeholder="למשל: מחכה למשכורת...">
             </div>
-            <button type="button" class="btn btn-primary" onclick="savePlayerDebtMeta()">שמור</button>
-            <button type="button" class="md-sheet-close" onclick="closeSheet('pdebt-meta-sheet')">ביטול</button>
+            <div class="pdebt-sheet-actions">
+              <button type="button" class="btn btn-primary" onclick="savePlayerDebtMeta()">שמור</button>
+              <button type="button" class="btn btn-secondary" id="pdm-skip" style="display:none" onclick="closeSheet('pdebt-meta-sheet')">שמור ללא הערה</button>
+            </div>
+            <button type="button" class="md-sheet-close" id="pdm-close" onclick="closeSheet('pdebt-meta-sheet')">ביטול</button>
           </div>
         </div>
 
@@ -1252,7 +1256,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261026a"></script>
+<script src="app.js?v=20261029b"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
