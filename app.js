@@ -1928,7 +1928,9 @@ function dashBadbeatCalcSub(cp, bbPct) {
 function dashDebtRows(v, firstOp = '+') {
   return dashRow('חוב עידו', n(v.cp.debt_ido), { op: firstOp }) +
          dashRow('חוב מאור', n(v.cp.debt_maor)) +
-         v.playerDebts.map(p => dashRow('חוב ' + (p.nickname || p.name), n(p.debt), { sub: 'חוב שחקן' })).join('');
+         v.playerDebts.map(p => isDebtExcludedFromCalc(p)
+    ? dashRow('חוב ' + (p.nickname || p.name), n(p.debt), { op: '', sub: 'חוב שחקן · לא נספר בחישובים' })
+    : dashRow('חוב ' + (p.nickname || p.name), n(p.debt), { sub: 'חוב שחקן' })).join('');
 }
 
 function openDashStatDetail(type) {
@@ -2184,8 +2186,15 @@ async function loadDebts() {
   renderOtherPlayerDebts();
 }
 
+// Debts of these players are tracked for display only - never counted in any
+// financial calculation (סה"כ בקופה, רווח, התקזזות, סה"כ חובות).
+const DEBT_EXCLUDED_FROM_CALC_IDS = ['705b49cc-f59e-4056-b613-3219fd135565']; // רונן קאש קאש
+function isDebtExcludedFromCalc(p) {
+  return DEBT_EXCLUDED_FROM_CALC_IDS.includes(p && p.id);
+}
+
 function otherPlayersDebtTotal() {
-  return (players || []).reduce((s, p) => s + (n(p.debt) > 0 ? n(p.debt) : 0), 0);
+  return (players || []).reduce((s, p) => s + (!isDebtExcludedFromCalc(p) && n(p.debt) > 0 ? n(p.debt) : 0), 0);
 }
 
 function cofferPlayerDebtName(p) {
@@ -2264,6 +2273,7 @@ function renderOtherPlayerDebts() {
       if (p.debt_due_date) metaParts.push(`📅 יסגור עד ${fmtDate(p.debt_due_date)}`);
       if (p.note) metaParts.push(escHtml(p.note));
     }
+    if (isDebtExcludedFromCalc(p)) metaParts.unshift('לא נספר בחישובים · לתצוגה בלבד');
     const meta = metaParts.length
       ? `<div class="md-list-subtitle pdebt-meta">${metaParts.join(' · ')}</div>`
       : '';
