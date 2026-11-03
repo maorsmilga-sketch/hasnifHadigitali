@@ -469,6 +469,14 @@ window.addEventListener('popstate', () => {
 
 document.addEventListener('click', () => setTimeout(syncBackGuard, 0), true);
 
+// Refresh the debts screen when the app returns to the foreground while it is showing,
+// so debt updates made from another device/session appear without manual re-entry.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  const active = document.querySelector('.page.active');
+  if (active && active.id === 'page-debts') loadDebts();
+});
+
 // Compatibility shim — existing in-page buttons call navigate()
 function navigate(page) {
   if (page === 'home') { showHome(); return; }
@@ -2484,6 +2492,8 @@ let debtLogFilter = null; // null = all, 'ido', 'maor', 'players'
 async function openDebtLog() {
   debtLogFilter = null;
   document.getElementById('debt-log-overlay').style.display = 'flex';
+  // Refresh player debts too, so the cards behind the popup can't disagree with the log
+  try { players = (await dbGet('players', '?order=name.asc')) || []; renderOtherPlayerDebts(); } catch {}
   await loadDebtLogData();
 }
 
