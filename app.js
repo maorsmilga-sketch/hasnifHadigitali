@@ -681,9 +681,14 @@ async function saveFunds() {
       updated_at: now()
     };
 
+    let savedExtra = true;
+    if (!extraSchemaReady()) {
+      EXTRA_SCHEMA_KEYS.forEach(k => delete data[k]);
+      savedExtra = false;
+    }
     await dbPatch('current_period', '?id=eq.1', data);
     Object.assign(currentPeriod, data);
-    showNotif('✅ כספים נשמרו');
+    showNotif(savedExtra ? '✅ כספים נשמרו' : '⚠️ נשמר ללא ״נזיל נוסף״ — חסרה הרצת SQL חד-פעמית', savedExtra ? 'success' : 'info');
   } catch (e) {
     showNotif('שגיאה בשמירה: ' + e.message, 'error');
   }
@@ -1977,6 +1982,12 @@ function dashStatValues() {
   const profit      = total - chipsIls;
   return { cp, playerDebts, liquidParts, extra, liquid, debtTotal, total, bbPct, counterIls, badbeatIls, chipsIls, profit, half: profit / 2 };
 }
+
+// עמודות נזיל נוסף קיימות? (select * מחזיר רק עמודות קיימות) — מאפשר שמירה רגילה גם לפני הרצת ה-SQL
+function extraSchemaReady() {
+  return !!(currentPeriod && Object.prototype.hasOwnProperty.call(currentPeriod, 'bank_maor'));
+}
+const EXTRA_SCHEMA_KEYS = ['bank_maor','bank_ido','pocket_maor','pocket_ravit','pocket_ido','pocket_dorin','bit_other_amount','bit_other_name','bit_other_team'];
 
 function dashBadbeatCalcSub(cp, bbPct) {
   const raw = n(cp.badbeat);
@@ -3791,9 +3802,11 @@ async function closePeriod(periodStart) {
       chips_per_shekel:      CHIPS_PER_SHEKEL,
       rake_app:              n(cp.rake_app),
       badbeat_snapshot:      n(cp.badbeat),
-      liquid_extra_maor:     liquidExtraParts(cp).maorTotal,
-      liquid_extra_ido:      liquidExtraParts(cp).idoTotal,
-      liquid_extra_branch:   liquidExtraParts(cp).branchTotal
+      ...(extraSchemaReady() ? {
+        liquid_extra_maor:     liquidExtraParts(cp).maorTotal,
+        liquid_extra_ido:      liquidExtraParts(cp).idoTotal,
+        liquid_extra_branch:   liquidExtraParts(cp).branchTotal
+      } : {})
     });
 
     // 3. Reset current_period — debts are intentionally kept
@@ -3802,9 +3815,12 @@ async function closePeriod(periodStart) {
       paybox_maor: 0, paybox_ido: 0, cashcash_ido: 0, cashcash_maor: 0,
       counter: 0, rake_app: 0, badbeat: 0,
       // נזיל נוסף — מתאפס בסגירת תקופה כולל לאומי (אושר ע"י מאור 5.11.26)
-      bank_leumi: 0, bank_maor: 0, bank_ido: 0,
-      pocket_maor: 0, pocket_ravit: 0, pocket_ido: 0, pocket_dorin: 0,
-      bit_other_amount: 0,  // השם והשיוך של ביט אחר נשמרים בין תקופות
+      bank_leumi: 0,
+      ...(extraSchemaReady() ? {
+        bank_maor: 0, bank_ido: 0,
+        pocket_maor: 0, pocket_ravit: 0, pocket_ido: 0, pocket_dorin: 0,
+        bit_other_amount: 0  // השם והשיוך של ביט אחר נשמרים בין תקופות
+      } : {}),
       updated_at: now()
     };
     await dbPatch('current_period', '?id=eq.1', resetData);
