@@ -418,7 +418,7 @@ function _topBackLayer() {
 function _closeBackLayer(el) {
   switch (el.id) {
     case 'dash-detail-overlay':
-      if (!document.getElementById('dash-detail-back').hidden) openDashStatDetail('expenses');
+      if (!document.getElementById('dash-detail-back').hidden) dashDetailBack();
       else closeDashDetail();
       return;
     case 'confirm-overlay':      closeConfirm(); return;
@@ -500,6 +500,30 @@ async function loadPageData(page) {
   }
 }
 
+
+// ============================================================
+// נזיל נוסף — additional liquid funds (teams + branch)
+// ============================================================
+function liquidExtraParts(cp) {
+  cp = cp || {};
+  const otherName = (cp.bit_other_name || '').trim() || 'ביט אחר';
+  const maor   = [['בנק מאור', n(cp.bank_maor)], ['כיס פרטי מאור', n(cp.pocket_maor)], ['כיס פרטי רוית', n(cp.pocket_ravit)]];
+  const ido    = [['בנק עידו', n(cp.bank_ido)], ['כיס פרטי עידו', n(cp.pocket_ido)], ['כיס פרטי דורין', n(cp.pocket_dorin)]];
+  if (cp.bit_other_team === 'maor') maor.push([otherName, n(cp.bit_other_amount)]);
+  if (cp.bit_other_team === 'ido')  ido.push([otherName, n(cp.bit_other_amount)]);
+  const branch = [['בנק לאומי', n(cp.bank_leumi)]];
+  const sum    = a => a.reduce((s, r) => s + r[1], 0);
+  const m = sum(maor), i = sum(ido), b = sum(branch);
+  return { maor, ido, branch, maorTotal: m, idoTotal: i, branchTotal: b, total: m + i + b };
+}
+
+function switchFundsTab(which) {
+  document.getElementById('funds-tab-regular').hidden = which !== 'regular';
+  document.getElementById('funds-tab-extra').hidden   = which !== 'extra';
+  document.getElementById('fm-tab-regular').classList.toggle('active', which === 'regular');
+  document.getElementById('fm-tab-extra').classList.toggle('active', which === 'extra');
+}
+
 // ============================================================
 // PAGE 1 — DASHBOARD
 // ============================================================
@@ -512,7 +536,7 @@ async function loadDashboard() {
 
   const cp = currentPeriod || {};
 
-  const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor);
+  const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor) + liquidExtraParts(cp).total;
   const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
   const counterIls   = chipsToIls(n(cp.counter));
   const badbeatFull  = chipsToIls(n(cp.badbeat));
@@ -527,6 +551,8 @@ async function loadDashboard() {
   const _pbSum   = n(cp.paybox_maor) + n(cp.paybox_ido);
   const _ccSum   = n(cp.cashcash_ido) + n(cp.cashcash_maor);
   const _parts   = [_bitSum > 0 && 'ביט', _pbSum > 0 && 'פייבוקס', _ccSum > 0 && 'קאשקאש'].filter(Boolean);
+  const _extra = liquidExtraParts(cp);
+  if (_extra.total > 0) _parts.push('נזיל נוסף');
   setText('val-liquid-sub', _parts.join(' + '));
   setText('val-total',           fmt(total));
   setText('val-counter-ils',     fmt(counterIls));
@@ -601,9 +627,17 @@ async function loadFunds() {
   setVal('cashcash_ido',  cp.cashcash_ido  || '');
   setVal('cashcash_maor', cp.cashcash_maor || '');
   setVal('rake_app',        cp.rake_app  || '');
+  setVal('bank_maor', cp.bank_maor || '');
+  setVal('bank_ido', cp.bank_ido || '');
+  setVal('pocket_maor', cp.pocket_maor || '');
+  setVal('pocket_ravit', cp.pocket_ravit || '');
+  setVal('pocket_ido', cp.pocket_ido || '');
+  setVal('pocket_dorin', cp.pocket_dorin || '');
+  setVal('bit_other_amount', cp.bit_other_amount || '');
+  setVal('bit_other_name', cp.bit_other_name || '');
+  document.querySelectorAll('input[name=bit_other_team]').forEach(r => { r.checked = r.value === cp.bit_other_team; });
 
   initPayboxSubtitles();
-  updateFundsSummary();
 
   // Counter + BadBeat
   setVal('counter-value', cp.counter || '');
@@ -611,15 +645,21 @@ async function loadFunds() {
   setVal('bank_leumi', cp.bank_leumi || '');
   updateCounterDisplay();
   updateBadBeatDisplay();
+  updateFundsSummary();
 }
 
 function updateFundsSummary() {
   const g = id => parseFloat(document.getElementById(id)?.value) || 0;
   const liquid = g('bit_maor') + g('bit_ido') + g('bit_ravit') + g('bit_dorin') + g('paybox_maor') + g('paybox_ido') + g('cashcash_ido') + g('cashcash_maor');
+  const _boTeam = document.querySelector('input[name=bit_other_team]:checked')?.value;
+  const extra = g('bank_maor') + g('bank_ido') + g('pocket_maor') + g('pocket_ravit') + g('pocket_ido') + g('pocket_dorin') + (_boTeam ? g('bit_other_amount') : 0) + (parseFloat(document.getElementById('bank_leumi')?.value) || 0);
+  const liquidWithExtra = liquid + extra;
+  setText('funds-extra', '₪' + fmt(extra));
   const total  = liquid + n(currentPeriod?.debt_ido) + n(currentPeriod?.debt_maor) + otherPlayersDebtTotal();
 
-  setText('funds-liquid', '₪' + fmt(liquid));
-  setText('funds-total',  '₪' + fmt(total));
+  const totalWithExtra = total + extra;
+  setText('funds-liquid', '₪' + fmt(liquidWithExtra));
+  setText('funds-total',  '₪' + fmt(totalWithExtra));
 }
 
 async function saveFunds() {
@@ -632,6 +672,12 @@ async function saveFunds() {
       cashcash_ido: g('cashcash_ido'), cashcash_maor: g('cashcash_maor'),
       rake_app: g('rake_app'),
       bank_leumi: g('bank_leumi'),
+      bank_maor: g('bank_maor'), bank_ido: g('bank_ido'),
+      pocket_maor: g('pocket_maor'), pocket_ravit: g('pocket_ravit'),
+      pocket_ido: g('pocket_ido'), pocket_dorin: g('pocket_dorin'),
+      bit_other_amount: g('bit_other_amount'),
+      bit_other_name: document.getElementById('bit_other_name')?.value.trim() || '',
+      bit_other_team: document.querySelector('input[name=bit_other_team]:checked')?.value || '',
       updated_at: now()
     };
 
@@ -860,7 +906,7 @@ function onDashBBSliderInput() {
 
 function refreshDashboardProfitCards() {
   const cp = currentPeriod || {};
-  const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor);
+  const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor) + liquidExtraParts(cp).total;
   const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
   const counterIls  = chipsToIls(n(cp.counter));
   const badbeatFull = chipsToIls(n(cp.badbeat));
@@ -1856,8 +1902,10 @@ async function refreshBTSummary() {
 // DASHBOARD — Blue Table Detail Modal
 // ============================================================
 function closeDashDetail() {
+  dashDetailStack = [];
   closeSheet('dash-detail-overlay');
 }
+
 
 // ============================================================
 // DASHBOARD — Stat card breakdown (what each number is made of)
@@ -1868,13 +1916,15 @@ function dashMoney(v) {
   return (v < 0 ? '-' : '') + '₪' + fmt(Math.abs(v));
 }
 
-function dashRow(label, value, { op = '+', sub = '', open = '' } = {}) {
+function dashRow(label, value, { op = '+', sub = '', open = '', go = '' } = {}) {
   const opHtml  = op ? `<span class="dash-calc-op">${op}</span>` : '';
-  const tag     = open ? 'button' : 'div';
-  const attrs   = open ? ` type="button" onclick="openDashBTDetail('${open}', true)"` : '';
-  const chevron = open ? '<span class="dash-calc-chevron" aria-hidden="true">‹</span>' : '';
+  const link    = open || go;
+  const tag     = link ? 'button' : 'div';
+  const attrs   = open ? ` type="button" onclick="openDashBTDetail('${open}', true)"`
+                : go   ? ` type="button" onclick="${go}"` : '';
+  const chevron = link ? '<span class="dash-calc-chevron" aria-hidden="true">‹</span>' : '';
   return `
-    <${tag} class="md-list-item dash-calc-row${open ? ' dash-calc-link' : ''}${value === 0 ? ' is-zero' : ''}"${attrs}>
+    <${tag} class="md-list-item dash-calc-row${link ? ' dash-calc-link' : ''}${value === 0 ? ' is-zero' : ''}"${attrs}>
       <span class="md-list-content">
         <span class="md-list-title">${escHtml(label)}</span>
         ${sub ? `<span class="md-list-subtitle">${escHtml(sub)}</span>` : ''}
@@ -1915,7 +1965,8 @@ function dashStatValues() {
     ['CashCash עידו', n(cp.cashcash_ido)],
     ['CashCash מאור', n(cp.cashcash_maor)]
   ];
-  const liquid      = liquidParts.reduce((s, p) => s + p[1], 0);
+  const extra       = liquidExtraParts(cp);
+  const liquid      = liquidParts.reduce((s, p) => s + p[1], 0) + extra.total;
   const otherDebts  = otherPlayersDebtTotal();
   const debtTotal   = n(cp.debt_ido) + n(cp.debt_maor) + otherDebts;
   const total       = liquid + debtTotal;
@@ -1924,7 +1975,7 @@ function dashStatValues() {
   const badbeatIls  = chipsToIls(n(cp.badbeat) * bbPct / 100);
   const chipsIls    = counterIls + badbeatIls;
   const profit      = total - chipsIls;
-  return { cp, playerDebts, liquidParts, liquid, debtTotal, total, bbPct, counterIls, badbeatIls, chipsIls, profit, half: profit / 2 };
+  return { cp, playerDebts, liquidParts, extra, liquid, debtTotal, total, bbPct, counterIls, badbeatIls, chipsIls, profit, half: profit / 2 };
 }
 
 function dashBadbeatCalcSub(cp, bbPct) {
@@ -1941,14 +1992,63 @@ function dashDebtRows(v, firstOp = '+') {
     : dashRow('חוב ' + (p.nickname || p.name), n(p.debt), { sub: 'חוב שחקן' })).join('');
 }
 
+// נזיל נוסף — רמות ניווט: כל רמה מחליפה את תוכן החלונית (לא נערמת), עם כפתור חזרה
+const EXTRA_TEAMS = {
+  maor:   { label: 'Team מאור' },
+  ido:    { label: 'Team עידו' },
+  branch: { label: 'הסניף (לאומי)' }
+};
+let dashDetailStack = [];
+
+function dashExtraRows(x, key) {
+  if (key === 'maor') return { rows: x.maor, total: x.maorTotal };
+  if (key === 'ido')  return { rows: x.ido,  total: x.idoTotal };
+  return { rows: x.branch, total: x.branchTotal };
+}
+
+function dashExtraSummaryHtml(x) {
+  const mk = key => {
+    const { total } = dashExtraRows(x, key);
+    return dashRow('👥 ' + EXTRA_TEAMS[key].label, total, { go: `pushDashDetail({type:'extra-team',team:'${key}'})` });
+  };
+  return mk('maor') + mk('ido') + mk('branch');
+}
+
 function openDashStatDetail(type) {
+  dashDetailStack = [{ type: type === 'extra' ? 'extra-summary' : type }];
+  renderDashDetail();
+  openSheet('dash-detail-overlay');
+}
+function pushDashDetail(view) {
+  dashDetailStack.push(view);
+  renderDashDetail();
+}
+function dashDetailBack() {
+  if (dashDetailStack.length > 1) { dashDetailStack.pop(); renderDashDetail(); }
+}
+function updateDashBackBtn() {
+  const b = document.getElementById('dash-detail-back');
+  if (!b) return;
+  const d = dashDetailStack.length;
+  b.hidden = d < 2;
+  if (d >= 2) {
+    const below = dashDetailStack[d - 2];
+    b.textContent = '\u2190 ' + (below.type === 'liquid' ? 'חזרה לכסף נזיל'
+      : below.type === 'extra-summary' ? 'חזרה לנזיל נוסף'
+      : below.type === 'expenses' ? 'חזרה לסיכום הוצאות' : 'חזרה');
+  }
+}
+function renderDashDetail() {
+  const view = dashDetailStack[dashDetailStack.length - 1];
+  const type = view.type;
   const v = dashStatValues();
   let title = '', html = '';
 
   if (type === 'liquid') {
     title = '💰 כסף נזיל';
-    html = dashFormula('Bit + PayBox + CashCash', 'בנק לאומי לא נכלל — הוא לתצוגה בלבד') +
+    html = dashFormula('Bit + PayBox + CashCash + נזיל נוסף') +
       v.liquidParts.map(([label, val, sub], i) => dashRow(label, val, { op: i ? '+' : '', sub })).join('') +
+      dashRow('💧 נזיל נוסף', v.extra.total, { go: "pushDashDetail({type:'extra-summary'})" }) +
       dashResult('כסף נזיל', v.liquid);
 
   } else if (type === 'total') {
@@ -2012,8 +2112,25 @@ function openDashStatDetail(type) {
 
   } else if (type === 'leumi') {
     title = '🏦 בנק לאומי';
-    html = dashFormula('יתרה שמוזנת ידנית', 'לתצוגה בלבד — לא נכללת בכסף נזיל, בסה"כ בקופה או ברווח') +
+    html = dashFormula('יתרה שמוזנת ידנית בטאב נזיל נוסף', 'משוייך לסניף — נספר בכסף נזיל, בסה"כ בקופה וברווח') +
       dashResult('יתרה', n(v.cp.bank_leumi));
+
+  } else if (type === 'extra' || type === 'extra-summary') {
+    title = '💧 נזיל נוסף';
+    html = dashFormula('בנק מאור/עידו + כיסים פרטיים + ביט אחר + בנק לאומי') +
+      dashExtraSummaryHtml(v.extra) +
+      dashResult('נזיל נוסף', v.extra.total);
+
+  } else if (type === 'extra-team') {
+    const team = EXTRA_TEAMS[view.team] ? view.team : 'maor';
+    const det  = dashExtraRows(v.extra, team);
+    const label = EXTRA_TEAMS[team].label;
+    title = '👥 ' + label;
+    html = dashFormula('פירוט נזיל נוסף של ' + label) +
+      (det.rows.length
+        ? det.rows.map((r, i) => dashRow(r[0], r[1], { op: i ? '+' : '', sub: 'נזיל נוסף' })).join('')
+        : '<div class="md-list-empty">אין סכומים ב-Team זה כרגע</div>') +
+      dashResult('סה"כ ' + label, det.total);
 
   } else {
     return;
@@ -2021,10 +2138,9 @@ function openDashStatDetail(type) {
 
   dashDetailSeq++;
   setText('dash-detail-title', title);
-  document.getElementById('dash-detail-back').hidden = true;
   document.getElementById('dash-detail-body').innerHTML = html;
+  updateDashBackBtn();
   document.querySelector('#dash-detail-overlay .dash-detail-sheet').scrollTop = 0;
-  openSheet('dash-detail-overlay');
 }
 
 let dashDetailSeq = 0; // bumps on every sheet change so a late fetch can't overwrite newer content
@@ -2042,7 +2158,9 @@ async function openDashBTDetail(type, fromExpenses = false) {
 
   const seq = ++dashDetailSeq;
   setText('dash-detail-title', cfg.title);
-  document.getElementById('dash-detail-back').hidden = !fromExpenses;
+  if (fromExpenses) dashDetailStack.push({ type: 'bt', bt: type });
+  else dashDetailStack = [{ type: 'bt', bt: type }];
+  updateDashBackBtn();
   const body = document.getElementById('dash-detail-body');
   document.querySelector('#dash-detail-overlay .dash-detail-sheet').scrollTop = 0;
   openSheet('dash-detail-overlay');  // handles display:flex + .open class + animation
@@ -3644,7 +3762,7 @@ async function closePeriod(periodStart) {
     const totalGeneralExpenses = sumField(exp, 'amount_ils');
 
     const cp     = currentPeriod;
-    const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor);
+    const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor) + liquidExtraParts(cp).total;
     const total       = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
     const chipsIls    = chipsToIls(n(cp.counter) + n(cp.badbeat) * getBBPercent() / 100);
     const profitTotal = total - chipsIls;
@@ -3672,14 +3790,22 @@ async function closePeriod(periodStart) {
       detail_expenses:       detailExpenses,
       chips_per_shekel:      CHIPS_PER_SHEKEL,
       rake_app:              n(cp.rake_app),
-      badbeat_snapshot:      n(cp.badbeat)
+      badbeat_snapshot:      n(cp.badbeat),
+      liquid_extra_maor:     liquidExtraParts(cp).maorTotal,
+      liquid_extra_ido:      liquidExtraParts(cp).idoTotal,
+      liquid_extra_branch:   liquidExtraParts(cp).branchTotal
     });
 
     // 3. Reset current_period — debts are intentionally kept
     const resetData = {
       bit_maor: 0, bit_ido: 0, bit_ravit: 0, bit_dorin: 0,
       paybox_maor: 0, paybox_ido: 0, cashcash_ido: 0, cashcash_maor: 0,
-      counter: 0, rake_app: 0, badbeat: 0, updated_at: now()
+      counter: 0, rake_app: 0, badbeat: 0,
+      // נזיל נוסף — מתאפס בסגירת תקופה כולל לאומי (אושר ע"י מאור 5.11.26)
+      bank_leumi: 0, bank_maor: 0, bank_ido: 0,
+      pocket_maor: 0, pocket_ravit: 0, pocket_ido: 0, pocket_dorin: 0,
+      bit_other_amount: 0,  // השם והשיוך של ביט אחר נשמרים בין תקופות
+      updated_at: now()
     };
     await dbPatch('current_period', '?id=eq.1', resetData);
     Object.assign(currentPeriod, resetData);
@@ -3785,7 +3911,7 @@ function loadSettlementPage() {
   setText('st-cashcash-maor', '₪' + fmt(n(cp.cashcash_maor)));
 
   // Profit per partner — total in coffers minus chips value (counter + badbeat×percent)
-  const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + payboxMaor + payboxIdo + n(cp.cashcash_ido) + n(cp.cashcash_maor);
+  const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + payboxMaor + payboxIdo + n(cp.cashcash_ido) + n(cp.cashcash_maor) + liquidExtraParts(cp).total;
   const total      = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
   const chipsIls   = chipsToIls(n(cp.counter) + n(cp.badbeat) * getBBPercent() / 100);
   const profitEach = (total - chipsIls) / 2;
@@ -3793,21 +3919,22 @@ function loadSettlementPage() {
   setText('st-profit-each', '₪' + fmt(profitEach));
 
   // Team totals — Bit + PayBox + CashCash per team (PayBox always included)
-  const teamIdo  = bitIdo  + bitDorin + payboxIdo  + n(cp.cashcash_ido);
-  const teamMaor = bitMaor + bitRavit + payboxMaor + n(cp.cashcash_maor);
+  const _x       = liquidExtraParts(cp);
+  const teamIdo  = bitIdo  + bitDorin + payboxIdo  + n(cp.cashcash_ido)  + _x.idoTotal;
+  const teamMaor = bitMaor + bitRavit + payboxMaor + n(cp.cashcash_maor) + _x.maorTotal;
 
   setText('st-total-ido',  '₪' + fmt(teamIdo));
   setText('st-total-maor', '₪' + fmt(teamMaor));
 
-  // Available for withdrawal per team — Bit + PayBox only (confirmed rule:
-  // if each partner can cover his share from his own Bit/PayBox, no transfer).
-  const availIdo  = bitIdo + bitDorin + payboxIdo;
-  const availMaor = bitMaor + bitRavit + payboxMaor;
+  // Available per team — Bit + PayBox + נזיל נוסף של אותו Team
+  // (אושר ע"י מאור 5.11.26: הבנקים והכיסים נכללים בחישוב ההעברה; לאומי נשאר בסניף, מחוץ לחלוקה)
+  const availIdo  = bitIdo + bitDorin + payboxIdo + _x.idoTotal;
+  const availMaor = bitMaor + bitRavit + payboxMaor + _x.maorTotal;
   const bothCovered = availIdo >= profitEach && availMaor >= profitEach;
 
   // A transfer is proposed only to cover the short partner's shortfall, and
   // only when the giving partner keeps at least his own share afterwards
-  // (total Bit+PayBox >= 2 x share). Otherwise no transfer can make both
+  // (total available >= 2 x share). Otherwise no transfer can make both
   // whole, so none is proposed.
   const totalAvail = availIdo + availMaor;
   const canCover   = totalAvail >= profitEach * 2;
@@ -3817,6 +3944,27 @@ function loadSettlementPage() {
                                       : -(profitEach - availIdo);   // Maor covers Ido's shortfall
   }
   renderSettlementResult(transfer, profitEach, bothCovered, canCover, totalAvail);
+}
+
+function openSettlementTeam(team) {
+  const cp = currentPeriod || {};
+  const x  = liquidExtraParts(cp);
+  const isMaor = team === 'maor';
+  const rows = isMaor
+    ? [['Bit מאור', n(cp.bit_maor), 0], ['Bit רוית', n(cp.bit_ravit), 0], ['PayBox מאור', n(cp.paybox_maor), 0], ['CashCash מאור', n(cp.cashcash_maor), 0], ...x.maor.map(r => [r[0], r[1], 1])]
+    : [['Bit עידו', n(cp.bit_ido), 0], ['Bit דורין', n(cp.bit_dorin), 0], ['PayBox עידו', n(cp.paybox_ido), 0], ['CashCash עידו', n(cp.cashcash_ido), 0], ...x.ido.map(r => [r[0], r[1], 1])];
+  const total = rows.reduce((s, r) => s + r[1], 0);
+  setText('st-team-title', isMaor ? '👥 Team מאור — פירוט' : '👥 Team עידו — פירוט');
+  document.getElementById('st-team-body').innerHTML =
+    rows.map(r => `
+      <div class="md-list-item dash-calc-row${r[1] === 0 ? ' is-zero' : ''}">
+        <span class="md-list-content">
+          <span class="md-list-title">${escHtml(r[0])}${r[2] ? ' <span class="st-new-tag">נזיל נוסף</span>' : ''}</span>
+        </span>
+        <span class="md-list-trailing"><span class="dash-calc-op">+</span>${dashMoney(r[1])}</span>
+      </div>`).join('') +
+    dashResult('סה"כ ' + (isMaor ? 'Team מאור' : 'Team עידו'), total);
+  openSheet('st-team-overlay');
 }
 
 function renderSettlementResult(transfer, profitEach, bothCovered, canCover, totalAvail) {
@@ -3832,14 +3980,14 @@ function renderSettlementResult(transfer, profitEach, bothCovered, canCover, tot
     label.textContent  = 'אין צורך בהעברות';
     amount.textContent = '✓';
     amount.style.color = 'var(--positive)';
-    subHtml            = `לכל שותף יש מספיק בביט ובפייבוקס שלו<br>` +
+    subHtml            = `לכל שותף יש מספיק ביתרות שלו (ביט, פייבוקס ונזיל נוסף)<br>` +
                          `כל שותף מושך <strong>₪${fmt(profitEach)}</strong> מהיתרות שלו, והשאר נשאר בקופה`;
   } else if (!canCover) {
-    label.textContent  = 'אין מספיק בביט ובפייבוקס לשני החלקים';
+    label.textContent  = 'אין מספיק ביתרות הזמינות לשני החלקים';
     amount.textContent = '⚠️';
     amount.style.color = 'var(--warning)';
-    subHtml            = `זמין בביט ובפייבוקס: <strong>₪${fmt(totalAvail)}</strong> מתוך <strong>₪${fmt(profitEach * 2)}</strong> לשני השותפים<br>` +
-                         `ההפרש נמצא ב-CashCash ובחובות שלא נגבו — לא מוצעת העברה`;
+    subHtml            = `זמין (ביט, פייבוקס ונזיל נוסף): <strong>₪${fmt(totalAvail)}</strong> מתוך <strong>₪${fmt(profitEach * 2)}</strong> לשני השותפים<br>` +
+                         `ההפרש נמצא ב-CashCash, בבנק לאומי ובחובות שלא נגבו — לא מוצעת העברה`;
   } else if (abs < 0.5) {
     label.textContent  = 'אין צורך בהעברות';
     amount.textContent = '✓';
@@ -3849,14 +3997,14 @@ function renderSettlementResult(transfer, profitEach, bothCovered, canCover, tot
     label.textContent  = 'עידו מעביר למאור';
     amount.textContent = '₪' + fmt(abs);
     amount.style.color = 'var(--warning)';
-    subHtml            = `עידו מעביר למאור <strong>₪${fmt(abs)}</strong> דרך ביט<br>` +
-                         `עידו ימשוך לעצמו <strong>₪${fmt(profitEach)}</strong> מהביט שלו`;
+    subHtml            = `עידו מעביר למאור <strong>₪${fmt(abs)}</strong> מתוך היתרות הזמינות<br>` +
+                         `עידו ימשוך לעצמו <strong>₪${fmt(profitEach)}</strong> מהיתרות שלו`;
   } else {
     label.textContent  = 'מאור מעביר לעידו';
     amount.textContent = '₪' + fmt(abs);
     amount.style.color = 'var(--accent)';
-    subHtml            = `מאור מעביר לעידו <strong>₪${fmt(abs)}</strong> דרך ביט<br>` +
-                         `מאור ימשוך לעצמו <strong>₪${fmt(profitEach)}</strong> מהביט שלו`;
+    subHtml            = `מאור מעביר לעידו <strong>₪${fmt(abs)}</strong> מתוך היתרות הזמינות<br>` +
+                         `מאור ימשוך לעצמו <strong>₪${fmt(profitEach)}</strong> מהיתרות שלו`;
   }
 
   sub.innerHTML = subHtml;

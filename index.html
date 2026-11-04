@@ -20,6 +20,60 @@
 <link rel="stylesheet" href="style.css?v=20261026a">
 <link rel="stylesheet" href="management.css?v=20261026a">
 <link rel="stylesheet" href="landing.css?v=20261001a">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+<style>
+/* ===== נזיל נוסף + פודיום התקזזות (עיצוב זהה לקיים) ===== */
+:root { --font: 'Heebo', 'Noto Color Emoji', sans-serif; }
+.fm-tabs { display:flex; gap:8px; margin-bottom:14px; }
+.fm-tab { flex:1; padding:9px 0; border-radius:10px; background:var(--bg-card); border:1px solid var(--border); color:var(--text-secondary); font-family:var(--font); font-size:13.5px; font-weight:500; cursor:pointer; }
+.fm-tab.active { background:rgba(108,99,255,.18); border-color:var(--accent); color:var(--text-primary); font-weight:700; }
+.fm-cat-maor { color:#4da3ff; }
+.fm-cat-ido { color:var(--warning); }
+.fm-cat-branch { color:var(--text-secondary); }
+.bit-other-team-row { display:flex; align-items:center; gap:12px; margin-top:8px; }
+.bit-other-radio { display:flex; align-items:center; gap:4px; font-size:12.5px; color:var(--text-secondary); cursor:pointer; }
+.bit-other-radio input { accent-color: var(--accent); }
+#bit_other_name { background:var(--bg-primary); border:1px dashed var(--accent); border-radius:8px; padding:8px 10px; color:var(--text-primary); font-family:var(--font); font-size:13.5px; width:100%; }
+.dash-team-row { display:flex; justify-content:space-between; align-items:center; padding:8px 4px; font-size:13px; font-weight:700; border-bottom:1px solid var(--border); cursor:pointer; }
+.dash-team-row:hover { color:var(--accent); }
+.dash-team-sub { border-bottom:1px dashed var(--border); }
+/* funds extra tab compaction */
+.fm-tabs { margin-bottom:10px !important; }
+.fm-tab { padding:7px 0 !important; font-size:13px !important; }
+#funds-tab-extra .fm-category { padding:8px 10px !important; margin-bottom:8px !important; }
+#funds-tab-extra .fm-cat-label { font-size:13px !important; margin-bottom:6px !important; }
+#funds-tab-extra .fm-grid { gap:6px !important; grid-template-columns:repeat(3, minmax(0,1fr)) !important; }
+#funds-tab-extra .fm-cell { min-width:0 !important; }
+#funds-tab-extra .fm-cell.fm-full-width { grid-column:1 / -1 !important; }
+#funds-tab-extra .fm-category { margin-bottom:6px !important; }
+#funds-tab-extra .fm-label { font-size:12px !important; }
+#funds-tab-extra .fm-input-row input { padding:7px 10px !important; font-size:14px !important; }
+#funds-tab-extra .bit-other-team-row { margin-top:6px !important; }
+/* popup row compaction + taller sheet */
+#page-dashboard .dash-detail-sheet, #page-settlement .dash-detail-sheet { max-height:86vh !important; }
+.md-list-item.dash-calc-row { padding:7px 10px !important; min-height:40px !important; box-sizing:border-box !important; }
+.md-list-item.dash-calc-row .md-list-title { font-size:13px !important; }
+.md-list-item.dash-calc-row .md-list-subtitle { font-size:11px !important; }
+.dash-team-row { padding:10px 6px !important; font-size:13px !important; min-height:44px !important; box-sizing:border-box !important; }
+.dash-formula { padding:6px 8px !important; font-size:10.5px !important; margin-bottom:6px !important; }
+.dash-calc-section { font-size:11px !important; margin:6px 0 2px !important; }
+.dash-detail-sheet .md-sheet-title { font-size:14px !important; margin-bottom:6px !important; }
+/* settlement podium */
+.settlement-podium { margin-bottom:16px; }
+.settlement-profit-card { text-align:center; padding:14px; margin-bottom:10px; border:1px solid var(--positive); background:linear-gradient(180deg, rgba(0,212,170,.14), var(--bg-card)); }
+.settlement-profit-label { font-size:13px; color:var(--text-secondary); }
+.settlement-profit-val { font-size:24px; font-weight:700; color:var(--positive); margin-top:2px; }
+.settlement-podium-teams { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+button.settlement-team-card { appearance:none; -webkit-appearance:none; font-family:var(--font); color:inherit; cursor:pointer; text-align:center; padding:12px 8px; }
+.settlement-team-maor { border:1px solid #4da3ff !important; border-top:3px solid #4da3ff !important; background:linear-gradient(180deg, rgba(77,163,255,.16), var(--bg-card)); }
+.settlement-team-maor .settlement-team-title { color:#4da3ff !important; font-weight:700; }
+.settlement-team-ido { border:1px solid var(--warning) !important; border-top:3px solid var(--warning) !important; background:linear-gradient(180deg, rgba(255,165,2,.16), var(--bg-card)); }
+.settlement-team-ido .settlement-team-title { color:var(--warning) !important; font-weight:700; }
+.settlement-team-big { font-size:19px; font-weight:700; margin-top:4px; }
+.settlement-team-tap { font-size:10px; color:var(--text-secondary); margin-top:5px; }
+.st-new-tag { font-size:9px; background:rgba(108,99,255,.2); color:var(--accent); border-radius:4px; padding:1px 5px; margin-right:4px; }
+#preview-badge { position:fixed; top:52px; left:50%; transform:translateX(-50%); z-index:99999; background:var(--warning); color:#111; font-size:10px; font-weight:700; border-radius:6px; padding:2px 8px; font-family:var(--font); pointer-events:none; }
+</style>
 </head>
 <body>
 
@@ -188,7 +242,7 @@
             <button type="button" class="stat-card accent" onclick="openDashStatDetail('leumi')">
               <span class="stat-label">🏦 בנק לאומי</span>
               <span class="stat-value"><span class="currency">₪</span><span id="val-bank-leumi">0</span></span>
-              <span class="stat-sub">יתרה — לתצוגה בלבד</span>
+              <span class="stat-sub">נכלל בנזיל נוסף</span>
             </button>
             <button type="button" class="stat-card positive" onclick="openDashStatDetail('profit-ido')">
               <span class="stat-label">רווח עידו</span>
@@ -239,7 +293,7 @@
           <div class="md-sheet dash-detail-sheet" onclick="event.stopPropagation()">
             <div class="md-sheet-handle"></div>
             <div class="md-sheet-title" id="dash-detail-title">פירוט</div>
-            <button type="button" class="dash-detail-back" id="dash-detail-back" hidden onclick="openDashStatDetail('expenses')">&#8592; חזרה לסיכום הוצאות</button>
+            <button type="button" class="dash-detail-back" id="dash-detail-back" hidden onclick="dashDetailBack()">&#8592; חזרה</button>
             <div id="dash-detail-body" class="md-list"></div>
             <button type="button" class="md-sheet-close" onclick="closeDashDetail()">סגור</button>
           </div>
@@ -264,6 +318,14 @@
       <div id="page-funds" class="page">
 
         <div class="fm-card">
+
+          <!-- FUNDS TABS -->
+          <div class="fm-tabs">
+            <button type="button" class="fm-tab active" id="fm-tab-regular" onclick="switchFundsTab('regular')">הזנה רגילה</button>
+            <button type="button" class="fm-tab" id="fm-tab-extra" onclick="switchFundsTab('extra')">💧 נזיל נוסף</button>
+          </div>
+
+          <div id="funds-tab-regular">
 
           <!-- BIT -->
           <div class="fm-category">
@@ -390,12 +452,95 @@
             </div>
           </div>
 
-          <!-- BANK LEUMI -->
+          </div><!-- end funds-tab-regular -->
+
+          <!-- ===== TAB: נזיל נוסף ===== -->
+          <div id="funds-tab-extra" hidden>
+
+          <!-- TEAM MAOR -->
           <div class="fm-category">
-            <div class="fm-cat-label">🏦 בנק לאומי</div>
+            <div class="fm-cat-label fm-cat-maor">👥 Team מאור</div>
+            <div class="fm-grid">
+              <div class="fm-cell">
+                <label class="fm-label" for="bank_maor">🏦 בנק מאור</label>
+                <div class="fm-input-row">
+                  <input type="number" id="bank_maor" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
+              <div class="fm-cell">
+                <label class="fm-label" for="pocket_maor">👛 כיס פרטי מאור</label>
+                <div class="fm-input-row">
+                  <input type="number" id="pocket_maor" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
+              <div class="fm-cell">
+                <label class="fm-label" for="pocket_ravit">👛 כיס פרטי רוית</label>
+                <div class="fm-input-row">
+                  <input type="number" id="pocket_ravit" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BIT OTHER -->
+          <div class="fm-category">
+            <div class="fm-cat-label">⚡ ביט אחר</div>
             <div class="fm-grid">
               <div class="fm-cell fm-full-width">
-                <label class="fm-label fm-label-bank" for="bank_leumi">יתרה (לתצוגה בלבד)</label>
+                <label class="fm-label fm-label-sm" for="bit_other_name">שם לתצוגה (אפשר לשנות) + סכום</label>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <input type="text" id="bit_other_name" placeholder="ביט אחר" autocomplete="off" onblur="onFundsBlur()" style="flex:1;min-width:0">
+                  <div class="fm-input-row" style="width:118px;flex:none">
+                    <input type="number" id="bit_other_amount" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
+                    <span class="fm-cur">₪</span>
+                  </div>
+                </div>
+                <div class="bit-other-team-row">
+                  <span class="fm-label fm-label-sm">שייך ל:</span>
+                  <label class="bit-other-radio"><input type="radio" name="bit_other_team" value="maor" onchange="onFundsBlur()"> Team מאור</label>
+                  <label class="bit-other-radio"><input type="radio" name="bit_other_team" value="ido" onchange="onFundsBlur()"> Team עידו</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TEAM IDO -->
+          <div class="fm-category">
+            <div class="fm-cat-label fm-cat-ido">👥 Team עידו</div>
+            <div class="fm-grid">
+              <div class="fm-cell">
+                <label class="fm-label" for="bank_ido">🏦 בנק עידו</label>
+                <div class="fm-input-row">
+                  <input type="number" id="bank_ido" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
+              <div class="fm-cell">
+                <label class="fm-label" for="pocket_ido">👛 כיס פרטי עידו</label>
+                <div class="fm-input-row">
+                  <input type="number" id="pocket_ido" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
+              <div class="fm-cell">
+                <label class="fm-label" for="pocket_dorin">👛 כיס פרטי דורין</label>
+                <div class="fm-input-row">
+                  <input type="number" id="pocket_dorin" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
+                  <span class="fm-cur">₪</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BRANCH -->
+          <div class="fm-category">
+            <div class="fm-cat-label fm-cat-branch">🏢 הסניף</div>
+            <div class="fm-grid">
+              <div class="fm-cell fm-full-width">
+                <label class="fm-label fm-label-bank" for="bank_leumi">🏦 בנק לאומי</label>
                 <div class="fm-input-row">
                   <input type="number" id="bank_leumi" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off"
                          oninput="onBankLeumiInput()" onblur="onBankLeumiBlur()">
@@ -405,10 +550,17 @@
             </div>
           </div>
 
+          </div><!-- end funds-tab-extra -->
+
         </div>
 
         <!-- Sticky summary footer -->
         <div class="fm-sticky-footer">
+          <div class="fm-footer-item">
+            <span class="fm-footer-label">נזיל נוסף</span>
+            <span class="fm-footer-val" id="funds-extra">—</span>
+          </div>
+          <div class="fm-footer-divider"></div>
           <div class="fm-footer-item">
             <span class="fm-footer-label">כסף נזיל</span>
             <span class="fm-footer-val" id="funds-liquid">—</span>
@@ -1046,62 +1198,33 @@
           <p>חישוב העברות לסגירת תקופה</p>
         </div>
 
-        <!-- Team holdings -->
-        <div class="settlement-teams">
-          <div class="card settlement-team-card">
-            <div class="settlement-team-title">Team עידו</div>
-            <div class="settlement-team-row">
-              <span>Bit עידו</span>
-              <span id="st-bit-ido">₪0</span>
-            </div>
-            <div class="settlement-team-row">
-              <span>Bit דורין</span>
-              <span id="st-bit-dorin">₪0</span>
-            </div>
-            <div class="settlement-team-row paybox-row" id="st-paybox-ido-row">
-              <span>PayBox עידו</span>
-              <span id="st-paybox-ido-val">₪0</span>
-            </div>
-            <div class="settlement-team-row">
-              <span>CashCash עידו</span>
-              <span id="st-cashcash-ido">₪0</span>
-            </div>
-            <div class="settlement-team-total">
-              <span>סה"כ</span>
-              <span id="st-total-ido">₪0</span>
-            </div>
+        <!-- Podium: profit on top, teams below -->
+        <div class="settlement-podium">
+          <div class="card settlement-profit-card">
+            <div class="settlement-profit-label">💰 רווח לכל שותף</div>
+            <div class="settlement-profit-val" id="st-profit-each">₪0</div>
           </div>
-
-          <div class="card settlement-team-card">
-            <div class="settlement-team-title">Team מאור</div>
-            <div class="settlement-team-row">
-              <span>Bit מאור</span>
-              <span id="st-bit-maor">₪0</span>
-            </div>
-            <div class="settlement-team-row">
-              <span>Bit רוית</span>
-              <span id="st-bit-ravit">₪0</span>
-            </div>
-            <div class="settlement-team-row paybox-row" id="st-paybox-maor-row">
-              <span>PayBox מאור</span>
-              <span id="st-paybox-maor-val">₪0</span>
-            </div>
-            <div class="settlement-team-row">
-              <span>CashCash מאור</span>
-              <span id="st-cashcash-maor">₪0</span>
-            </div>
-            <div class="settlement-team-total">
-              <span>סה"כ</span>
-              <span id="st-total-maor">₪0</span>
-            </div>
+          <div class="settlement-podium-teams">
+            <button type="button" class="card settlement-team-card settlement-team-maor" onclick="openSettlementTeam('maor')">
+              <div class="settlement-team-title">Team מאור</div>
+              <div class="settlement-team-big" id="st-total-maor">₪0</div>
+              <div class="settlement-team-tap">לחיצה לפירוט ▸</div>
+            </button>
+            <button type="button" class="card settlement-team-card settlement-team-ido" onclick="openSettlementTeam('ido')">
+              <div class="settlement-team-title">Team עידו</div>
+              <div class="settlement-team-big" id="st-total-ido">₪0</div>
+              <div class="settlement-team-tap">לחיצה לפירוט ▸</div>
+            </button>
           </div>
         </div>
 
-        <!-- Profit per partner -->
-        <div class="card" style="margin-bottom:20px">
-          <div class="settlement-info-row">
-            <span>רווח לכל שותף</span>
-            <strong id="st-profit-each">₪0</strong>
+        <!-- Team breakdown sheet -->
+        <div id="st-team-overlay" class="md-sheet-overlay" style="display:none" onclick="closeSheet('st-team-overlay')">
+          <div class="md-sheet dash-detail-sheet" onclick="event.stopPropagation()">
+            <div class="md-sheet-handle"></div>
+            <div class="md-sheet-title" id="st-team-title">פירוט</div>
+            <div id="st-team-body" class="md-list"></div>
+            <button type="button" class="md-sheet-close" onclick="closeSheet('st-team-overlay')">סגור</button>
           </div>
         </div>
 
@@ -1256,7 +1379,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261103a"></script>
+<script src="app.js?v=20261105a"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
