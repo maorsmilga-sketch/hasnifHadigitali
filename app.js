@@ -645,7 +645,18 @@ async function loadFunds() {
   setVal('bank_leumi', cp.bank_leumi || '');
   updateCounterDisplay();
   updateBadBeatDisplay();
+  updateExtraTabAvailability();
   updateFundsSummary();
+}
+
+// Disable the נזיל נוסף tab inputs until the extra columns exist in Supabase
+// (migration run). Prevents entering amounts that cannot persist and would
+// silently skip close-period reset/history.
+function updateExtraTabAvailability() {
+  const ok = extraSchemaReady();
+  const warn = document.getElementById('extra-schema-warn');
+  if (warn) warn.hidden = ok;
+  document.querySelectorAll('#funds-tab-extra input, #funds-tab-extra button').forEach(el => { el.disabled = !ok; });
 }
 
 function updateFundsSummary() {
