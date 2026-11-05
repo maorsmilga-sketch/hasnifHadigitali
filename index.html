@@ -33,7 +33,9 @@
 .bit-other-team-row { display:flex; align-items:center; gap:12px; margin-top:8px; }
 .bit-other-radio { display:flex; align-items:center; gap:4px; font-size:12.5px; color:var(--text-secondary); cursor:pointer; }
 .bit-other-radio input { accent-color: var(--accent); }
-#bit_other_name { background:var(--bg-primary); border:1px dashed var(--accent); border-radius:8px; padding:8px 10px; color:var(--text-primary); font-family:var(--font); font-size:13.5px; width:100%; }
+#bit_other_name.fm-cat-rename { font:inherit; color:inherit; background:none; border:none; outline:none; min-width:40px; cursor:text; }
+#bit_other_name.fm-cat-rename:empty::before { content:attr(data-ph); }
+#bit_other_name.fm-cat-rename:focus { box-shadow:0 0 0 2px rgba(108,99,255,0.28); border-radius:4px; }
 .dash-team-row { display:flex; justify-content:space-between; align-items:center; padding:8px 4px; font-size:13px; font-weight:700; border-bottom:1px solid var(--border); cursor:pointer; }
 .dash-team-row:hover { color:var(--accent); }
 .dash-team-sub { border-bottom:1px dashed var(--border); }
@@ -42,12 +44,9 @@
 .fm-tab { padding:7px 0 !important; font-size:13px !important; }
 #funds-tab-extra .fm-category { padding:8px 10px !important; margin-bottom:8px !important; }
 #funds-tab-extra .fm-cat-label { font-size:13px !important; margin-bottom:6px !important; }
-#funds-tab-extra .fm-grid { gap:6px !important; grid-template-columns:repeat(3, minmax(0,1fr)) !important; }
 #funds-tab-extra .fm-cell { min-width:0 !important; }
 #funds-tab-extra .fm-cell.fm-full-width { grid-column:1 / -1 !important; }
 #funds-tab-extra .fm-category { margin-bottom:6px !important; }
-#funds-tab-extra .fm-label { font-size:12px !important; }
-#funds-tab-extra .fm-input-row input { padding:7px 10px !important; font-size:14px !important; }
 #funds-tab-extra .bit-other-team-row { margin-top:6px !important; }
 /* popup row compaction + taller sheet */
 #page-dashboard .dash-detail-sheet, #page-settlement .dash-detail-sheet { max-height:86vh !important; }
@@ -489,23 +488,16 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
           </div>
 
           <!-- BIT OTHER -->
-          <div class="fm-category">
-            <div class="fm-cat-label">⚡ ביט אחר</div>
-            <div class="fm-grid">
-              <div class="fm-cell fm-full-width">
-                <label class="fm-label fm-label-sm" for="bit_other_name">שם לתצוגה (אפשר לשנות) + סכום</label>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input type="text" id="bit_other_name" placeholder="ביט אחר" autocomplete="off" onblur="onFundsBlur()" style="flex:1;min-width:0">
-                  <div class="fm-input-row" style="width:118px;flex:none">
-                    <input type="number" id="bit_other_amount" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
-                    <span class="fm-cur">₪</span>
-                  </div>
-                </div>
-                <div class="bit-other-team-row">
-                  <span class="fm-label fm-label-sm">שייך ל:</span>
-                  <label class="bit-other-radio"><input type="radio" name="bit_other_team" value="maor" onchange="onFundsBlur()"> Team מאור</label>
-                  <label class="bit-other-radio"><input type="radio" name="bit_other_team" value="ido" onchange="onFundsBlur()"> Team עידו</label>
-                </div>
+          <div class="fm-grid" style="margin-bottom:8px">
+            <div class="fm-cell">
+              <div class="fm-label">⚡ <span id="bit_other_name" class="fm-cat-rename" contenteditable="true" spellcheck="false" role="textbox" aria-label="שם ביט אחר" data-ph="ביט אחר"></span></div>
+              <div class="fm-input-row">
+                <input type="number" id="bit_other_amount" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off" oninput="onFundsInput()" onblur="onFundsBlur()">
+                <span class="fm-cur">₪</span>
+              </div>
+              <div class="bit-other-team-row" style="margin-top:4px;gap:10px">
+                <label class="bit-other-radio" style="font-size:10.5px"><input type="radio" name="bit_other_team" value="maor" onchange="onFundsBlur()" style="width:11px;height:11px"> מאור</label>
+                <label class="bit-other-radio" style="font-size:10.5px"><input type="radio" name="bit_other_team" value="ido" onchange="onFundsBlur()" style="width:11px;height:11px"> עידו</label>
               </div>
             </div>
           </div>
@@ -542,7 +534,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
           <div class="fm-category">
             <div class="fm-cat-label fm-cat-branch">🏢 הסניף</div>
             <div class="fm-grid">
-              <div class="fm-cell fm-full-width">
+              <div class="fm-cell">
                 <label class="fm-label fm-label-bank" for="bank_leumi">🏦 בנק לאומי</label>
                 <div class="fm-input-row">
                   <input type="number" id="bank_leumi" placeholder="0" min="0" step="0.01" inputmode="decimal" enterkeyhint="done" autocomplete="off"
@@ -1382,7 +1374,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261105a"></script>
+<script src="app.js?v=20261105b"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

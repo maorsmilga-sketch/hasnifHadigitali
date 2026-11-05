@@ -634,10 +634,12 @@ async function loadFunds() {
   setVal('pocket_ido', cp.pocket_ido || '');
   setVal('pocket_dorin', cp.pocket_dorin || '');
   setVal('bit_other_amount', cp.bit_other_amount || '');
-  setVal('bit_other_name', cp.bit_other_name || '');
+  const bonEl = document.getElementById('bit_other_name');
+  if (bonEl && bonEl.textContent !== (cp.bit_other_name || '')) bonEl.textContent = cp.bit_other_name || '';
   document.querySelectorAll('input[name=bit_other_team]').forEach(r => { r.checked = r.value === cp.bit_other_team; });
 
   initPayboxSubtitles();
+  initBitOtherName();
 
   // Counter + BadBeat
   setVal('counter-value', cp.counter || '');
@@ -657,6 +659,18 @@ function updateExtraTabAvailability() {
   const warn = document.getElementById('extra-schema-warn');
   if (warn) warn.hidden = ok;
   document.querySelectorAll('#funds-tab-extra input, #funds-tab-extra button').forEach(el => { el.disabled = !ok; });
+  const bon = document.getElementById('bit_other_name');
+  if (bon) bon.contentEditable = ok ? 'true' : 'false';
+}
+
+// ביט אחר name edits: PayBox-rename principle - plain heading text, tap to edit,
+// Enter/blur saves through the normal funds save.
+function initBitOtherName() {
+  const el = document.getElementById('bit_other_name');
+  if (!el || el.dataset.bound) return;
+  el.dataset.bound = '1';
+  el.addEventListener('blur', () => onFundsBlur());
+  el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
 }
 
 function updateFundsSummary() {
@@ -687,7 +701,7 @@ async function saveFunds() {
       pocket_maor: g('pocket_maor'), pocket_ravit: g('pocket_ravit'),
       pocket_ido: g('pocket_ido'), pocket_dorin: g('pocket_dorin'),
       bit_other_amount: g('bit_other_amount'),
-      bit_other_name: document.getElementById('bit_other_name')?.value.trim() || '',
+      bit_other_name: document.getElementById('bit_other_name')?.textContent.trim() || '',
       bit_other_team: document.querySelector('input[name=bit_other_team]:checked')?.value || '',
       updated_at: now()
     };
