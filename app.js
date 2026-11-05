@@ -9,6 +9,7 @@ const SUPABASE_URL      = 'https://nmwoepvgecnwrxzkyzeu.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_9TvfEI2S3K_M95-LBzikvg_r63QVQXc';
 
 const USER_DISPLAY = { ido: 'עידו', maor: 'מאור' };
+const PARTNER_PHONES = { maor: '972553081112', ido: '972559647963' };
 
 const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
@@ -494,6 +495,7 @@ async function loadPageData(page) {
       case 'history':       await loadHistory();      break;
       case 'players':     await loadPlayers();      break;
       case 'settlement':  loadSettlementPage();     break;
+      case 'meetings':    await loadMeetings();     break;
     }
   } catch (e) {
     showNotif('שגיאה בטעינת הדף: ' + e.message, 'error');
@@ -3866,7 +3868,7 @@ async function closePeriod(periodStart) {
 
     // 5. Send WhatsApp summary to the other partner
     try {
-      const phones    = { ido: '972559877777', maor: '972546819166' };
+      const phones    = PARTNER_PHONES;
       const recipient = getCurrentUser() === 'ido' ? phones.maor : phones.ido;
       const waMsg     = encodeURIComponent(
         `סיכום תקופה 🎰 הסניף הדיגיטלי\n` +
@@ -4291,4 +4293,120 @@ function styleSheet(ws, data) {
       return { wch: Math.min(Math.max(max + 2, 8), 40) };
     });
   }
+}
+
+// ============================================================
+// ישיבות — shared tasks & talking points between the partners
+// ============================================================
+let mtKind  = 'tasks';
+let mtItems = [];
+let mtReady = true;
+let mtSendId = null;
+
+function mtEsc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function loadMeetings() {
+  try {
+    mtItems = await dbGet('meeting_items', '?order=created_at.asc');
+    mtReady = true;
+  } catch (e) {
+    mtItems = [];
+    mtReady = false;
+  }
+  const warn = document.getElementById('mt-schema-warn');
+  if (warn) warn.hidden = mtReady;
+  const input = document.getElementById('mt-new-text');
+  const btn = document.getElementById('mt-add-btn');
+  if (input) input.disabled = !mtReady;
+  if (btn) btn.disabled = !mtReady;
+  mtRender();
+}
+
+function mtSwitch(kind) {
+  mtKind = kind;
+  document.getElementById('mt-tab-tasks')?.classList.toggle('active', kind === 'tasks');
+  document.getElementById('mt-tab-topics')?.classList.toggle('active', kind === 'topics');
+  mtRender();
+}
+
+function mtRender() {
+  const list = document.getElementById('mt-list');
+  if (!list) return;
+  const kindKey = mtKind === 'tasks' ? 'task' : 'topic';
+  const items = mtItems.filter(it => it.kind === kindKey);
+  if (!items.length) {
+    list.innerHTML = `<div class="md-list-empty">${mtReady ? 'אין פריטים עדיין' : ''}</div>`;
+    return;
+  }
+  list.innerHTML = items.map(it => `
+    <div class="mt-item${it.done ? ' done' : ''}" onclick="mtToggle('${it.id}')">
+      <span class="mt-author ${it.author === 'ido' ? 'ido' : 'maor'}">${USER_DISPLAY[it.author] || ''}</span>
+      <span class="mt-item-text">${mtEsc(it.body)}</span>
+      ${kindKey === 'task' ? `<button type="button" class="mt-send" title="שלח בוואטסאפ" onclick="event.stopPropagation(); mtOpenSend('${it.id}')">➤</button>` : ''}
+      ${it.done ? `<button type="button" class="mt-del" onclick="event.stopPropagation(); mtDelete('${it.id}')">מחק</button>` : ''}
+    </div>`).join('');
+}
+
+async function mtAdd() {
+  const input = document.getElementById('mt-new-text');
+  const body = (input?.value || '').trim();
+  if (!body || !mtReady) return;
+  try {
+    const row = await dbPost('meeting_items', { kind: mtKind === 'tasks' ? 'task' : 'topic', body, author: getCurrentUser() || '' });
+    if (row && row[0]) mtItems.push(row[0]); else await loadMeetings();
+    input.value = '';
+    mtRender();
+  } catch (e) {
+    showNotif('שגיאה בהוספה: ' + e.message, 'error');
+  }
+}
+
+async function mtToggle(id) {
+  const it = mtItems.find(x => x.id === id);
+  if (!it) return;
+  it.done = !it.done;
+  mtRender();
+  try {
+    await dbPatch('meeting_items', `?id=eq.${id}`, { done: it.done });
+  } catch (e) {
+    it.done = !it.done;
+    mtRender();
+    showNotif('שגיאה בעדכון: ' + e.message, 'error');
+  }
+}
+
+async function mtDelete(id) {
+  const keep = mtItems;
+  mtItems = mtItems.filter(x => x.id !== id);
+  mtRender();
+  try {
+    await dbDelete('meeting_items', `?id=eq.${id}`);
+  } catch (e) {
+    mtItems = keep;
+    mtRender();
+    showNotif('שגיאה במחיקה: ' + e.message, 'error');
+  }
+}
+
+function mtOpenSend(id) {
+  mtSendId = id;
+  const it = mtItems.find(x => x.id === id);
+  const el = document.getElementById('mt-popup-task');
+  if (el) el.textContent = it ? it.body : '';
+  document.getElementById('mt-send-overlay').hidden = false;
+}
+
+function mtCloseSend() {
+  document.getElementById('mt-send-overlay').hidden = true;
+  mtSendId = null;
+}
+
+function mtSendTo(who) {
+  const it = mtItems.find(x => x.id === mtSendId);
+  if (!it || !PARTNER_PHONES[who]) { mtCloseSend(); return; }
+  const text = encodeURIComponent('משימה מהסניף 🗒️\n' + it.body);
+  window.open(`https://wa.me/${PARTNER_PHONES[who]}?text=${text}`, '_blank');
+  mtCloseSend();
 }

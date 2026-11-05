@@ -17,7 +17,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20261026a">
+<link rel="stylesheet" href="style.css?v=20261105c">
 <link rel="stylesheet" href="management.css?v=20261026a">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
@@ -173,6 +173,10 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
         <button type="button" class="app-icon" onclick="openPage('settlement')">
           <span class="app-icon-img">🔄</span>
           <span class="app-icon-label">התקזזות</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openPage('meetings')">
+          <span class="app-icon-img">🗒️</span>
+          <span class="app-icon-label">ישיבות</span>
         </button>
       </div>
     </div>
@@ -1304,6 +1308,40 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
     </div>
   </div>
 
+
+      <!-- PAGE: ישיבות -->
+      <div id="page-meetings" class="page">
+        <div class="page-header">
+          <h1>ישיבות</h1>
+          <p>משימות ונושאים לשיחה בין השותפים</p>
+        </div>
+        <div id="mt-schema-warn" hidden style="background:#fff3e0;border:1px solid #ffb74d;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:13px;line-height:1.5;color:#5d4037;">
+          ⚠️ כדי להשתמש בישיבות נדרשת הרצת SQL חד-פעמית (נשלח אליך).
+        </div>
+        <div class="fm-tabs" id="mt-tabs">
+          <button type="button" class="fm-tab active" id="mt-tab-tasks" onclick="mtSwitch('tasks')">משימות</button>
+          <button type="button" class="fm-tab" id="mt-tab-topics" onclick="mtSwitch('topics')">נושאים לשיחה</button>
+        </div>
+        <div class="mt-add-row">
+          <input type="text" id="mt-new-text" class="mt-input" placeholder="כתוב כאן..." autocomplete="off"
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();mtAdd();}">
+          <button type="button" class="btn btn-primary mt-add-btn" id="mt-add-btn" onclick="mtAdd()">הוסף</button>
+        </div>
+        <div id="mt-list"></div>
+      </div>
+
+      <div id="mt-send-overlay" class="mt-overlay" hidden>
+        <div class="mt-popup">
+          <div class="mt-popup-title">שליחת משימה בוואטסאפ</div>
+          <div class="mt-popup-task" id="mt-popup-task"></div>
+          <div class="mt-popup-sub">אל מי לשלוח?</div>
+          <div class="mt-popup-btns">
+            <button type="button" class="btn btn-primary" onclick="mtSendTo('maor')">מאור</button>
+            <button type="button" class="btn btn-primary" onclick="mtSendTo('ido')">עידו</button>
+          </div>
+          <button type="button" class="mt-popup-cancel" onclick="mtCloseSend()">ביטול</button>
+        </div>
+      </div>
 </div><!-- end #management-section -->
 
 <!-- DATA LOADING OVERLAY (blocks taps until initial fetch finishes) -->
@@ -1374,7 +1412,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261105b"></script>
+<script src="app.js?v=20261105c"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
