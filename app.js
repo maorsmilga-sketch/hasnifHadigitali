@@ -3868,7 +3868,7 @@ async function closePeriod(periodStart) {
 
     // 5. Send WhatsApp summary to the other partner
     try {
-      const phones    = PARTNER_PHONES;
+      const phones    = { ido: '972559877777', maor: PARTNER_PHONES.maor };
       const recipient = getCurrentUser() === 'ido' ? phones.maor : phones.ido;
       const waMsg     = encodeURIComponent(
         `סיכום תקופה 🎰 הסניף הדיגיטלי\n` +
