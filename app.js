@@ -120,6 +120,17 @@ async function dbDelete(table, query) {
   return true;
 }
 
+async function sbRpc(name, params) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    headers: await sbHeaders(),
+    body: JSON.stringify(params || {})
+  });
+  if (!res.ok) throw new Error(await sbErrMsg(res));
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
 // ============================================================
 // TOAST NOTIFICATIONS
 // ============================================================
@@ -289,6 +300,7 @@ async function mountApp() {
   } catch (e) {
     showNotif('שגיאה בטעינת הנתונים: ' + e.message, 'error');
   }
+  applyStandingExpenses(); // fire-and-forget; silently skips if table not created yet
 
   initPayboxSubtitles();
   showHome();
@@ -1822,6 +1834,7 @@ function toggleExpenseOther() {
 }
 
 async function loadExpensesTable() {
+  loadStandingExpenses();
   try {
     const data = await dbGet('blue_table_expenses', '?order=created_at.desc');
     const tbody = document.getElementById('exp-table-body');
@@ -4409,4 +4422,69 @@ function mtSendTo(who) {
   const text = encodeURIComponent('משימה מהסניף 🗒️\n' + it.body);
   window.open(`https://wa.me/${PARTNER_PHONES[who]}?text=${text}`, '_blank');
   mtCloseSend();
+}
+
+// ============================================================
+// מנויים חודשיים — standing monthly expenses, auto-applied on app open
+// ============================================================
+const STANDING_FIRST_MONTH = '2026-11';
+let seRows = null;
+
+function currentMonthIL() {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit' }).formatToParts(new Date());
+  return `${parts.find(p => p.type === 'year').value}-${parts.find(p => p.type === 'month').value}`;
+}
+
+function monthsSince(firstMonth) {
+  let [y, m] = firstMonth.split('-').map(Number);
+  const [cy, cm] = currentMonthIL().split('-').map(Number);
+  const out = [];
+  while (y < cy || (y === cy && m <= cm)) {
+    out.push(`${y}-${String(m).padStart(2, '0')}`);
+    if (++m > 12) { m = 1; y++; }
+  }
+  return out;
+}
+
+async function applyStandingExpenses() {
+  try {
+    await sbRpc('apply_standing_expenses', { p_months: monthsSince(STANDING_FIRST_MONTH), p_current_month: currentMonthIL() });
+  } catch (e) { /* standing table not created yet - stay silent */ }
+}
+
+async function loadStandingExpenses() {
+  const wrap = document.getElementById('se-section');
+  if (!wrap) return;
+  try {
+    seRows = await dbGet('standing_expenses', '?order=created_at.asc');
+  } catch (e) {
+    seRows = null;
+    wrap.innerHTML = '';
+    return;
+  }
+  if (!seRows.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = `<div class="fm-cat-label" style="border:none;padding-bottom:0;margin-bottom:6px">📅 מנויים חודשיים</div>` +
+    seRows.map(r => `
+      <div class="se-item${r.active ? '' : ' stopped'}">
+        <div class="se-info">
+          <div class="se-name">${mtEsc(r.label)}</div>
+          <div class="se-sub">₪${fmt(r.amount_ils)} · מתווסף אוטומטית בתחילת כל חודש</div>
+        </div>
+        <button type="button" class="se-stop" onclick="seToggle('${r.id}', ${r.active ? 'false' : 'true'})">${r.active ? 'הפסק' : 'הפעל מחדש'}</button>
+      </div>`).join('');
+}
+
+async function seToggle(id, activate) {
+  try {
+    const body = { active: activate };
+    if (activate) body.since_month = currentMonthIL(); // no retroactive charges for stopped months
+    await dbPatch('standing_expenses', `?id=eq.${id}`, body);
+    if (activate) await applyStandingExpenses();
+    await loadStandingExpenses();
+    await loadExpensesTable();
+    refreshBTSummary();
+    showNotif(activate ? '✅ המנוי הופעל מחדש' : '✅ המנוי הופסק - רישומים עתידיים ייעצרו');
+  } catch (e) {
+    showNotif('שגיאה בעדכון המנוי: ' + e.message, 'error');
+  }
 }

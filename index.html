@@ -17,7 +17,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20261105c">
+<link rel="stylesheet" href="style.css?v=20261105d">
 <link rel="stylesheet" href="management.css?v=20261026a">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
@@ -838,6 +838,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
         <!-- Tab: Expenses -->
         <div id="bt-expenses" class="tab-panel">
           <div class="tab-summary" id="bt-exp-summary"></div>
+          <div id="se-section"></div>
 
           <!-- FAB -->
           <button class="md-fab" onclick="openSheet('exp-sheet')" title="הוסף הוצאה" aria-label="הוסף הוצאה">＋</button>
@@ -1412,7 +1413,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261105c"></script>
+<script src="app.js?v=20261105d"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
