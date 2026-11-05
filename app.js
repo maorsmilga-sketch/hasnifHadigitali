@@ -4448,7 +4448,7 @@ function monthsSince(firstMonth) {
 
 async function applyStandingExpenses() {
   try {
-    await sbRpc('apply_standing_expenses', { p_months: monthsSince(STANDING_FIRST_MONTH), p_current_month: currentMonthIL() });
+    await sbRpc('apply_standing_expenses', { p_months: monthsSince(STANDING_FIRST_MONTH) });
   } catch (e) { /* standing table not created yet - stay silent */ }
 }
 
