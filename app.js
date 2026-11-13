@@ -4564,3 +4564,20 @@ async function seToggle(id, activate) {
     showNotif('שגיאה בעדכון המנוי: ' + e.message, 'error');
   }
 }
+
+/* BadBeat slider note — tiny tappable "i" toggle */
+function toggleDashBBNote(ev) {
+  if (ev) ev.stopPropagation();
+  const note = document.getElementById('dash-bb-slider-note');
+  const btn = document.getElementById('dash-bb-note-btn');
+  if (!note) return;
+  note.hidden = !note.hidden;
+  if (btn) btn.setAttribute('aria-expanded', note.hidden ? 'false' : 'true');
+}
+
+/* Card note — tiny tappable "i" toggle (stops the card's own tap action) */
+function toggleStatNote(ev, id) {
+  if (ev) { ev.stopPropagation(); ev.preventDefault(); }
+  const el = document.getElementById(id);
+  if (el) el.hidden = !el.hidden;
+}

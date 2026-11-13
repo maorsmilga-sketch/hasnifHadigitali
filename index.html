@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261105d">
-<link rel="stylesheet" href="management.css?v=20261026a">
+<link rel="stylesheet" href="management.css?v=20261114a">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -218,24 +218,24 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
       <div id="page-dashboard" class="page">
         <div class="dash-stats">
             <button type="button" class="stat-card accent" onclick="openDashStatDetail('liquid')">
-              <span class="stat-label">כסף נזיל</span>
+              <span class="stat-label">כסף נזיל <span class="stat-note-i" role="button" aria-label="הסבר" onclick="toggleStatNote(event,'val-liquid-sub')">i</span></span>
               <span class="stat-value"><span class="currency">₪</span><span id="val-liquid">—</span></span>
-              <span class="stat-sub" id="val-liquid-sub"></span>
+              <span class="stat-sub stat-note" id="val-liquid-sub" hidden></span>
             </button>
             <button type="button" class="stat-card accent" onclick="openDashStatDetail('total')">
-              <span class="stat-label">סה"כ בקופה</span>
+              <span class="stat-label">סה"כ בקופה <span class="stat-note-i" role="button" aria-label="הסבר" onclick="toggleStatNote(event,'val-total-note')">i</span></span>
               <span class="stat-value"><span class="currency">₪</span><span id="val-total">—</span></span>
-              <span class="stat-sub">כסף נזיל + חובות</span>
+              <span class="stat-sub stat-note" id="val-total-note" hidden>כסף נזיל + חובות</span>
             </button>
             <button type="button" class="stat-card warning" onclick="openDashStatDetail('counter')">
-              <span class="stat-label">Counter</span>
+              <span class="stat-label">Counter <span class="stat-note-i" role="button" aria-label="הסבר" onclick="toggleStatNote(event,'val-counter-sub')">i</span></span>
               <span class="stat-value"><span class="currency">₪</span><span id="val-counter-ils">—</span></span>
-              <span class="stat-sub" id="val-counter-sub"></span>
+              <span class="stat-sub stat-note" id="val-counter-sub" hidden></span>
             </button>
             <button type="button" class="stat-card warning" onclick="openDashStatDetail('badbeat-full')">
-              <span class="stat-label">BadBeat</span>
+              <span class="stat-label">BadBeat <span class="stat-note-i" role="button" aria-label="הסבר" onclick="toggleStatNote(event,'val-badbeat-full-sub')">i</span></span>
               <span class="stat-value"><span class="currency">₪</span><span id="val-badbeat-full-ils">—</span></span>
-              <span class="stat-sub" id="val-badbeat-full-sub"></span>
+              <span class="stat-sub stat-note" id="val-badbeat-full-sub" hidden></span>
             </button>
             <button type="button" class="stat-card" id="card-profit" onclick="openDashStatDetail('profit')">
               <span class="stat-label">רווח כללי</span>
@@ -247,19 +247,20 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
               <span class="stat-value"><span class="currency">₪</span><span id="val-remain-liquid">—</span></span>
               <span class="stat-sub" id="val-remain-liquid-sub"></span>
               <span class="remain-slider">
-                <span class="remain-slider-head"><span class="remain-slider-label">אחוז שימוש בקאונטר</span><span class="remain-slider-value" id="remain-counter-pct-val">100%</span></span>
-                <input type="range" class="remain-slider-input" id="remain-counter-pct" min="0" max="100" step="1" value="100" aria-label="אחוז שימוש בקאונטר" oninput="onRemainCounterSliderInput()">
+                <span class="remain-slider-head"><span class="stat-note-i" role="button" aria-label="הסבר" onclick="toggleStatNote(event,'remain-counter-note')">i</span><span class="remain-slider-value" id="remain-counter-pct-val">100%</span></span>
+                <span class="stat-sub stat-note remain-note" id="remain-counter-note" hidden>כמה מהקאונטר להשאיר במועדון</span>
+                <input type="range" class="remain-slider-input" id="remain-counter-pct" min="0" max="100" step="1" value="100" aria-label="כמה מהקאונטר להשאיר במועדון" oninput="onRemainCounterSliderInput()">
               </span>
             </div>
             <button type="button" class="stat-card positive" onclick="openDashStatDetail('profit-ido')">
-              <span class="stat-label">רווח עידו</span>
+              <span class="stat-label">רווח עידו <span class="stat-note-i" role="button" aria-label="הסבר" onclick="toggleStatNote(event,'profit-ido-note')">i</span></span>
               <span class="stat-value positive"><span class="currency">₪</span><span id="val-profit-ido">—</span></span>
-              <span class="stat-sub">לאחר חובות: <span id="val-profit-ido-net">—</span></span>
+              <span class="stat-sub stat-note" id="profit-ido-note" hidden>לאחר חובות: <span id="val-profit-ido-net">—</span></span>
             </button>
             <button type="button" class="stat-card positive" onclick="openDashStatDetail('profit-maor')">
-              <span class="stat-label">רווח מאור</span>
+              <span class="stat-label">רווח מאור <span class="stat-note-i" role="button" aria-label="הסבר" onclick="toggleStatNote(event,'profit-maor-note')">i</span></span>
               <span class="stat-value positive"><span class="currency">₪</span><span id="val-profit-maor">—</span></span>
-              <span class="stat-sub">לאחר חובות: <span id="val-profit-maor-net">—</span></span>
+              <span class="stat-sub stat-note" id="profit-maor-note" hidden>לאחר חובות: <span id="val-profit-maor-net">—</span></span>
             </button>
             <button type="button" class="stat-card negative" onclick="openDashStatDetail('debts')">
               <span class="stat-label">סה"כ חובות</span>
@@ -309,14 +310,17 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
         <div class="dash-sticky-close dash-sticky-bb" id="dash-bb-slider-wrap">
           <div class="dash-bb-slider">
             <div class="dash-bb-slider-head">
-              <span class="dash-bb-slider-label">אחוז BadBeat בחישוב הרווח</span>
+              <span class="dash-bb-slider-label-wrap">
+                <span class="dash-bb-slider-label">אחוז BadBeat בחישוב הרווח</span>
+                <button type="button" class="dash-bb-note-i" id="dash-bb-note-btn" aria-label="הסבר" aria-expanded="false" onclick="toggleDashBBNote(event)">i</button>
+              </span>
               <span class="dash-bb-slider-value" id="dash-bb-percent-val">65%</span>
             </div>
             <input type="range" class="dash-bb-slider-input" id="dash-bb-percent" min="0" max="100" step="1"
                    aria-valuemin="0" aria-valuemax="100" aria-labelledby="dash-bb-slider-wrap"
                    oninput="onDashBBSliderInput()" onchange="onDashBBSliderChange()">
             <div class="dash-bb-slider-ticks" aria-hidden="true"><span>0%</span><span>100%</span></div>
-            <div class="dash-bb-slider-note">100% = כל ה-BadBeat מופחת מהרווח · 0% = לא מופחת בכלל</div>
+            <div class="dash-bb-slider-note" id="dash-bb-slider-note" hidden>100% = כל ה-BadBeat מופחת מהרווח · 0% = לא מופחת בכלל</div>
           </div>
         </div>
 
@@ -1418,7 +1422,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261113a"></script>
+<script src="app.js?v=20261114a"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

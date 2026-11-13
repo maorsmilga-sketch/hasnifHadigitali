@@ -1932,3 +1932,139 @@ body:has(#management-section[style*="block"]) #notification {
   background: var(--bg-secondary);
   color: var(--text-secondary);
 }
+
+/* ===== דשבורד צפוף — כרטיסים קטנים יותר כדי שיותר ייכנס במסך ===== */
+#management-section #page-dashboard .dash-stats {
+  grid-template-rows: repeat(5, minmax(74px, 1fr));
+  gap: 6px;
+  margin-bottom: 8px;
+}
+#management-section #page-dashboard .stat-card {
+  min-height: 74px;
+  padding: 7px 8px 8px;
+}
+#management-section #page-dashboard .stat-label {
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+#management-section #page-dashboard .stat-value {
+  font-size: clamp(17px, 4.8vw, 21px);
+}
+#management-section #page-dashboard .stat-sub {
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1.25;
+}
+/* סליידר קאונטר בתוך כרטיס "נזיל שיישאר בקופה" — גרסה צפופה */
+#management-section #page-dashboard .remain-slider {
+  margin-top: 4px;
+}
+#management-section #page-dashboard .remain-slider-head {
+  margin-bottom: 2px;
+}
+#management-section #page-dashboard .remain-slider-label {
+  font-size: 10px;
+}
+#management-section #page-dashboard .remain-slider-value {
+  font-size: 12px;
+}
+#management-section #page-dashboard .remain-slider-input {
+  height: 22px;
+}
+/* כפתור סגירת תקופה — נמוך יותר */
+#management-section #page-dashboard .dash-close-period-wrap {
+  margin: 2px 0 8px;
+}
+#management-section #page-dashboard .dash-close-period-btn {
+  min-height: 44px;
+  font-size: 15px;
+}
+/* פס סליידר BadBeat הדבוק — צפוף יותר */
+#management-section #page-dashboard.active .dash-sticky-close {
+  padding: 6px 10px 4px;
+}
+#management-section #page-dashboard .dash-bb-slider {
+  padding: 0 6px;
+}
+#management-section #page-dashboard .dash-bb-slider-head {
+  margin-bottom: 4px;
+}
+#management-section #page-dashboard .dash-bb-slider-label {
+  font-size: 12px;
+}
+#management-section #page-dashboard .dash-bb-slider-value {
+  font-size: 15px;
+}
+#management-section #page-dashboard .dash-bb-slider-input {
+  height: 26px;
+}
+#management-section #page-dashboard .dash-bb-slider-ticks {
+  margin-top: 2px;
+  font-size: 10px;
+}
+#management-section #page-dashboard .dash-bb-slider-note {
+  margin-top: 2px;
+  font-size: 10px;
+}
+#management-section #page-dashboard.active {
+  padding-bottom: calc(110px + var(--m-safe-b) + var(--keyboard-inset, 0px));
+}
+
+/* הערת "i" קטנה לסליידר BadBeat — נפתחת בלחיצה */
+#management-section .dash-bb-slider-label-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+#management-section .dash-bb-note-i {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1px solid var(--text-muted);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 700;
+  font-style: italic;
+  font-family: inherit;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+#management-section .dash-bb-note-i:active { transform: scale(0.92); }
+#management-section .dash-bb-note-i[aria-expanded="true"] {
+  color: #c4c0ff;
+  border-color: #c4c0ff;
+}
+#management-section #page-dashboard .dash-bb-slider-note[hidden] { display: none; }
+
+/* הערת "i" בכרטיסי דשבורד — נפתחת בלחיצה, לא מפעילה את הכרטיס */
+#management-section #page-dashboard .stat-note-i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid var(--text-muted);
+  color: var(--text-muted);
+  font-size: 8px;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  vertical-align: middle;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* הערת הסליידר בכרטיס "נזיל שיישאר בקופה" — מאחורי i */
+#management-section #page-dashboard .remain-note {
+  display: block;
+  margin-top: 2px;
+}
+#management-section #page-dashboard .remain-note[hidden] { display: none; }
