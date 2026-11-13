@@ -1862,3 +1862,73 @@ body:has(#management-section[style*="block"]) #notification {
     border-right-color: var(--accent);
   }
 }
+
+/* כרטיס בקרה — הערת סליידר BadBeat */
+#management-section .dash-bb-slider-note {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* כרטיס "נזיל שיישאר בקופה" — סליידר אחוז שימוש בקאונטר */
+#management-section .remain-slider {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+}
+#management-section .remain-slider-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+#management-section .remain-slider-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+#management-section .remain-slider-value {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #c4c0ff;
+}
+#management-section .remain-slider-input {
+  display: block;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  accent-color: #8b83ff;
+  cursor: pointer;
+  touch-action: pan-x;
+}
+
+/* רווח ידני בחלונית פירוט הרווח */
+.manual-profit-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.manual-profit-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent, #6c63ff);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.manual-profit-reset {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}

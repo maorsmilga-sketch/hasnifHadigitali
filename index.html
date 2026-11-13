@@ -240,13 +240,17 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
             <button type="button" class="stat-card" id="card-profit" onclick="openDashStatDetail('profit')">
               <span class="stat-label">רווח כללי</span>
               <span class="stat-value" id="sv-profit"><span class="currency">₪</span><span id="val-profit">—</span></span>
-              <span class="stat-sub">&nbsp;</span>
+              <span class="stat-sub" id="val-profit-sub"></span>
             </button>
-            <button type="button" class="stat-card accent" onclick="openDashStatDetail('leumi')">
-              <span class="stat-label">🏦 בנק לאומי</span>
-              <span class="stat-value"><span class="currency">₪</span><span id="val-bank-leumi">0</span></span>
-              <span class="stat-sub">נכלל בנזיל נוסף</span>
-            </button>
+            <div class="stat-card accent" id="card-remain-liquid">
+              <span class="stat-label">נזיל שיישאר בקופה</span>
+              <span class="stat-value"><span class="currency">₪</span><span id="val-remain-liquid">—</span></span>
+              <span class="stat-sub" id="val-remain-liquid-sub"></span>
+              <span class="remain-slider">
+                <span class="remain-slider-head"><span class="remain-slider-label">אחוז שימוש בקאונטר</span><span class="remain-slider-value" id="remain-counter-pct-val">100%</span></span>
+                <input type="range" class="remain-slider-input" id="remain-counter-pct" min="0" max="100" step="1" value="100" aria-label="אחוז שימוש בקאונטר" oninput="onRemainCounterSliderInput()">
+              </span>
+            </div>
             <button type="button" class="stat-card positive" onclick="openDashStatDetail('profit-ido')">
               <span class="stat-label">רווח עידו</span>
               <span class="stat-value positive"><span class="currency">₪</span><span id="val-profit-ido">—</span></span>
@@ -312,6 +316,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
                    aria-valuemin="0" aria-valuemax="100" aria-labelledby="dash-bb-slider-wrap"
                    oninput="onDashBBSliderInput()" onchange="onDashBBSliderChange()">
             <div class="dash-bb-slider-ticks" aria-hidden="true"><span>0%</span><span>100%</span></div>
+            <div class="dash-bb-slider-note">100% = כל ה-BadBeat מופחת מהרווח · 0% = לא מופחת בכלל</div>
           </div>
         </div>
 
