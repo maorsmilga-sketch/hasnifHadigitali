@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261114b">
-<link rel="stylesheet" href="management.css?v=20261114l">
+<link rel="stylesheet" href="management.css?v=20261114m">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -136,44 +136,44 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
     <!-- HOME GRID -->
     <div id="home-grid" class="app-grid-screen">
       <div class="app-grid">
-        <button type="button" class="app-icon" onclick="openPage('dashboard')">
-          <span class="app-icon-img">📊</span>
+        <button type="button" class="app-icon" data-card="control" onclick="openPage('dashboard')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/home/control.png" alt="" draggable="false"></span>
           <span class="app-icon-label">בקרה</span>
         </button>
-        <button type="button" class="app-icon" onclick="openPage('control')">
-          <span class="app-icon-img">🎛️</span>
+        <button type="button" class="app-icon" data-card="scenarios" onclick="openPage('control')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/home/scenarios.png" alt="" draggable="false"></span>
           <span class="app-icon-label">בקרה - תרחישים</span>
         </button>
-        <button type="button" class="app-icon" onclick="openPage('funds')">
-          <span class="app-icon-img">💰</span>
+        <button type="button" class="app-icon" data-card="funds" onclick="openPage('funds')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/home/funds.png" alt="" draggable="false"></span>
           <span class="app-icon-label">הזנת כספים</span>
         </button>
-        <button type="button" class="app-icon" onclick="openBlueGrid()">
-          <span class="app-icon-img">📋</span>
+        <button type="button" class="app-icon" data-card="expenses" onclick="openBlueGrid()">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/home/expenses.png" alt="" draggable="false"></span>
           <span class="app-icon-label">הוצאות</span>
         </button>
-        <button type="button" class="app-icon" onclick="openPage('debts')">
-          <span class="app-icon-img">⚖️</span>
+        <button type="button" class="app-icon" data-card="debts" onclick="openPage('debts')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/home/debts.png" alt="" draggable="false"></span>
           <span class="app-icon-label">חובות</span>
         </button>
-        <button type="button" class="app-icon" onclick="openPage('player-debts')">
-          <span class="app-icon-img">💵</span>
+        <button type="button" class="app-icon" data-card="player-debts" onclick="openPage('player-debts')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/home/player-debts.png" alt="" draggable="false"></span>
           <span class="app-icon-label">חובות <b class="letter-emph">ל</b>שחקנים</span>
         </button>
-        <button type="button" class="app-icon" onclick="openPage('history')">
-          <span class="app-icon-img">📈</span>
+        <button type="button" class="app-icon" data-card="graphs" onclick="openPage('history')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/home/graphs.png" alt="" draggable="false"></span>
           <span class="app-icon-label">גרפים</span>
         </button>
-        <button type="button" class="app-icon" onclick="openPage('players')">
-          <span class="app-icon-img">👥</span>
+        <button type="button" class="app-icon" data-card="players" onclick="openPage('players')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/home/players.png" alt="" draggable="false"></span>
           <span class="app-icon-label">ניהול שחקנים</span>
         </button>
-        <button type="button" class="app-icon" onclick="openPage('settlement')">
-          <span class="app-icon-img">🔄</span>
+        <button type="button" class="app-icon" data-card="settlement" onclick="openPage('settlement')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/home/settlement.png" alt="" draggable="false"></span>
           <span class="app-icon-label">התקזזות</span>
         </button>
-        <button type="button" class="app-icon" onclick="openPage('meetings')">
-          <span class="app-icon-img">🗒️</span>
+        <button type="button" class="app-icon" data-card="meetings" onclick="openPage('meetings')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/home/meetings.png" alt="" draggable="false"></span>
           <span class="app-icon-label">ישיבות</span>
         </button>
       </div>
