@@ -2099,6 +2099,7 @@ async function refreshBTSummary() {
 
     // Dashboard expenses card
     setText('val-expenses-ils', fmt(chipsToIls(totalChips)));
+    mirrorControlPage(); // הסיכום נטען אסינכרונית — לשקף מחדש כשהוא מגיע (כרטיס ההוצאות במסך התרחישים)
   } catch {}
 }
 

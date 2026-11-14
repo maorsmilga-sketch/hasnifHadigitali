@@ -2699,3 +2699,199 @@ body:has(#management-section[style*="block"]) #notification {
   .pd-actions { grid-template-rows: auto auto; }
   .pd-actions .pd-act, .pd-actions .pd-act-close { min-height: 44px; }
 }
+
+/* --- שלב 5ט: הגברת צבע וזוהר להתאמה למוקאפ הניאון (אושר 14.11 10:31) ---
+   צבע/הילה בלבד — בלי שינוי גדלים, מבנה, מיקום או תוכן. */
+#page-control::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(120% 55% at 100% -5%, rgba(108,99,255,0.34) 0%, transparent 58%),
+    radial-gradient(90% 45% at -10% 38%, rgba(0,212,170,0.14) 0%, transparent 60%),
+    radial-gradient(110% 55% at 50% 110%, rgba(108,99,255,0.22) 0%, transparent 60%);
+}
+
+/* כרטיסי נתונים: מסגרות רוויות + הילה חיצונית/פנימית */
+.pd-c-liquid  { background: linear-gradient(150deg, rgba(56,189,248,.40), rgba(12,74,110,.22) 60%, rgba(56,189,248,.08)); border-color: rgba(56,189,248,.95); box-shadow: 0 0 26px rgba(56,189,248,.50), inset 0 0 24px rgba(56,189,248,.14); }
+.pd-c-total   { background: linear-gradient(150deg, rgba(139,92,246,.44), rgba(76,29,149,.24) 60%, rgba(139,92,246,.10)); border-color: rgba(167,139,250,.95); box-shadow: 0 0 26px rgba(139,92,246,.55), inset 0 0 24px rgba(139,92,246,.14); }
+.pd-c-rake    { background: linear-gradient(160deg, rgba(52,211,153,.34), rgba(6,78,59,.20) 65%, rgba(52,211,153,.08)); border-color: rgba(52,211,153,.90); box-shadow: 0 0 22px rgba(52,211,153,.50), inset 0 0 20px rgba(52,211,153,.12); }
+.pd-c-badbeat { background: linear-gradient(160deg, rgba(192,132,252,.34), rgba(88,28,135,.20) 65%, rgba(192,132,252,.08)); border-color: rgba(192,132,252,.90); box-shadow: 0 0 22px rgba(192,132,252,.50), inset 0 0 20px rgba(192,132,252,.12); }
+.pd-c-counter { background: linear-gradient(160deg, rgba(251,146,60,.34), rgba(120,53,15,.18) 65%, rgba(251,146,60,.08)); border-color: rgba(251,146,60,.90); box-shadow: 0 0 22px rgba(251,146,60,.50), inset 0 0 20px rgba(251,146,60,.12); }
+.pd-c-exp     { background: linear-gradient(150deg, rgba(244,114,182,.30), rgba(131,24,67,.16) 60%, rgba(244,114,182,.07)); border-color: rgba(244,114,182,.90); box-shadow: 0 0 20px rgba(244,114,182,.45), inset 0 0 18px rgba(244,114,182,.10); }
+.pd-c-debt    { background: linear-gradient(150deg, rgba(96,165,250,.32), rgba(30,58,138,.18) 60%, rgba(96,165,250,.08)); border-color: rgba(96,165,250,.90); box-shadow: 0 0 20px rgba(96,165,250,.45), inset 0 0 18px rgba(96,165,250,.10); }
+
+/* מספרים זוהרים בגוון הכרטיס */
+.pd-c-liquid .pd-card-value  { text-shadow: 0 0 16px rgba(56,189,248,.80); }
+.pd-c-total .pd-card-value   { text-shadow: 0 0 16px rgba(167,139,250,.85); }
+.pd-c-rake .pd-card-value    { color: #6ee7b7; text-shadow: 0 0 14px rgba(52,211,153,.75); }
+.pd-c-badbeat .pd-card-value { color: #d8b4fe; text-shadow: 0 0 14px rgba(192,132,252,.75); }
+.pd-c-counter .pd-card-value { color: #fdba74; text-shadow: 0 0 14px rgba(251,146,60,.75); }
+.pd-c-exp .pd-card-value     { text-shadow: 0 0 14px rgba(244,114,182,.70); }
+.pd-c-debt .pd-card-value    { text-shadow: 0 0 14px rgba(96,165,250,.70); }
+#page-control .pd-card-icon svg { filter: drop-shadow(0 0 6px currentColor); }
+
+/* כרטיס הרווח: ירוק ניאון חזק */
+.pd-c-profit { background: linear-gradient(155deg, rgba(0,245,138,.34), rgba(6,78,59,.34) 55%, rgba(0,245,138,.10)); border-color: rgba(0,245,138,.90); box-shadow: 0 0 34px rgba(0,245,138,.50), inset 0 0 30px rgba(0,245,138,.10); }
+.pd-profit-value { color: #4ade80; text-shadow: 0 0 24px rgba(0,245,138,.90); }
+.pd-profit-value.negative { color: #ff4565; text-shadow: 0 0 22px rgba(255,69,101,.85); }
+.pd-profit-partners { border-color: rgba(0,245,138,.25); }
+.pd-c-profit .pd-profit-chart { filter: drop-shadow(0 0 6px currentColor); }
+
+/* סליידרים: מסילה וזרוע זוהרים, תג אחוז רווי */
+#page-control .pd-range-bb::-webkit-slider-runnable-track { background: rgba(167,139,250,.55); box-shadow: 0 0 10px rgba(139,92,246,.60); }
+#page-control .pd-range-counter::-webkit-slider-runnable-track { background: rgba(56,189,248,.55); box-shadow: 0 0 10px rgba(56,189,248,.60); }
+#page-control .pd-range-bb::-webkit-slider-thumb { box-shadow: 0 0 18px rgba(196,181,253,1), 0 0 6px rgba(255,255,255,.9); }
+#page-control .pd-range-counter::-webkit-slider-thumb { box-shadow: 0 0 18px rgba(125,211,252,1), 0 0 6px rgba(255,255,255,.9); }
+#page-control .pd-range-bb::-moz-range-track { background: rgba(167,139,250,.55); box-shadow: 0 0 10px rgba(139,92,246,.60); }
+#page-control .pd-range-counter::-moz-range-track { background: rgba(56,189,248,.55); box-shadow: 0 0 10px rgba(56,189,248,.60); }
+#page-control .pd-range-bb::-moz-range-thumb { box-shadow: 0 0 18px rgba(196,181,253,1), 0 0 6px rgba(255,255,255,.9); }
+#page-control .pd-range-counter::-moz-range-thumb { box-shadow: 0 0 18px rgba(125,211,252,1), 0 0 6px rgba(255,255,255,.9); }
+#pd-bb-percent-val { background: rgba(139,92,246,.50); border-color: rgba(196,181,253,.90); color: #fff; box-shadow: 0 0 12px rgba(139,92,246,.70); }
+#pd-remain-pct-val { background: rgba(14,165,233,.50); border-color: rgba(125,211,252,.90); color: #fff; box-shadow: 0 0 12px rgba(56,189,248,.70); }
+.pd-slider-row { border-color: rgba(167,139,250,.22); }
+
+/* כרטיס התרחיש */
+.pd-scenario { border-color: rgba(167,139,250,.55); box-shadow: 0 0 26px rgba(139,92,246,.28); }
+.pd-sc-profit { border-color: rgba(0,245,138,.30); }
+.pd-sc-profit-value { text-shadow: 0 0 14px rgba(74,222,128,.70); }
+.pd-sc-profit-value.negative { text-shadow: 0 0 14px rgba(255,69,101,.70); }
+.pd-mini-btn.is-active, .pd-mini-btn:active { border-color: rgba(196,181,253,.8); }
+#pd-btn-calc { background: rgba(139,92,246,.35); border-color: rgba(167,139,250,.7); color: #e9d5ff; }
+
+/* מד הניצול: הילה לפי מצב */
+.pd-meter { border-color: rgba(167,139,250,.60); box-shadow: 0 0 18px rgba(139,92,246,.25); }
+.pd-meter.is-low  { border-color: rgba(0,245,138,.85); box-shadow: 0 0 20px rgba(0,245,138,.40); }
+.pd-meter.is-low .pd-meter-pct  { text-shadow: 0 0 16px rgba(0,245,138,.80); }
+.pd-meter.is-low .pd-meter-fill { box-shadow: 0 0 16px rgba(0,245,138,.85); }
+.pd-meter.is-high { border-color: rgba(245,166,35,.85); box-shadow: 0 0 20px rgba(245,166,35,.40); }
+.pd-meter.is-high .pd-meter-pct  { text-shadow: 0 0 16px rgba(245,166,35,.80); }
+.pd-meter.is-high .pd-meter-fill { box-shadow: 0 0 16px rgba(245,166,35,.85); }
+.pd-meter.is-over { border-color: rgba(255,69,101,.90); box-shadow: 0 0 24px rgba(255,69,101,.50); }
+.pd-meter.is-over .pd-meter-pct  { text-shadow: 0 0 18px rgba(255,69,101,.85); }
+.pd-meter.is-over .pd-meter-fill { box-shadow: 0 0 16px rgba(255,69,101,.90); }
+
+/* פעולות */
+.pd-act-close { box-shadow: 0 0 30px rgba(139,92,246,.75), 0 6px 24px rgba(139,92,246,.45); }
+.pd-act { background: rgba(139,92,246,.18); border-color: rgba(167,139,250,.75); color: #ddd6fe; box-shadow: 0 0 12px rgba(139,92,246,.25); }
+.pd-act-info { border-color: rgba(56,189,248,.85); box-shadow: 0 0 14px rgba(56,189,248,.45); }
+
+/* --- שלב 5י: זכוכית חלבית + צינור ניאון כמו ברפרנס (תיקון אחרי דחיית 5ט, 14.11 10:35) ---
+   שכבת ברק לבן מלמעלה, טשטוש רקע, מסגרת זוהרת בשלוש שכבות. עדיין בלי שינוי תוכן/מבנה. */
+#page-control::before {
+  background:
+    radial-gradient(120% 55% at 100% -5%, rgba(108,99,255,0.50) 0%, transparent 58%),
+    radial-gradient(90% 45% at -10% 38%, rgba(0,212,170,0.22) 0%, transparent 60%),
+    radial-gradient(100% 40% at 0% 0%, rgba(0,245,138,0.14) 0%, transparent 55%),
+    radial-gradient(110% 55% at 50% 110%, rgba(108,99,255,0.34) 0%, transparent 60%);
+}
+
+.pd-c-liquid, .pd-c-total, .pd-c-rake, .pd-c-badbeat, .pd-c-counter, .pd-c-exp, .pd-c-debt,
+.pd-c-profit, .pd-scenario, .pd-sc-profit, .pd-slider-row, .pd-meter {
+  backdrop-filter: blur(12px) saturate(1.35);
+  -webkit-backdrop-filter: blur(12px) saturate(1.35);
+}
+
+.pd-c-liquid  { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 40%), linear-gradient(150deg, rgba(56,189,248,.34), rgba(12,74,110,.26) 60%, rgba(56,189,248,.10)); border: 1.5px solid rgba(125,211,252,.95); box-shadow: 0 0 4px rgba(125,211,252,.90), 0 0 14px rgba(56,189,248,.65), 0 0 34px rgba(56,189,248,.35), inset 0 1px 0 rgba(255,255,255,.25), inset 0 0 18px rgba(56,189,248,.18); }
+.pd-c-total   { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 40%), linear-gradient(150deg, rgba(139,92,246,.38), rgba(76,29,149,.28) 60%, rgba(139,92,246,.10)); border: 1.5px solid rgba(196,181,253,.95); box-shadow: 0 0 4px rgba(196,181,253,.90), 0 0 14px rgba(139,92,246,.65), 0 0 34px rgba(139,92,246,.40), inset 0 1px 0 rgba(255,255,255,.25), inset 0 0 18px rgba(139,92,246,.18); }
+.pd-c-rake    { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,0) 40%), linear-gradient(160deg, rgba(52,211,153,.30), rgba(6,78,59,.24) 65%, rgba(52,211,153,.08)); border: 1.5px solid rgba(110,231,183,.90); box-shadow: 0 0 4px rgba(110,231,183,.85), 0 0 12px rgba(52,211,153,.60), 0 0 28px rgba(52,211,153,.35), inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 16px rgba(52,211,153,.16); }
+.pd-c-badbeat { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,0) 40%), linear-gradient(160deg, rgba(192,132,252,.30), rgba(88,28,135,.24) 65%, rgba(192,132,252,.08)); border: 1.5px solid rgba(216,180,254,.90); box-shadow: 0 0 4px rgba(216,180,254,.85), 0 0 12px rgba(192,132,252,.60), 0 0 28px rgba(192,132,252,.35), inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 16px rgba(192,132,252,.16); }
+.pd-c-counter { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,0) 40%), linear-gradient(160deg, rgba(251,146,60,.30), rgba(120,53,15,.22) 65%, rgba(251,146,60,.08)); border: 1.5px solid rgba(253,186,116,.90); box-shadow: 0 0 4px rgba(253,186,116,.85), 0 0 12px rgba(251,146,60,.60), 0 0 28px rgba(251,146,60,.35), inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 16px rgba(251,146,60,.16); }
+.pd-c-exp     { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,0) 40%), linear-gradient(150deg, rgba(244,114,182,.26), rgba(131,24,67,.20) 60%, rgba(244,114,182,.07)); border: 1.5px solid rgba(249,168,212,.85); box-shadow: 0 0 4px rgba(249,168,212,.80), 0 0 12px rgba(244,114,182,.55), 0 0 26px rgba(244,114,182,.30), inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 16px rgba(244,114,182,.14); }
+.pd-c-debt    { background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,0) 40%), linear-gradient(150deg, rgba(96,165,250,.28), rgba(30,58,138,.22) 60%, rgba(96,165,250,.08)); border: 1.5px solid rgba(147,197,253,.85); box-shadow: 0 0 4px rgba(147,197,253,.80), 0 0 12px rgba(96,165,250,.55), 0 0 26px rgba(96,165,250,.30), inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 16px rgba(96,165,250,.14); }
+
+/* מספרים: זוהר דו-שכבתי חם */
+.pd-c-liquid .pd-card-value  { text-shadow: 0 0 6px rgba(224,242,254,.95), 0 0 20px rgba(56,189,248,.95); }
+.pd-c-total .pd-card-value   { text-shadow: 0 0 6px rgba(237,233,254,.95), 0 0 20px rgba(167,139,250,.95); }
+.pd-c-rake .pd-card-value    { text-shadow: 0 0 5px rgba(209,250,229,.9), 0 0 16px rgba(52,211,153,.90); }
+.pd-c-badbeat .pd-card-value { text-shadow: 0 0 5px rgba(243,232,255,.9), 0 0 16px rgba(192,132,252,.90); }
+.pd-c-counter .pd-card-value { text-shadow: 0 0 5px rgba(255,237,213,.9), 0 0 16px rgba(251,146,60,.90); }
+.pd-c-exp .pd-card-value     { text-shadow: 0 0 5px rgba(252,231,243,.9), 0 0 16px rgba(244,114,182,.85); }
+.pd-c-debt .pd-card-value    { text-shadow: 0 0 5px rgba(219,234,254,.9), 0 0 16px rgba(96,165,250,.85); }
+
+/* כרטיס הרווח */
+.pd-c-profit { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,0) 38%), linear-gradient(155deg, rgba(0,245,138,.32), rgba(6,78,59,.38) 55%, rgba(0,245,138,.10)); border: 1.5px solid rgba(74,222,128,.95); box-shadow: 0 0 4px rgba(74,222,128,.90), 0 0 16px rgba(0,245,138,.70), 0 0 42px rgba(0,245,138,.40), inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 24px rgba(0,245,138,.14); }
+.pd-profit-value { text-shadow: 0 0 8px rgba(190,255,220,.90), 0 0 28px rgba(0,245,138,1); }
+.pd-profit-value.negative { text-shadow: 0 0 8px rgba(255,205,215,.85), 0 0 24px rgba(255,69,101,.95); }
+
+/* שורות התרחיש כזכוכית */
+.pd-scenario { background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,0) 30%), linear-gradient(180deg, rgba(167,139,250,.16), rgba(139,92,246,.05)); border: 1.5px solid rgba(196,181,253,.75); box-shadow: 0 0 4px rgba(196,181,253,.55), 0 0 18px rgba(139,92,246,.45), 0 0 40px rgba(139,92,246,.22), inset 0 1px 0 rgba(255,255,255,.18); }
+.pd-sc-profit { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 45%), rgba(10,10,26,.45); border: 1px solid rgba(110,231,183,.55); box-shadow: 0 0 10px rgba(0,245,138,.30), inset 0 1px 0 rgba(255,255,255,.14); }
+.pd-slider-row { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 45%), rgba(10,10,26,.45); border: 1px solid rgba(196,181,253,.40); box-shadow: 0 0 12px rgba(139,92,246,.25), inset 0 1px 0 rgba(255,255,255,.14); }
+.pd-sc-profit-value { text-shadow: 0 0 6px rgba(190,255,220,.8), 0 0 18px rgba(74,222,128,.85); }
+
+/* מסילות צינור + זרוע */
+#page-control .pd-range-bb::-webkit-slider-runnable-track { background: linear-gradient(90deg, rgba(139,92,246,.85), rgba(196,181,253,.85)); box-shadow: 0 0 6px rgba(167,139,250,.9), 0 0 16px rgba(139,92,246,.7); }
+#page-control .pd-range-counter::-webkit-slider-runnable-track { background: linear-gradient(90deg, rgba(14,165,233,.85), rgba(125,211,252,.85)); box-shadow: 0 0 6px rgba(56,189,248,.9), 0 0 16px rgba(56,189,248,.7); }
+#page-control .pd-range-bb::-webkit-slider-thumb { background: radial-gradient(circle at 35% 35%, #fff, #c4b5fd 55%, #8b5cf6); box-shadow: 0 0 10px rgba(196,181,253,1), 0 0 26px rgba(139,92,246,.9); }
+#page-control .pd-range-counter::-webkit-slider-thumb { background: radial-gradient(circle at 35% 35%, #fff, #7dd3fc 55%, #0284c7); box-shadow: 0 0 10px rgba(125,211,252,1), 0 0 26px rgba(14,165,233,.9); }
+#page-control .pd-range-bb::-moz-range-track { background: linear-gradient(90deg, rgba(139,92,246,.85), rgba(196,181,253,.85)); box-shadow: 0 0 6px rgba(167,139,250,.9), 0 0 16px rgba(139,92,246,.7); }
+#page-control .pd-range-counter::-moz-range-track { background: linear-gradient(90deg, rgba(14,165,233,.85), rgba(125,211,252,.85)); box-shadow: 0 0 6px rgba(56,189,248,.9), 0 0 16px rgba(56,189,248,.7); }
+#page-control .pd-range-bb::-moz-range-thumb { background: radial-gradient(circle at 35% 35%, #fff, #c4b5fd 55%, #8b5cf6); box-shadow: 0 0 10px rgba(196,181,253,1), 0 0 26px rgba(139,92,246,.9); }
+#page-control .pd-range-counter::-moz-range-thumb { background: radial-gradient(circle at 35% 35%, #fff, #7dd3fc 55%, #0284c7); box-shadow: 0 0 10px rgba(125,211,252,1), 0 0 26px rgba(14,165,233,.9); }
+#pd-bb-percent-val { background: linear-gradient(180deg, rgba(196,181,253,.55), rgba(139,92,246,.55)); border-color: rgba(233,213,255,.95); box-shadow: 0 0 6px rgba(196,181,253,.8), 0 0 14px rgba(139,92,246,.7); }
+#pd-remain-pct-val { background: linear-gradient(180deg, rgba(125,211,252,.55), rgba(14,165,233,.55)); border-color: rgba(186,230,253,.95); box-shadow: 0 0 6px rgba(125,211,252,.8), 0 0 14px rgba(14,165,233,.7); }
+
+/* מד */
+.pd-meter { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 45%), rgba(10,10,26,.45); border: 1.5px solid rgba(196,181,253,.60); box-shadow: 0 0 14px rgba(139,92,246,.35), inset 0 1px 0 rgba(255,255,255,.14); }
+.pd-meter.is-low  { border-color: rgba(110,231,183,.90); box-shadow: 0 0 4px rgba(110,231,183,.7), 0 0 16px rgba(0,245,138,.55), 0 0 34px rgba(0,245,138,.30), inset 0 1px 0 rgba(255,255,255,.14); }
+.pd-meter.is-low .pd-meter-fill { box-shadow: 0 0 8px rgba(0,245,138,.9), 0 0 20px rgba(0,245,138,.7); }
+.pd-meter.is-high { border-color: rgba(252,191,73,.90); box-shadow: 0 0 4px rgba(252,191,73,.7), 0 0 16px rgba(245,166,35,.55), 0 0 34px rgba(245,166,35,.30), inset 0 1px 0 rgba(255,255,255,.14); }
+.pd-meter.is-high .pd-meter-fill { box-shadow: 0 0 8px rgba(245,166,35,.9), 0 0 20px rgba(245,166,35,.7); }
+.pd-meter.is-over { border-color: rgba(255,99,132,.95); box-shadow: 0 0 4px rgba(255,99,132,.8), 0 0 18px rgba(255,69,101,.65), 0 0 40px rgba(255,69,101,.35), inset 0 1px 0 rgba(255,255,255,.14); }
+.pd-meter.is-over .pd-meter-fill { box-shadow: 0 0 8px rgba(255,69,101,.95), 0 0 22px rgba(255,69,101,.8); }
+.pd-meter.is-over .pd-meter-pct { text-shadow: 0 0 6px rgba(255,205,215,.9), 0 0 20px rgba(255,69,101,1); }
+.pd-meter.is-low .pd-meter-pct { text-shadow: 0 0 6px rgba(190,255,220,.9), 0 0 18px rgba(0,245,138,.95); }
+.pd-meter.is-high .pd-meter-pct { text-shadow: 0 0 6px rgba(255,235,200,.9), 0 0 18px rgba(245,166,35,.95); }
+
+/* פעולות */
+.pd-act-close { box-shadow: 0 0 6px rgba(196,181,253,.9), 0 0 22px rgba(139,92,246,.85), 0 0 48px rgba(139,92,246,.5), inset 0 1px 0 rgba(255,255,255,.35); }
+.pd-act { background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(139,92,246,.16)); border: 1px solid rgba(196,181,253,.85); box-shadow: 0 0 10px rgba(139,92,246,.45), inset 0 1px 0 rgba(255,255,255,.18); }
+.pd-act-info { border: 1.5px solid rgba(125,211,252,.95); box-shadow: 0 0 8px rgba(125,211,252,.8), 0 0 20px rgba(56,189,248,.55); }
+#pd-btn-calc { background: linear-gradient(180deg, rgba(196,181,253,.45), rgba(139,92,246,.45)); border-color: rgba(196,181,253,.85); box-shadow: 0 0 10px rgba(139,92,246,.55); }
+
+/* --- שלב 5יי: תיקון לפי משוב 10:37 - פנים כהה כמעט-שחור, קצה ניאון רזה וספיק,
+   ברק מקומי בלבד, ספרות לבנות חדות בלי פריחה לבנה --- */
+#page-control::before {
+  background:
+    radial-gradient(120% 55% at 100% -5%, rgba(108,99,255,0.34) 0%, transparent 58%),
+    radial-gradient(90% 45% at -10% 38%, rgba(0,212,170,0.16) 0%, transparent 60%),
+    radial-gradient(100% 40% at 0% 0%, rgba(0,245,138,0.10) 0%, transparent 55%),
+    radial-gradient(110% 55% at 50% 110%, rgba(108,99,255,0.24) 0%, transparent 60%);
+}
+
+.pd-c-liquid  { background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,0) 35%), linear-gradient(150deg, rgba(56,189,248,.20), rgba(8,47,73,.36) 60%, rgba(56,189,248,.06)); box-shadow: 0 0 3px rgba(125,211,252,.85), 0 0 10px rgba(56,189,248,.45), 0 0 22px rgba(56,189,248,.16), inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 14px rgba(56,189,248,.10); }
+.pd-c-total   { background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,0) 35%), linear-gradient(150deg, rgba(139,92,246,.22), rgba(46,16,101,.36) 60%, rgba(139,92,246,.06)); box-shadow: 0 0 3px rgba(196,181,253,.85), 0 0 10px rgba(139,92,246,.45), 0 0 22px rgba(139,92,246,.18), inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 14px rgba(139,92,246,.10); }
+.pd-c-rake    { background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 35%), linear-gradient(160deg, rgba(52,211,153,.18), rgba(6,60,45,.32) 65%, rgba(52,211,153,.05)); box-shadow: 0 0 3px rgba(110,231,183,.80), 0 0 9px rgba(52,211,153,.42), 0 0 18px rgba(52,211,153,.16), inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 12px rgba(52,211,153,.09); }
+.pd-c-badbeat { background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 35%), linear-gradient(160deg, rgba(192,132,252,.18), rgba(59,7,100,.32) 65%, rgba(192,132,252,.05)); box-shadow: 0 0 3px rgba(216,180,254,.80), 0 0 9px rgba(192,132,252,.42), 0 0 18px rgba(192,132,252,.16), inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 12px rgba(192,132,252,.09); }
+.pd-c-counter { background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 35%), linear-gradient(160deg, rgba(251,146,60,.18), rgba(67,20,7,.32) 65%, rgba(251,146,60,.05)); box-shadow: 0 0 3px rgba(253,186,116,.80), 0 0 9px rgba(251,146,60,.42), 0 0 18px rgba(251,146,60,.16), inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 12px rgba(251,146,60,.09); }
+.pd-c-exp     { background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 35%), linear-gradient(150deg, rgba(244,114,182,.15), rgba(80,7,36,.30) 60%, rgba(244,114,182,.04)); box-shadow: 0 0 3px rgba(249,168,212,.75), 0 0 9px rgba(244,114,182,.40), 0 0 18px rgba(244,114,182,.15), inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 12px rgba(244,114,182,.08); }
+.pd-c-debt    { background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 35%), linear-gradient(150deg, rgba(96,165,250,.16), rgba(23,37,84,.32) 60%, rgba(96,165,250,.05)); box-shadow: 0 0 3px rgba(147,197,253,.75), 0 0 9px rgba(96,165,250,.40), 0 0 18px rgba(96,165,250,.15), inset 0 1px 0 rgba(255,255,255,.14), inset 0 0 12px rgba(96,165,250,.08); }
+
+/* ספרות: לבן חד, הילת הדגש קטנה בלבד */
+.pd-c-liquid .pd-card-value  { text-shadow: 0 0 5px rgba(56,189,248,.50); }
+.pd-c-total .pd-card-value   { text-shadow: 0 0 5px rgba(167,139,250,.50); }
+.pd-c-rake .pd-card-value    { text-shadow: 0 0 4px rgba(52,211,153,.45); }
+.pd-c-badbeat .pd-card-value { text-shadow: 0 0 4px rgba(192,132,252,.45); }
+.pd-c-counter .pd-card-value { text-shadow: 0 0 4px rgba(251,146,60,.45); }
+.pd-c-exp .pd-card-value     { text-shadow: 0 0 4px rgba(244,114,182,.45); }
+.pd-c-debt .pd-card-value    { text-shadow: 0 0 4px rgba(96,165,250,.45); }
+
+.pd-c-profit { background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,0) 32%), linear-gradient(155deg, rgba(0,245,138,.18), rgba(6,60,45,.42) 55%, rgba(0,245,138,.06)); box-shadow: 0 0 3px rgba(74,222,128,.85), 0 0 12px rgba(0,245,138,.50), 0 0 26px rgba(0,245,138,.20), inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 18px rgba(0,245,138,.08); }
+.pd-profit-value { text-shadow: 0 0 8px rgba(0,245,138,.60); }
+.pd-profit-value.negative { text-shadow: 0 0 8px rgba(255,69,101,.60); }
+
+.pd-scenario { background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0) 28%), linear-gradient(180deg, rgba(167,139,250,.10), rgba(139,92,246,.04)); box-shadow: 0 0 3px rgba(196,181,253,.45), 0 0 12px rgba(139,92,246,.30), 0 0 26px rgba(139,92,246,.12), inset 0 1px 0 rgba(255,255,255,.12); }
+.pd-sc-profit { background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0) 40%), rgba(8,8,20,.55); box-shadow: 0 0 8px rgba(0,245,138,.18), inset 0 1px 0 rgba(255,255,255,.10); }
+.pd-slider-row { background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0) 40%), rgba(8,8,20,.55); box-shadow: 0 0 10px rgba(139,92,246,.16), inset 0 1px 0 rgba(255,255,255,.10); }
+.pd-sc-profit-value { text-shadow: 0 0 6px rgba(74,222,128,.55); }
+
+.pd-meter { background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0) 40%), rgba(8,8,20,.55); box-shadow: 0 0 10px rgba(139,92,246,.20), inset 0 1px 0 rgba(255,255,255,.10); }
+.pd-meter.is-low  { box-shadow: 0 0 3px rgba(110,231,183,.6), 0 0 12px rgba(0,245,138,.40), 0 0 24px rgba(0,245,138,.18), inset 0 1px 0 rgba(255,255,255,.10); }
+.pd-meter.is-high { box-shadow: 0 0 3px rgba(252,191,73,.6), 0 0 12px rgba(245,166,35,.40), 0 0 24px rgba(245,166,35,.18), inset 0 1px 0 rgba(255,255,255,.10); }
+.pd-meter.is-over { box-shadow: 0 0 3px rgba(255,99,132,.7), 0 0 14px rgba(255,69,101,.50), 0 0 28px rgba(255,69,101,.22), inset 0 1px 0 rgba(255,255,255,.10); }
+.pd-meter.is-over .pd-meter-pct { text-shadow: 0 0 8px rgba(255,69,101,.70); }
+.pd-meter.is-low .pd-meter-pct { text-shadow: 0 0 8px rgba(0,245,138,.65); }
+.pd-meter.is-high .pd-meter-pct { text-shadow: 0 0 8px rgba(245,166,35,.65); }
+
+.pd-act-close { box-shadow: 0 0 5px rgba(196,181,253,.75), 0 0 16px rgba(139,92,246,.60), 0 0 34px rgba(139,92,246,.30), inset 0 1px 0 rgba(255,255,255,.28); }
+.pd-act { background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(139,92,246,.10)); box-shadow: 0 0 8px rgba(139,92,246,.30), inset 0 1px 0 rgba(255,255,255,.12); }
+.pd-act-info { box-shadow: 0 0 6px rgba(125,211,252,.60), 0 0 14px rgba(56,189,248,.40); }
