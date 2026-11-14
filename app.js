@@ -329,6 +329,7 @@ async function loadInitialData() {
       paybox_maor: 0, paybox_ido: 0, cashcash_ido: 0, cashcash_maor: 0, debt_ido: 0, debt_maor: 0, counter: 0, rake_app: 0, badbeat: 0
     };
   }
+  initSliderPercentsFromPeriod(currentPeriod);
 
   // players
   try {
@@ -546,7 +547,7 @@ async function loadDashboard() {
   // Refresh current_period from DB
   try {
     const rows = await dbGet('current_period', '?id=eq.1');
-    if (rows && rows.length) currentPeriod = rows[0];
+    if (rows && rows.length) { currentPeriod = rows[0]; initSliderPercentsFromPeriod(currentPeriod); }
   } catch {}
 
   const cp = currentPeriod || {};
@@ -929,10 +930,30 @@ function onCounterBlur() {
 }
 
 // — BadBeat —
-// אחוז ה-BadBeat בחישוב הרווח — מצב סשן בלבד, ברירת מחדל 100% (בקשת מאור 14.11: "כדיפולט יוצג רווח כללי לפי 100 אחוז")
+// אחוז ה-BadBeat בחישוב הרווח. נשמר ב-current_period.bb_keep_percent ונטען מחדש בכל כניסה
+// (אושר ע"י מאור 14.11); עמודה ריקה (null) = ברירת המחדל 100%, וגם בתחילת כל תקופה חדשה.
 let bbSliderPct = 100;
 function getBBPercent() {
   return bbSliderPct;
+}
+// עמודות השמירה של הסליידרים הן תוספת חדשה לסופבייס; בלי ההטמעה נשמר לסשן בלבד
+function sliderPersistReady() {
+  return !!(currentPeriod && Object.prototype.hasOwnProperty.call(currentPeriod, 'bb_keep_percent'));
+}
+function initSliderPercentsFromPeriod(cp) {
+  bbSliderPct      = (cp && cp.bb_keep_percent != null)      ? Math.min(100, Math.max(0, n(cp.bb_keep_percent)))      : 100;
+  remainCounterPct = (cp && cp.counter_keep_percent != null) ? Math.min(100, Math.max(0, n(cp.counter_keep_percent))) : 100;
+}
+async function persistSliderPercents() {
+  if (!sliderPersistReady()) return;
+  try {
+    const body = { bb_keep_percent: Math.round(bbSliderPct), counter_keep_percent: Math.round(remainCounterPct), updated_at: now() };
+    await dbPatch('current_period', '?id=eq.1', body);
+    currentPeriod.bb_keep_percent = body.bb_keep_percent;
+    currentPeriod.counter_keep_percent = body.counter_keep_percent;
+  } catch (e) {
+    console.warn('שמירת מיקום הסליידרים נכשלה', e);
+  }
 }
 
 function updateBadBeatDisplay() {
@@ -1003,7 +1024,8 @@ function calcPeriodFigures(cp) {
   return { liquid, total, counterIls, badbeatFull, counterKeepIls, bbKeepIls, computed, profit };
 }
 
-// כרטיס "נזיל שיישאר בקופה" — מה שיישאר לאחר משיכת הרווח המוצג (תואם למד הניצול)
+// אחוז הקאונטר שמופחת מהרווח ("כמה מהקאונטר להשאיר במועדון"). נשמר ב-current_period.counter_keep_percent
+// ונטען מחדש בכל כניסה; עמודה ריקה (null) = ברירת המחדל 100%, וגם בתחילת כל תקופה חדשה.
 let remainCounterPct = 100;
 function setRemainLiquid(liquid, profit) {
   const el = document.getElementById('val-remain-liquid');
@@ -1125,6 +1147,7 @@ function onRemainCounterSliderInput(el) {
 }
 async function onRemainCounterSliderChange() {
   await persistClearedManualProfit();
+  await persistSliderPercents();
 }
 
 // ============================================================
@@ -1182,6 +1205,7 @@ function syncControlPage() {
 
 async function onDashBBSliderChange() {
   await persistClearedManualProfit();
+  await persistSliderPercents();
 }
 
 async function saveBadBeat() {
@@ -4188,6 +4212,8 @@ async function closePeriod(periodStart) {
       bank_leumi: 0,
       // רווח ידני מתאפס בסגירת תקופה (הרווח שמוצג באותו רגע נשמר בהיסטוריה)
       ...(manualProfitReady() ? { manual_profit: null } : {}),
+      // תקופה חדשה — הסליידרים חוזרים לברירת המחדל 100% (עמודה ריקה = 100%)
+      ...(sliderPersistReady() ? { bb_keep_percent: null, counter_keep_percent: null } : {}),
       ...(extraSchemaReady() ? {
         bank_maor: 0, bank_ido: 0,
         pocket_maor: 0, pocket_ravit: 0, pocket_ido: 0, pocket_dorin: 0,

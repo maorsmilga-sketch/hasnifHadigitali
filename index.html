@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261114b">
-<link rel="stylesheet" href="management.css?v=20261114i">
+<link rel="stylesheet" href="management.css?v=20261114j">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -313,7 +313,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
                    aria-valuemin="0" aria-valuemax="100" aria-labelledby="dash-bb-slider-wrap"
                    oninput="onDashBBSliderInput()" onchange="onDashBBSliderChange()">
             <div class="dash-bb-slider-ticks" aria-hidden="true"><span>0%</span><span>100%</span></div>
-            <div class="dash-bb-slider-note" id="dash-bb-slider-note" hidden>100% = כל ה-BadBeat מופחת מהרווח · 0% = לא מופחת בכלל</div>
+            <div class="dash-bb-slider-note" id="dash-bb-slider-note" hidden>100% = כל ה-BadBeat מופחת מהרווח · 0% = לא מופחת בכלל · הבחירה נשמרת לתקופה</div>
           </div>
         </div>
 
@@ -411,7 +411,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
             <input type="range" class="pd-range pd-range-bb" id="pd-bb-percent" min="0" max="100" step="1"
                    oninput="onDashBBSliderInput(this)" onchange="onDashBBSliderChange()">
             <div class="pd-ticks" aria-hidden="true"><span>0%</span><span>100%</span></div>
-            <div class="pd-slider-note stat-note" id="pd-bb-note" hidden>100% = כל ה-BadBeat מופחת מהרווח · 0% = לא מופחת בכלל · מעדכן את הרווח הכללי ואת מד הנזילות</div>
+            <div class="pd-slider-note stat-note" id="pd-bb-note" hidden>100% = כל ה-BadBeat מופחת מהרווח · 0% = לא מופחת בכלל · מעדכן את הרווח הכללי ואת מד הנזילות · הבחירה נשמרת לתקופה</div>
           </div>
 
           <div class="pd-slider-row">
@@ -425,7 +425,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
             <input type="range" class="pd-range pd-range-counter" id="pd-remain-pct" min="0" max="100" step="1"
                    oninput="onRemainCounterSliderInput(this)" onchange="onRemainCounterSliderChange()">
             <div class="pd-ticks" aria-hidden="true"><span>0%</span><span>100%</span></div>
-            <div class="pd-slider-note stat-note" id="pd-remain-note" hidden>100% = כל הקאונטר מופחת מהרווח · 0% = לא מופחת בכלל · מעדכן את הרווח הכללי ואת מד הנזילות</div>
+            <div class="pd-slider-note stat-note" id="pd-remain-note" hidden>100% = כל הקאונטר מופחת מהרווח · 0% = לא מופחת בכלל · מעדכן את הרווח הכללי ואת מד הנזילות · הבחירה נשמרת לתקופה</div>
           </div>
 
           <div class="pd-meter is-empty" id="pd-meter">
@@ -1595,7 +1595,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261114i"></script>
+<script src="app.js?v=20261114j"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
