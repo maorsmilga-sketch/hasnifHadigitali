@@ -3404,3 +3404,123 @@ body:has(#management-section[style*="block"]) #notification {
     transform: none;
   }
 }
+
+/* ===== EXPENSE MENU — Neon Dark Premium (תפריט הוצאות בלבד, 2026-11-14) ===== */
+/* הרקע הכהה חל רק כשתפריט הוצאות מוצג; שאר מסכי הניהול שומרים על הרקע הקיים */
+#management-section:has(#blue-grid:not([hidden]))::before {
+  background:
+    radial-gradient(120% 55% at 100% -5%, rgba(88, 66, 220, 0.14) 0%, transparent 58%),
+    radial-gradient(110% 55% at 50% 110%, rgba(64, 44, 190, 0.10) 0%, transparent 60%),
+    #070B1B;
+}
+
+#management-section #blue-grid .app-icon {
+  --card-color: #8b8bff;
+  gap: 8px;
+  /* גובה אחיד מוחלט: מכסה גם כותרת בשתי שורות ברוחב 320px, כדי שכל הכרטיסים זהים בגודל בכל מכשיר */
+  min-height: 136px;
+  height: 136px;
+  padding: 12px;
+  border-radius: 20px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--card-color) 22%, #0B1024), #0B1024 85%);
+  border: 1.5px solid var(--card-color);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--card-color) 45%, transparent),
+    0 0 20px color-mix(in srgb, var(--card-color) 20%, transparent),
+    inset 0 0 16px color-mix(in srgb, var(--card-color) 10%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* ברק מבריק מעוקל בחלק העליון, כמו בהדמיה */
+#management-section #blue-grid .app-icon::before {
+  background:
+    radial-gradient(140% 95% at 88% -35%, color-mix(in srgb, var(--card-color) 46%, transparent) 0%, transparent 55%),
+    radial-gradient(170% 120% at 8% -45%, color-mix(in srgb, var(--card-color) 20%, rgba(255,255,255,0.10)) 0%, transparent 58%);
+}
+
+#management-section #blue-grid .app-icon:active {
+  transform: scale(0.98);
+  box-shadow:
+    0 0 6px color-mix(in srgb, var(--card-color) 60%, transparent),
+    0 0 14px color-mix(in srgb, var(--card-color) 28%, transparent),
+    inset 0 0 12px color-mix(in srgb, var(--card-color) 14%, transparent);
+}
+
+/* האייקון: ללא ריבוע/מסגרת, זוהר עדין בצבע הכרטיס */
+#management-section #blue-grid .app-icon-img {
+  display: block;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border-radius: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  filter: none;
+  line-height: 0;
+}
+
+#management-section #blue-grid .app-icon-3d {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  -webkit-user-drag: none;
+  user-select: none;
+  filter:
+    drop-shadow(0 0 8px color-mix(in srgb, var(--card-color) 55%, transparent))
+    drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
+}
+
+#management-section #blue-grid .app-icon-label {
+  font-size: 18px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 0;
+  line-height: 1.25;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+#management-section #blue-grid .app-icon-label .letter-emph {
+  color: #FFFFFF;
+  font-size: inherit;
+  text-shadow: inherit;
+}
+
+/* Per-card expense colors */
+#management-section #blue-grid .app-icon[data-expense="rakeback"] { --card-color: #00E89A; }
+#management-section #blue-grid .app-icon[data-expense="tournaments"] { --card-color: #FFC400; }
+#management-section #blue-grid .app-icon[data-expense="bonuses"] { --card-color: #FF4DB8; }
+#management-section #blue-grid .app-icon[data-expense="referrals"] { --card-color: #00D9C8; }
+#management-section #blue-grid .app-icon[data-expense="withdrawals"] { --card-color: #168BFF; }
+#management-section #blue-grid .app-icon[data-expense="general"] { --card-color: #FFB347; }
+
+@media (hover: hover) {
+  #management-section #blue-grid .app-icon:hover {
+    transform: none;
+    border-color: var(--card-color);
+    box-shadow:
+      0 0 10px color-mix(in srgb, var(--card-color) 55%, transparent),
+      0 0 26px color-mix(in srgb, var(--card-color) 26%, transparent),
+      inset 0 0 18px color-mix(in srgb, var(--card-color) 12%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #management-section #blue-grid .app-icon {
+    transition: none;
+    animation: none;
+  }
+  #management-section #blue-grid .app-icon:active {
+    transform: none;
+  }
+}
+
+/* Preserve the existing narrow-phone card footprint (122px). */
+@media (max-width: 360px) {
+  #management-section #blue-grid .app-icon { height: 122px; min-height: 122px; padding: 8px; gap: 6px; }
+  #management-section #blue-grid .app-icon-img { width: 48px; height: 48px; flex-basis: 48px; }
+  #management-section #blue-grid .app-icon-3d { width: 48px; height: 48px; }
+}

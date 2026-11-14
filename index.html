@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261114b">
-<link rel="stylesheet" href="management.css?v=20261114m">
+<link rel="stylesheet" href="management.css?v=20261114n">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -182,28 +182,28 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
     <!-- BLUE TABLE SUB-GRID -->
     <div id="blue-grid" class="app-grid-screen" hidden>
       <div class="app-grid">
-        <button type="button" class="app-icon" onclick="openBlueTab('rakeback')">
-          <span class="app-icon-img">💸</span>
+        <button type="button" class="app-icon" data-expense="rakeback" onclick="openBlueTab('rakeback')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/expenses/rakeback.png" alt="" draggable="false"></span>
           <span class="app-icon-label">החזר גנייה</span>
         </button>
-        <button type="button" class="app-icon" onclick="openBlueTab('tournaments')">
-          <span class="app-icon-img">🏆</span>
+        <button type="button" class="app-icon" data-expense="tournaments" onclick="openBlueTab('tournaments')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/expenses/tournaments.png" alt="" draggable="false"></span>
           <span class="app-icon-label">טורנירים</span>
         </button>
-        <button type="button" class="app-icon" onclick="openBlueTab('bonuses')">
-          <span class="app-icon-img">🎁</span>
+        <button type="button" class="app-icon" data-expense="bonuses" onclick="openBlueTab('bonuses')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/expenses/bonuses.png" alt="" draggable="false"></span>
           <span class="app-icon-label">בונוסים</span>
         </button>
-        <button type="button" class="app-icon" onclick="openBlueTab('referrals')">
-          <span class="app-icon-img">🤝</span>
+        <button type="button" class="app-icon" data-expense="referrals" onclick="openBlueTab('referrals')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/expenses/referrals.png" alt="" draggable="false"></span>
           <span class="app-icon-label">חבר מביא חבר</span>
         </button>
-        <button type="button" class="app-icon" onclick="openBlueTab('withdrawals-tab')">
-          <span class="app-icon-img">💳</span>
+        <button type="button" class="app-icon" data-expense="withdrawals" onclick="openBlueTab('withdrawals-tab')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/expenses/withdrawals.png" alt="" draggable="false"></span>
           <span class="app-icon-label">משיכות</span>
         </button>
-        <button type="button" class="app-icon" onclick="openBlueTab('expenses')">
-          <span class="app-icon-img">🧾</span>
+        <button type="button" class="app-icon" data-expense="general" onclick="openBlueTab('expenses')">
+          <span class="app-icon-img"><img class="app-icon-3d" src="icons/expenses/general.png" alt="" draggable="false"></span>
           <span class="app-icon-label">הוצאות כללית</span>
         </button>
       </div>
