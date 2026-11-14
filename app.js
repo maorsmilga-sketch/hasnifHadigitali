@@ -551,12 +551,8 @@ async function loadDashboard() {
 
   const cp = currentPeriod || {};
 
-  const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor) + liquidExtraParts(cp).total;
-  const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-  const counterIls   = chipsToIls(n(cp.counter));
-  const badbeatFull  = chipsToIls(n(cp.badbeat));
-  const chipsIls     = counterIls + chipsToIls(n(cp.badbeat) * getBBPercent() / 100);
-  const profit       = effectiveProfit(cp, total - chipsIls);    // רווח מוצג = חישוב אוטומטי, או ערך ידני אם הוזן
+  const f = calcPeriodFigures(cp);
+  const { liquid, total, counterIls, badbeatFull, profit } = f;  // רווח מוצג = חישוב לפי הסליידרים, או ערך ידני אם הוזן
   const half     = profit / 2;
   const idoNet   = half - n(cp.debt_ido);
   const maorNet  = half - n(cp.debt_maor);
@@ -576,8 +572,8 @@ async function loadDashboard() {
   setText('val-badbeat-full-sub', n(cp.badbeat) ? `${fmt(cp.badbeat)} צ' · ${Math.round(getBBPercent())}%` : '');
   setText('val-profit',          fmt(profit));
   setText('val-profit-sub',      getManualProfit(cp) != null ? 'ערך ידני' : '');
-  setRemainLiquid(cp, liquid, profit);
-  updateScenarioView(cp, liquid, total, counterIls, badbeatFull);
+  setRemainLiquid(liquid, profit);
+  updateUtilizationMeter(liquid, profit, f.counterKeepIls, f.bbKeepIls);
   setText('val-profit-ido',      fmt(half));
   setText('val-profit-maor',     fmt(half));
   setText('val-profit-ido-net',  '₪' + fmt(idoNet));
@@ -619,11 +615,12 @@ async function loadDashboard() {
   // Blue table summary for dashboard card
   refreshBTSummary();
   syncDashBBSlider();
+  syncCounterSliders();
   mirrorControlPage();
 }
 
 function syncDashBBSlider() {
-  const pct = scenarioBBPct();  // במצב פתרון תרחיש — מציג את הערך הפתור (תצוגה בלבד, לא נשמר)
+  const pct = getBBPercent();
   ['dash-bb-percent', 'pd-bb-percent'].forEach(id => {
     const s = document.getElementById(id);
     if (s && document.activeElement !== s) s.value = String(Math.round(pct));
@@ -932,10 +929,10 @@ function onCounterBlur() {
 }
 
 // — BadBeat —
+// אחוז ה-BadBeat בחישוב הרווח — מצב סשן בלבד, ברירת מחדל 100% (בקשת מאור 14.11: "כדיפולט יוצג רווח כללי לפי 100 אחוז")
+let bbSliderPct = 100;
 function getBBPercent() {
-  const v = currentPeriod?.badbeat_percent;
-  if (v == null) return 65;
-  return Math.min(100, Math.max(0, n(v)));
+  return bbSliderPct;
 }
 
 function updateBadBeatDisplay() {
@@ -947,10 +944,9 @@ function updateBadBeatDisplay() {
 
 function onDashBBSliderInput(el) {
   const slider = el || document.getElementById('dash-bb-percent');
-  if (!slider || !currentPeriod) return;
-  const pct = Math.min(100, Math.max(0, parseFloat(slider.value) || 0));
-  resetScenarioSolve();
-  currentPeriod.badbeat_percent = pct;
+  if (!slider) return;
+  clearManualProfitInMemory();   // הזזת סליידר מעדכנת את הרווח תמיד — ערך ידני מתבטל
+  bbSliderPct = Math.min(100, Math.max(0, parseFloat(slider.value) || 0));
   syncDashBBSlider();
   updateBadBeatDisplay();
   refreshDashboardProfitCards();
@@ -958,19 +954,15 @@ function onDashBBSliderInput(el) {
 
 function refreshDashboardProfitCards() {
   const cp = currentPeriod || {};
-  const liquid   = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor) + liquidExtraParts(cp).total;
-  const total    = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-  const counterIls  = chipsToIls(n(cp.counter));
-  const badbeatFull = chipsToIls(n(cp.badbeat));
-  const chipsIls    = counterIls + chipsToIls(n(cp.badbeat) * getBBPercent() / 100);
-  const profit      = effectiveProfit(cp, total - chipsIls);
+  const f = calcPeriodFigures(cp);
+  const { liquid, total, counterIls, badbeatFull, profit } = f;
   const half        = profit / 2;
   setText('val-badbeat-full-ils', fmt(chipsToIls(n(cp.badbeat) * getBBPercent() / 100)));
   setText('val-badbeat-full-sub', n(cp.badbeat) ? `${fmt(cp.badbeat)} צ' · ${Math.round(getBBPercent())}%` : '');
   setText('val-profit', fmt(profit));
   setText('val-profit-sub', getManualProfit(cp) != null ? 'ערך ידני' : '');
-  setRemainLiquid(cp, liquid, profit);
-  updateScenarioView(cp, liquid, total, counterIls, badbeatFull);
+  setRemainLiquid(liquid, profit);
+  updateUtilizationMeter(liquid, profit, f.counterKeepIls, f.bbKeepIls);
   setText('val-profit-ido', fmt(half));
   setText('val-profit-maor', fmt(half));
   setText('val-profit-ido-net', '₪' + fmt(half - n(cp.debt_ido)));
@@ -994,212 +986,145 @@ function refreshDashboardProfitCards() {
   mirrorControlPage();
 }
 
-// כרטיס "נזיל שיישאר בקופה" — אחוז שימוש בקאונטר הוא כלי בדיקה זמני בכרטיס בלבד, לא נשמר
+// ============================================================
+// חישוב מרכזי משותף — רווח התקופה לפי הסליידרים (או ערך ידני אם הוזן)
+// רווח = סה"כ בקופה − קאונטר × אחוז ההשארה במועדון − BadBeat × אחוז בחישוב
+// ============================================================
+function calcPeriodFigures(cp) {
+  cp = cp || {};
+  const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor) + liquidExtraParts(cp).total;
+  const total  = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
+  const counterIls  = chipsToIls(n(cp.counter));
+  const badbeatFull = chipsToIls(n(cp.badbeat));
+  const counterKeepIls = chipsToIls(n(cp.counter) * remainCounterPct / 100);
+  const bbKeepIls      = chipsToIls(n(cp.badbeat) * getBBPercent() / 100);
+  const computed = total - counterKeepIls - bbKeepIls;
+  const profit   = effectiveProfit(cp, computed);
+  return { liquid, total, counterIls, badbeatFull, counterKeepIls, bbKeepIls, computed, profit };
+}
+
+// כרטיס "נזיל שיישאר בקופה" — מה שיישאר לאחר משיכת הרווח המוצג (תואם למד הניצול)
 let remainCounterPct = 100;
-function setRemainLiquid(cp, liquid, profit) {
+function setRemainLiquid(liquid, profit) {
   const el = document.getElementById('val-remain-liquid');
   if (!el) return;
-  const counterPart = chipsToIls(n(cp.counter) * remainCounterPct / 100);
-  const badbeatPart = chipsToIls(n(cp.badbeat) * getBBPercent() / 100);
-  setText('val-remain-liquid', fmt(liquid - profit - counterPart - badbeatPart));
+  setText('val-remain-liquid', fmt(liquid - profit));
 }
 
-/* תרחיש משיכה (page-control) — סימולציה בלבד, לא נשמר:
-   total = סכום משיכה + קאונטר נשאר + BadBeat נשאר + מזומן נוסף שנשאר.
-   הרווח הכללי, החלוקה והיתרות השמורות לא מושפעים. */
-let scenarioTarget = null;   // יעד משיכה שהמשתמש הקליד (₪); null = מצב סליידרים
-let bbSolvePct = null;       // אחוז BadBeat "פתור" לתצוגה בלבד — לא נכתב ל-currentPeriod
-
-function scenarioBBPct() { return bbSolvePct != null ? bbSolvePct : getBBPercent(); }
-
-function updateScenarioView(cp, liquid, total, counterIls, badbeatFull) {
-  if (!document.getElementById('pd-val-profit-scenario')) return;
-  const cKeep = chipsToIls(n(cp.counter) * remainCounterPct / 100);
-  const bKeep = chipsToIls(n(cp.badbeat) * scenarioBBPct() / 100);
-  const floor = total - counterIls - badbeatFull;
-  let W, extra = 0;
-  if (scenarioTarget != null && scenarioTarget < floor) {
-    W = scenarioTarget;              // יעד מתחת לרצפה — תקין; ההפרש נשאר כמזומן בקופה
-    extra = floor - scenarioTarget;
-  } else if (scenarioTarget != null && scenarioTarget > total) {
-    W = total;                       // תקרה — מוצג עם דגל חריגה מפורש
-  } else {
-    W = total - cKeep - bKeep;
-  }
-  setText('pd-val-profit-scenario', fmt(W));
-  // מד נזילות: אותו W מול הכסף הנזיל בלבד
-  const meter = document.getElementById('pd-meter');
-  setText('pd-meter-required', fmt(W));
-  setText('pd-mn-liquid', fmt(liquid));
-  setText('pd-mn-profit', fmt(W));
-  setText('pd-mn-counter', fmt(cKeep));
-  setText('pd-mn-bb', fmt(bKeep));
-  const extraRow = document.getElementById('pd-mn-extra-row');
-  if (extraRow) extraRow.hidden = extra <= 0;
-  setText('pd-mn-extra', fmt(extra));
-  const remain = liquid - W;
-  setText('pd-mn-remain', fmt(remain));
-  const remLabel = document.getElementById('pd-meter-remain-label');
-  if (remLabel) remLabel.textContent = remain >= 0 ? 'נשאר' : 'חסר';
-  setText('pd-meter-remain-val', fmt(Math.abs(remain)));
-  if (meter) {
-    const pctEl = document.getElementById('pd-meter-pct');
-    const fill = document.getElementById('pd-meter-fill');
-    meter.classList.remove('is-low', 'is-high', 'is-over', 'is-empty');
-    if (liquid > 0) {
-      const pct = W / liquid * 100;
-      if (pctEl) pctEl.textContent = (Math.round(pct * 10) / 10) + '%';
-      if (fill) fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
-      meter.classList.add(pct > 100 ? 'is-over' : pct >= 90 ? 'is-high' : 'is-low');
-    } else {
-      if (pctEl) pctEl.textContent = '—';
-      if (fill) fill.style.width = '0%';
-      meter.classList.add('is-empty');
-    }
-  }
-  const note = document.getElementById('pd-target-note');
-  if (note) {
-    let msg = '';
-    if (scenarioTarget != null) {
-      if (scenarioTarget > total) msg = `יעד: ₪${fmt(scenarioTarget)} · חריג מהזמין בתרחיש: ₪${fmt(scenarioTarget - total)}`;
-      else if (extra > 0) msg = `יעד: ₪${fmt(scenarioTarget)} · ההפרש נשאר במועדון כמזומן`;
-      else {
-        const diff = W - scenarioTarget;
-        msg = Math.abs(diff) >= 1
-          ? `יעד: ₪${fmt(scenarioTarget)} · הפרש עיגול: ${diff >= 0 ? '+' : '−'}₪${fmt(Math.abs(diff))}`
-          : `יעד: ₪${fmt(scenarioTarget)}`;
-      }
-    }
-    note.textContent = msg;
-    note.hidden = !msg;
-  }
-}
-
-// snapshot של התרחיש הפעיל לשמירה בהיסטוריה בסגירת תקופה; null = לא הופעל תרחיש (מצב ברירת מחדל)
-function getScenarioSnapshot(cp, liquid, total, counterIls, badbeatFull) {
-  const engaged = scenarioTarget != null || bbSolvePct != null || remainCounterPct !== 100;
-  if (!engaged) return null;
-  const cKeep = chipsToIls(n(cp.counter) * remainCounterPct / 100);
-  const bKeep = chipsToIls(n(cp.badbeat) * scenarioBBPct() / 100);
-  const floor = total - counterIls - badbeatFull;
-  let W, extra = 0, status = null, delta = 0;
-  if (scenarioTarget != null && scenarioTarget < floor) {
-    W = scenarioTarget; extra = floor - scenarioTarget;
-  } else if (scenarioTarget != null && scenarioTarget > total) {
-    W = total; status = 'infeasible'; delta = scenarioTarget - total;
-  } else {
-    W = total - cKeep - bKeep;
-    if (scenarioTarget != null) {
-      const d = W - scenarioTarget;
-      if (Math.abs(d) >= 1) { status = 'rounded'; delta = d; }
-    }
-  }
-  return {
-    requested_target_ils: scenarioTarget,
-    simulated_withdrawal_ils: W,
-    counter_pct: Math.round(remainCounterPct),
-    counter_kept_ils: cKeep,
-    bb_pct: Math.round(scenarioBBPct()),
-    bb_kept_ils: bKeep,
-    extra_retained_ils: extra,
-    status: status,
-    delta_ils: delta
-  };
-}
-
-// פתרון יעד → סליידרים: קודם משחררים BadBeat, רק אחריו קאונטר. תצוגה בלבד — לא נשמר.
-function setScenarioSlidersSolved(cPct, bPct) {
-  remainCounterPct = Math.min(100, Math.max(0, cPct));
+function syncCounterSliders() {
   ['remain-counter-pct', 'pd-remain-pct'].forEach(id => {
-    const sl = document.getElementById(id);
-    if (sl) sl.value = String(Math.round(remainCounterPct));
+    const s = document.getElementById(id);
+    if (s && document.activeElement !== s) s.value = String(Math.round(remainCounterPct));
   });
   ['remain-counter-pct-val', 'pd-remain-pct-val'].forEach(id => {
     const l = document.getElementById(id);
     if (l) l.textContent = Math.round(remainCounterPct) + '%';
   });
-  if (bPct != null) {
-    bbSolvePct = Math.min(100, Math.max(0, bPct));
-    ['dash-bb-percent', 'pd-bb-percent'].forEach(id => {
-      const sl = document.getElementById(id);
-      if (sl) sl.value = String(Math.round(bbSolvePct));
-    });
-    ['dash-bb-percent-val', 'pd-bb-percent-val'].forEach(id => {
-      const l = document.getElementById(id);
-      if (l) l.textContent = Math.round(bbSolvePct) + '%';
-    });
-  }
 }
 
-function applyScenarioTargetFromInput() {
-  const inp = document.getElementById('pd-target-input');
-  const v = inp ? parseFloat(inp.value) : NaN;
-  const note = document.getElementById('pd-target-note');
-  if (!isFinite(v) || v < 0) {
-    if (note) { note.textContent = 'הזן סכום תקין'; note.hidden = false; }
-    return;
-  }
-  const cp = currentPeriod || {};
-  const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor) + liquidExtraParts(cp).total;
-  const total = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-  const C = chipsToIls(n(cp.counter)), B = chipsToIls(n(cp.badbeat));
-  scenarioTarget = v;
-  if (v > total) {
-    setScenarioSlidersSolved(0, B > 0 ? 0 : null);
+/* מד ניצול הכסף הנזיל (page-control) —
+   הנדרש למשיכה = הרווח המוצג (מחושב לפי הסליידרים, או ערך ידני).
+   המד משווה אותו לכסף הנזיל בלבד. */
+function updateUtilizationMeter(liquid, profit, cKeep, bKeep) {
+  const meter = document.getElementById('pd-meter');
+  if (!meter) return;
+  setText('pd-meter-required', fmt(profit));
+  setText('pd-mn-liquid', fmt(liquid));
+  setText('pd-mn-profit', fmt(profit));
+  setText('pd-mn-counter', fmt(cKeep));
+  setText('pd-mn-bb', fmt(bKeep));
+  const remain = liquid - profit;
+  setText('pd-mn-remain', fmt(remain));
+  const remLabel = document.getElementById('pd-meter-remain-label');
+  if (remLabel) remLabel.textContent = remain >= 0 ? 'נשאר' : 'חסר';
+  setText('pd-meter-remain-val', fmt(Math.abs(remain)));
+  const pctEl = document.getElementById('pd-meter-pct');
+  const fill = document.getElementById('pd-meter-fill');
+  meter.classList.remove('is-low', 'is-high', 'is-over', 'is-empty');
+  if (liquid > 0) {
+    const pct = profit / liquid * 100;
+    if (pctEl) pctEl.textContent = (Math.round(pct * 10) / 10) + '%';
+    if (fill) fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
+    meter.classList.add(pct > 100 ? 'is-over' : pct >= 90 ? 'is-high' : 'is-low');
   } else {
-    const K = total - v;
-    if (K >= C + B) {
-      setScenarioSlidersSolved(100, B > 0 ? 100 : null);
-    } else {
-      const cKeep = Math.min(C, K);
-      const bKeep = K - cKeep;
-      const cPct = C > 0 ? Math.round(cKeep / C * 100) : remainCounterPct;
-      const bPct = B > 0 ? Math.round(bKeep / B * 100) : null;
-      setScenarioSlidersSolved(cPct, bPct);
-    }
+    if (pctEl) pctEl.textContent = '—';
+    if (fill) fill.style.width = '0%';
+    meter.classList.add('is-empty');
   }
-  refreshDashboardProfitCards();
 }
 
-function resetScenarioSolve() {
-  scenarioTarget = null;
-  if (bbSolvePct != null) { bbSolvePct = null; syncDashBBSlider(); }
-  const inp = document.getElementById('pd-target-input');
-  if (inp) inp.value = '';
-  const note = document.getElementById('pd-target-note');
-  if (note) { note.textContent = ''; note.hidden = true; }
+// הזזת סליידר מעדכנת את הרווח תמיד — אם הוזן ערך ידני הוא מתבטל (הביטול נשמר ב-DB בסיום ההזזה)
+let _manualClearPending = false;
+function clearManualProfitInMemory() {
+  if (currentPeriod && currentPeriod.manual_profit != null) {
+    currentPeriod.manual_profit = null;
+    _manualClearPending = true;
+  }
+}
+async function persistClearedManualProfit() {
+  if (!_manualClearPending || !manualProfitReady()) return;
+  _manualClearPending = false;
+  try {
+    await dbPatch('current_period', '?id=eq.1', { manual_profit: null, updated_at: now() });
+  } catch (e) {
+    showNotif('שגיאה בעדכון הרווח: ' + e.message, 'error');
+  }
 }
 
-function clearScenarioTarget() {
-  resetScenarioSolve();
-  if (remainCounterPct !== 100) {
-    remainCounterPct = 100;
-    ['remain-counter-pct', 'pd-remain-pct'].forEach(id => {
-      const sl = document.getElementById(id);
-      if (sl) sl.value = '100';
-    });
-    ['remain-counter-pct-val', 'pd-remain-pct-val'].forEach(id => {
-      const l = document.getElementById(id);
-      if (l) l.textContent = '100%';
-    });
+// עריכת רווח בלחיצה על המספר: 'total' = רווח כללי, 'maor'/'ido' = חלק שותף (הרווח הכללי יהיה כפול)
+let profitEditTarget = null;
+function editProfitValue(ev, who) {
+  if (ev) ev.stopPropagation();
+  if (!manualProfitReady()) { showNotif('נדרש להריץ את עדכון ה-SQL בסופבייס', 'error'); return; }
+  const row = document.getElementById('pd-profit-edit-row');
+  const inp = document.getElementById('pd-profit-edit-input');
+  if (!row || !inp) return;
+  profitEditTarget = (who === 'maor' || who === 'ido') ? who : 'total';
+  const f = calcPeriodFigures(currentPeriod || {});
+  const cur = profitEditTarget === 'total' ? f.profit : f.profit / 2;
+  inp.value = Math.round(cur * 100) / 100;
+  setText('pd-profit-edit-label', profitEditTarget === 'total'
+    ? 'רווח כללי ידני'
+    : `רווח ידני — ${profitEditTarget === 'ido' ? 'עידו' : 'מאור'} · הרווח הכללי יהיה כפול`);
+  row.hidden = false;
+  inp.focus();
+  inp.select();
+}
+function cancelProfitEdit() {
+  const row = document.getElementById('pd-profit-edit-row');
+  if (row) row.hidden = true;
+  profitEditTarget = null;
+}
+async function saveProfitEdit() {
+  const inp = document.getElementById('pd-profit-edit-input');
+  const v = inp ? parseFloat(inp.value) : NaN;
+  if (!isFinite(v) || v < 0) { showNotif('אנא הזן סכום תקין', 'error'); return; }
+  const total = profitEditTarget === 'total' ? v : v * 2;
+  cancelProfitEdit();
+  await setManualProfitValue(total);
+}
+async function setManualProfitValue(val) {
+  if (!manualProfitReady()) { showNotif('נדרש להריץ את עדכון ה-SQL בסופבייס', 'error'); return; }
+  try {
+    await dbPatch('current_period', '?id=eq.1', { manual_profit: val, updated_at: now() });
+    currentPeriod.manual_profit = val;
+    loadDashboard();
+    renderDashDetail();
+  } catch (e) {
+    showNotif('שגיאה בשמירת רווח ידני: ' + e.message, 'error');
   }
-  refreshDashboardProfitCards();
 }
 
 function onRemainCounterSliderInput(el) {
   const slider = el || document.getElementById('remain-counter-pct');
   if (!slider) return;
-  resetScenarioSolve();
+  clearManualProfitInMemory();   // הזזת סליידר מעדכנת את הרווח תמיד — ערך ידני מתבטל
   remainCounterPct = Math.min(100, Math.max(0, parseFloat(slider.value) || 0));
-  ['remain-counter-pct', 'pd-remain-pct'].forEach(id => {
-    const s = document.getElementById(id);
-    if (s && s !== slider && document.activeElement !== s) s.value = String(Math.round(remainCounterPct));
-  });
-  ['remain-counter-pct-val', 'pd-remain-pct-val'].forEach(id => {
-    const l = document.getElementById(id);
-    if (l) l.textContent = Math.round(remainCounterPct) + '%';
-  });
+  syncCounterSliders();
   refreshDashboardProfitCards();
+}
+async function onRemainCounterSliderChange() {
+  await persistClearedManualProfit();
 }
 
 // ============================================================
@@ -1235,11 +1160,6 @@ function mirrorControlPage() {
   if (sv && pdSv) pdSv.className = 'pd-profit-value' + (sv.classList.contains('negative') ? ' negative' : '');
   const manualTag = document.getElementById('pd-val-profit-sub');
   if (manualTag) manualTag.hidden = !manualTag.textContent.trim();
-  const isManual = getManualProfit(currentPeriod || {}) != null;
-  const btnCalc = document.getElementById('pd-btn-calc');
-  const btnManual = document.getElementById('pd-btn-manual');
-  if (btnCalc) btnCalc.classList.toggle('is-active', !isManual);
-  if (btnManual) btnManual.classList.toggle('is-active', isManual);
   const rakeCard = document.getElementById('rake-control-card');
   const pdRake = document.getElementById('pd-rake-mini');
   if (rakeCard && pdRake) {
@@ -1255,19 +1175,13 @@ function mirrorControlPage() {
   }
 }
 function syncControlPage() {
-  syncDashBBSlider();  // מכבד פתרון תרחיש פעיל (bbSolvePct) — הסימולציה נשמרת בניווט בתוך הסשן
-  const s = document.getElementById('pd-remain-pct');
-  if (s && document.activeElement !== s) s.value = String(Math.round(remainCounterPct));
-  const l = document.getElementById('pd-remain-pct-val');
-  if (l) l.textContent = Math.round(remainCounterPct) + '%';
-  const manualP = getManualProfit(currentPeriod || {});
-  const inp = document.getElementById('pd-manual-profit-input');
-  if (inp) inp.value = manualP != null ? manualP : '';
+  syncDashBBSlider();
+  syncCounterSliders();
   mirrorControlPage();
 }
 
 async function onDashBBSliderChange() {
-  await persistBadBeatPercent(getBBPercent());
+  await persistClearedManualProfit();
 }
 
 async function saveBadBeat() {
@@ -1297,14 +1211,7 @@ async function saveManualProfit(inputId) {
   if (!manualProfitReady()) { showNotif('נדרש להריץ את עדכון ה-SQL בסופבייס', 'error'); return; }
   const val = parseFloat(document.getElementById(inputId || 'manual-profit-input')?.value);
   if (isNaN(val)) { showNotif('אנא הזן ערך רווח', 'error'); return; }
-  try {
-    await dbPatch('current_period', '?id=eq.1', { manual_profit: val, updated_at: now() });
-    currentPeriod.manual_profit = val;
-    loadDashboard();
-    renderDashDetail();
-  } catch (e) {
-    showNotif('שגיאה בשמירת רווח ידני: ' + e.message, 'error');
-  }
+  await setManualProfitValue(val);
 }
 async function resetManualProfit() {
   if (!manualProfitReady()) return;
@@ -1315,17 +1222,6 @@ async function resetManualProfit() {
     renderDashDetail();
   } catch (e) {
     showNotif('שגיאה באיפוס הרווח: ' + e.message, 'error');
-  }
-}
-
-async function persistBadBeatPercent(val) {
-  const pct = Math.min(100, Math.max(0, n(val)));
-  if (!currentPeriod) return;
-  try {
-    await dbPatch('current_period', '?id=eq.1', { badbeat_percent: pct, updated_at: now() });
-    currentPeriod.badbeat_percent = pct;
-  } catch (e) {
-    showNotif('שגיאה בשמירת אחוז BadBeat: ' + e.message, 'error');
   }
 }
 
@@ -2332,11 +2228,13 @@ function dashStatValues() {
   const debtTotal   = n(cp.debt_ido) + n(cp.debt_maor) + otherDebts;
   const total       = liquid + debtTotal;
   const bbPct       = getBBPercent();
+  const cPct        = remainCounterPct;
   const counterIls  = chipsToIls(n(cp.counter));
   const badbeatIls  = chipsToIls(n(cp.badbeat) * bbPct / 100);
-  const chipsIls    = counterIls + badbeatIls;
-  const profit      = effectiveProfit(cp, total - chipsIls);
-  return { cp, playerDebts, liquidParts, extra, liquid, debtTotal, total, bbPct, counterIls, badbeatIls, chipsIls, profit, half: profit / 2 };
+  const counterKeepIls = chipsToIls(n(cp.counter) * cPct / 100);
+  const bbKeepIls      = badbeatIls;
+  const profit      = effectiveProfit(cp, total - counterKeepIls - bbKeepIls);
+  return { cp, playerDebts, liquidParts, extra, liquid, debtTotal, total, bbPct, cPct, counterIls, badbeatIls, counterKeepIls, bbKeepIls, profit, half: profit / 2 };
 }
 
 // עמודות נזיל נוסף קיימות? (select * מחזיר רק עמודות קיימות) — מאפשר שמירה רגילה גם לפני הרצת ה-SQL
@@ -2349,15 +2247,6 @@ const EXTRA_SCHEMA_KEYS = ['bank_maor','bank_ido','pocket_maor','pocket_ravit','
 function manualProfitReady() {
   return !!(currentPeriod && Object.prototype.hasOwnProperty.call(currentPeriod, 'manual_profit'));
 }
-// עמודת history.scenario_snapshot קיימת? (בדיקה חיה פעם אחת; נכשל = לא קיימת)
-let _scnColReady = null;
-async function scenarioColumnReady() {
-  if (_scnColReady != null) return _scnColReady;
-  try { await dbGet('history', '?select=scenario_snapshot&limit=1'); _scnColReady = true; }
-  catch (e) { _scnColReady = false; }
-  return _scnColReady;
-}
-
 function getManualProfit(cp) {
   return (manualProfitReady() && cp && cp.manual_profit != null) ? n(cp.manual_profit) : null;
 }
@@ -2526,11 +2415,11 @@ function renderDashDetail() {
 
   } else if (type === 'profit') {
     title = '📈 רווח כללי';
-    html = dashFormula(`סה"כ בקופה − Counter − BadBeat × ${fmt(v.bbPct)}%`, `יחס המרה: ${CHIPS_PER_SHEKEL} צ' = ₪1`) +
+    html = dashFormula(`סה"כ בקופה − Counter × ${fmt(v.cPct)}% − BadBeat × ${fmt(v.bbPct)}%`, `יחס המרה: ${CHIPS_PER_SHEKEL} צ' = ₪1`) +
       dashRow('סה"כ בקופה', v.total, { op: '' }) +
-      dashRow('Counter', v.counterIls, { op: '−', sub: `${fmt(v.cp.counter)} צ'` }) +
-      dashRow(`BadBeat × ${fmt(v.bbPct)}%`, v.badbeatIls, { op: '−', sub: dashBadbeatCalcSub(v.cp, v.bbPct) }) +
-      dashResult('רווח כללי (חישוב)', v.total - v.chipsIls);
+      dashRow(`Counter × ${fmt(v.cPct)}%`, v.counterKeepIls, { op: '−', sub: `${fmt(v.cp.counter)} צ' · להשארה במועדון` }) +
+      dashRow(`BadBeat × ${fmt(v.bbPct)}%`, v.bbKeepIls, { op: '−', sub: dashBadbeatCalcSub(v.cp, v.bbPct) }) +
+      dashResult('רווח כללי (חישוב)', v.total - v.counterKeepIls - v.bbKeepIls);
     const manualP = getManualProfit(v.cp);
     if (manualP != null) html += dashResult('רווח מוצג (ערך ידני)', manualP);
     html += `
@@ -4188,16 +4077,6 @@ function closeConfirm() {
 async function closePeriod(periodStart) {
   showNotif('⏳ מבצע סגירת תקופה...', 'info');
   try {
-    // תרחיש פעיל? חובה שהעמודה תהיה קיימת לפני כל כתיבה — אחרת הסגירה נעצרת כדי לא לאבד את הבחירה
-    const cpPre = currentPeriod;
-    const liquidPre = n(cpPre.bit_maor) + n(cpPre.bit_ido) + n(cpPre.bit_ravit) + n(cpPre.bit_dorin) + n(cpPre.paybox_maor) + n(cpPre.paybox_ido) + n(cpPre.cashcash_ido) + n(cpPre.cashcash_maor) + liquidExtraParts(cpPre).total;
-    const totalPre = liquidPre + n(cpPre.debt_ido) + n(cpPre.debt_maor) + otherPlayersDebtTotal();
-    const scnSnap = getScenarioSnapshot(cpPre, liquidPre, totalPre, chipsToIls(n(cpPre.counter)), chipsToIls(n(cpPre.badbeat)));
-    if (scnSnap && !(await scenarioColumnReady())) {
-      showNotif('כדי לשמור את התרחיש שנבחר בהיסטוריה יש להריץ קודם את עדכון ה-SQL בסופבייס', 'error');
-      return;
-    }
-    await persistBadBeatPercent(getBBPercent());
     // 1. Fetch full detail from all blue tables (with player names)
     const [rb, tn, bn, ref, wd, exp] = await Promise.all([
       dbGet('blue_table_rakeback',   '?select=*,players(name,nickname)&order=created_at.asc'),
@@ -4266,10 +4145,8 @@ async function closePeriod(periodStart) {
     const totalGeneralExpenses = sumField(exp, 'amount_ils');
 
     const cp     = currentPeriod;
-    const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor) + liquidExtraParts(cp).total;
-    const total       = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-    const chipsIls    = chipsToIls(n(cp.counter) + n(cp.badbeat) * getBBPercent() / 100);
-    const profitTotal = effectiveProfit(cp, total - chipsIls);
+    // הרווח שנשמר בהיסטוריה = הרווח המוצג כרגע (מחושב לפי הסליידרים, או ערך ידני)
+    const profitTotal = calcPeriodFigures(cp).profit;
     const profitHalf  = profitTotal / 2;
 
     // 2. Save full snapshot to history
@@ -4287,7 +4164,6 @@ async function closePeriod(periodStart) {
       notes:                 null,
       counter_snapshot:      n(cp.counter),
       badbeat_snapshot:      n(cp.badbeat),
-      ...(scnSnap ? { scenario_snapshot: scnSnap } : {}),
       detail_rakeback:       detailRakeback,
       detail_tournaments:    detailTournaments,
       detail_bonuses:        detailBonuses,
@@ -4321,7 +4197,9 @@ async function closePeriod(periodStart) {
     };
     await dbPatch('current_period', '?id=eq.1', resetData);
     Object.assign(currentPeriod, resetData);
-    try { clearScenarioTarget(); } catch (e) {}
+    // תקופה חדשה — הסליידרים חוזרים לברירת המחדל 100%
+    remainCounterPct = 100;
+    bbSliderPct = 100;
 
     // 4. Delete all blue table records for this period
     await Promise.all([
@@ -4423,11 +4301,8 @@ function loadSettlementPage() {
   setText('st-cashcash-ido',  '₪' + fmt(n(cp.cashcash_ido)));
   setText('st-cashcash-maor', '₪' + fmt(n(cp.cashcash_maor)));
 
-  // Profit per partner — total in coffers minus chips value (counter + badbeat×percent)
-  const liquid     = bitIdo + bitDorin + bitMaor + bitRavit + payboxMaor + payboxIdo + n(cp.cashcash_ido) + n(cp.cashcash_maor) + liquidExtraParts(cp).total;
-  const total      = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
-  const chipsIls   = chipsToIls(n(cp.counter) + n(cp.badbeat) * getBBPercent() / 100);
-  const profitEach = effectiveProfit(cp, total - chipsIls) / 2;
+  // Profit per partner — הרווח המוצג (חישוב לפי הסליידרים, או ערך ידני) חלקי 2
+  const profitEach = calcPeriodFigures(cp).profit / 2;
 
   setText('st-profit-each', '₪' + fmt(profitEach));
 

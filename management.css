@@ -3028,3 +3028,44 @@ body:has(#management-section[style*="block"]) #notification {
 
 /* snapshot תרחיש בסגירת תקופה — כיתוב "סימולציה בלבד" בפירוט תקופה בהיסטוריה */
 .pd-scn-sim { font-size: 11.5px; opacity: .75; font-style: italic; margin-bottom: 4px; }
+
+/* ============================================================
+   כרטיס רווח קומפקטי — שלושה סכומים בשורה אחת (14.11)
+   מאור ועידו בצדדים, רווח כללי במרכז; לחיצה על סכום = עריכה ידנית
+   ============================================================ */
+.pd-profit-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: rgba(4,10,24,.45); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 14px; padding: 8px 12px;
+}
+.pd-profit-row .pd-partner {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 12px; color: rgba(255,255,255,.8); cursor: pointer;
+  min-width: 62px; padding: 2px 4px; border-radius: 10px;
+  transition: background .12s ease;
+}
+.pd-profit-row .pd-partner:active { background: rgba(255,255,255,.07); }
+.pd-profit-row .pd-partner svg { width: 16px; height: 16px; }
+.pd-profit-row .pd-partner:first-child svg { color: #38bdf8; }
+.pd-profit-row .pd-partner:last-child svg { color: #c084fc; }
+.pd-profit-row .pd-partner b { font-size: 15px; font-weight: 800; color: #fff; direction: ltr; }
+.pd-profit-center {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; padding: 0 6px; border-radius: 10px;
+}
+.pd-profit-center:active { background: rgba(255,255,255,.05); }
+.pd-profit-center .pd-profit-manual { align-self: center; }
+.pd-profit-edit-row {
+  display: flex; flex-direction: column; gap: 7px;
+  background: rgba(4,10,24,.55); border: 1px solid rgba(167,139,250,.35);
+  border-radius: 12px; padding: 10px 12px;
+}
+.pd-profit-edit-row[hidden] { display: none; }
+.pd-profit-edit-label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); text-align: center; }
+.pd-profit-edit-controls { display: flex; gap: 8px; align-items: center; }
+.pd-profit-edit-controls input {
+  flex: 1; min-width: 0; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
+  border-radius: 10px; padding: 8px 12px; color: #fff; font-family: inherit;
+  font-size: 16px; font-weight: 700; text-align: center; direction: ltr;
+}
+.pd-profit-edit-controls input:focus { outline: none; border-color: rgba(0,245,138,.6); }

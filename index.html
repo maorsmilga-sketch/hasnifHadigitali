@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261114b">
-<link rel="stylesheet" href="management.css?v=20261114h">
+<link rel="stylesheet" href="management.css?v=20261114i">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -253,7 +253,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
               <span class="remain-slider">
                 <span class="remain-slider-head"><span class="stat-note-i" role="button" aria-label="הסבר" onclick="toggleStatNote(event,'remain-counter-note')">i</span><span class="remain-slider-value" id="remain-counter-pct-val">100%</span></span>
                 <span class="stat-sub stat-note remain-note" id="remain-counter-note" hidden>כמה מהקאונטר להשאיר במועדון</span>
-                <input type="range" class="remain-slider-input" id="remain-counter-pct" min="0" max="100" step="1" value="100" aria-label="כמה מהקאונטר להשאיר במועדון" oninput="onRemainCounterSliderInput()">
+                <input type="range" class="remain-slider-input" id="remain-counter-pct" min="0" max="100" step="1" value="100" aria-label="כמה מהקאונטר להשאיר במועדון" oninput="onRemainCounterSliderInput()" onchange="onRemainCounterSliderChange()">
               </span>
             </div>
             <button type="button" class="stat-card positive" onclick="openDashStatDetail('profit-ido')">
@@ -307,7 +307,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
                 <span class="dash-bb-slider-label">אחוז BadBeat בחישוב הרווח</span>
                 <button type="button" class="dash-bb-note-i" id="dash-bb-note-btn" aria-label="הסבר" aria-expanded="false" onclick="toggleDashBBNote(event)">i</button>
               </span>
-              <span class="dash-bb-slider-value" id="dash-bb-percent-val">65%</span>
+              <span class="dash-bb-slider-value" id="dash-bb-percent-val">100%</span>
             </div>
             <input type="range" class="dash-bb-slider-input" id="dash-bb-percent" min="0" max="100" step="1"
                    aria-valuemin="0" aria-valuemax="100" aria-labelledby="dash-bb-slider-wrap"
@@ -380,52 +380,38 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
             <span class="pd-card-label">רווח כללי</span>
             <span class="stat-note-i" role="button" aria-label="פירוט רווח" onclick="event.stopPropagation();openDashStatDetail('profit')">i</span>
           </span>
-          <span class="pd-profit-value" id="pd-sv-profit"><span class="currency">₪</span><span id="pd-val-profit">—</span></span>
-          <span class="pd-profit-manual" id="pd-val-profit-sub" hidden>ערך ידני</span>
-          <span class="pd-profit-partners">
-            
-            <span class="pd-partner"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.5 3.5-5 7-5s6 1.5 7 5"/></svg>מאור <b id="pd-val-profit-maor">—</b></span>
-            <span class="pd-partner-sep"></span>
-            <span class="pd-partner"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.5 3.5-5 7-5s6 1.5 7 5"/></svg>עידו <b id="pd-val-profit-ido">—</b></span>
+          <span class="pd-profit-row">
+            <span class="pd-partner" role="button" aria-label="עריכת רווח מאור" onclick="editProfitValue(event,'maor')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.5 3.5-5 7-5s6 1.5 7 5"/></svg>מאור <b id="pd-val-profit-maor">—</b></span>
+            <span class="pd-profit-center" role="button" aria-label="עריכת רווח כללי" onclick="editProfitValue(event,'total')">
+              <span class="pd-profit-value" id="pd-sv-profit"><span class="currency">₪</span><span id="pd-val-profit">—</span></span>
+              <span class="pd-profit-manual" id="pd-val-profit-sub" hidden>ערך ידני</span>
+            </span>
+            <span class="pd-partner" role="button" aria-label="עריכת רווח עידו" onclick="editProfitValue(event,'ido')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.5 3.5-5 7-5s6 1.5 7 5"/></svg>עידו <b id="pd-val-profit-ido">—</b></span>
           </span>
         </button>
+        <div class="pd-profit-edit-row" id="pd-profit-edit-row" hidden>
+          <span class="pd-profit-edit-label" id="pd-profit-edit-label"></span>
+          <span class="pd-profit-edit-controls">
+            <input type="number" inputmode="decimal" id="pd-profit-edit-input" enterkeyhint="done" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();saveProfitEdit();}">
+            <button type="button" class="pd-mini-btn pd-mini-save" onclick="saveProfitEdit()">שמור</button>
+            <button type="button" class="pd-mini-btn" onclick="cancelProfitEdit()">ביטול</button>
+          </span>
+        </div>
 
         <div class="pd-scenario">
-          <div class="pd-scenario-title">תרחיש משיכה <span class="pd-title-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19 16 8"/><path d="M17 3l.7 1.8 1.8.7-1.8.7L17 8l-.7-1.8-1.8-.7 1.8-.7zM20 10l.4 1 1 .4-1 .4-.4 1-.4-1-1-.4 1-.4zM4 4l.4 1 1 .4-1 .4L4 6.8l-.4-1-1-.4 1-.4z"/></svg></span></div>
-          <div class="pd-sc-profit">
-            <span class="pd-sc-profit-label">סכום המשיכה בתרחיש</span>
-            <span class="pd-sc-profit-value">₪<span id="pd-val-profit-scenario">—</span>
-              <span class="pd-inline-btn" role="button" aria-label="בדיקת סכום משיכה" onclick="document.getElementById('pd-target-row').hidden=false;document.getElementById('pd-target-input').focus()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/></svg></span>
-            </span>
-            <span class="pd-sc-profit-btns">
-              <span class="pd-btns-prefix">רווח:</span>
-              <button type="button" class="pd-mini-btn" id="pd-btn-calc" onclick="resetManualProfit()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg> מחושב</button>
-              <button type="button" class="pd-mini-btn" id="pd-btn-manual" onclick="document.getElementById('pd-manual-row').hidden=false;document.getElementById('pd-manual-profit-input').focus()"> ידני</button>
-            </span>
-          </div>
-          <div class="pd-manual-row" id="pd-manual-row" hidden>
-            <input type="number" inputmode="decimal" id="pd-manual-profit-input" placeholder="הזן רווח ידני">
-            <button type="button" class="pd-mini-btn pd-mini-save" onclick="saveManualProfit('pd-manual-profit-input')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 4v4.5h7V4M8 20v-6h8v6"/></svg> שמור</button>
-          </div>
-          <div class="pd-manual-row" id="pd-target-row" hidden>
-            <input type="number" inputmode="decimal" id="pd-target-input" placeholder="סכום משיכה לבדיקה — סימולציה, לא נשמר">
-            <button type="button" class="pd-mini-btn pd-mini-save" onclick="applyScenarioTargetFromInput()">בדוק</button>
-            <button type="button" class="pd-mini-btn" onclick="clearScenarioTarget()">נקה</button>
-          </div>
-          <div class="pd-slider-note stat-note" id="pd-target-note" hidden></div>
-
+          <div class="pd-scenario-title">התאמת הרווח <span class="pd-title-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19 16 8"/><path d="M17 3l.7 1.8 1.8.7-1.8.7L17 8l-.7-1.8-1.8-.7 1.8-.7zM20 10l.4 1 1 .4-1 .4-.4 1-.4-1-1-.4 1-.4zM4 4l.4 1 1 .4-1 .4L4 6.8l-.4-1-1-.4 1-.4z"/></svg></span></div>
           <div class="pd-slider-row">
             <div class="pd-slider-head">
               <span class="pd-slider-label">אחוז BadBeat בחישוב
                 <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-bb-note')">i</span>
               </span>
               <span class="pd-slider-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C9 7 5.5 9.5 5.5 13a4.2 4.2 0 0 0 6.5 3.4c-.3 1.6-.9 2.8-1.5 3.6h3c-.6-.8-1.2-2-1.5-3.6a4.2 4.2 0 0 0 6.5-3.4C18.5 9.5 15 7 12 3z"/></svg></span>
-              <b class="pd-badge" id="pd-bb-percent-val">65%</b>
+              <b class="pd-badge" id="pd-bb-percent-val">100%</b>
             </div>
             <input type="range" class="pd-range pd-range-bb" id="pd-bb-percent" min="0" max="100" step="1"
                    oninput="onDashBBSliderInput(this)" onchange="onDashBBSliderChange()">
             <div class="pd-ticks" aria-hidden="true"><span>0%</span><span>100%</span></div>
-            <div class="pd-slider-note stat-note" id="pd-bb-note" hidden>100% = כל ה-BadBeat מופחת מהרווח · 0% = לא מופחת בכלל · נשמר לתקופה ומשותף עם מסך הבקרה</div>
+            <div class="pd-slider-note stat-note" id="pd-bb-note" hidden>100% = כל ה-BadBeat מופחת מהרווח · 0% = לא מופחת בכלל · מעדכן את הרווח הכללי ואת מד הנזילות</div>
           </div>
 
           <div class="pd-slider-row">
@@ -437,9 +423,9 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
               <b class="pd-badge" id="pd-remain-pct-val">100%</b>
             </div>
             <input type="range" class="pd-range pd-range-counter" id="pd-remain-pct" min="0" max="100" step="1"
-                   oninput="onRemainCounterSliderInput(this)">
+                   oninput="onRemainCounterSliderInput(this)" onchange="onRemainCounterSliderChange()">
             <div class="pd-ticks" aria-hidden="true"><span>0%</span><span>100%</span></div>
-            <div class="pd-slider-note stat-note" id="pd-remain-note" hidden>סימולציה בלבד — לא נשמר; משנה את סכום המשיכה בתרחיש ואת מד הנזילות, לא את הרווח הכללי</div>
+            <div class="pd-slider-note stat-note" id="pd-remain-note" hidden>100% = כל הקאונטר מופחת מהרווח · 0% = לא מופחת בכלל · מעדכן את הרווח הכללי ואת מד הנזילות</div>
           </div>
 
           <div class="pd-meter is-empty" id="pd-meter">
@@ -456,10 +442,9 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
             </div>
             <div class="pd-meter-note stat-note" id="pd-meter-note" hidden>
               <span class="pd-meter-note-row">כסף נזיל <b>₪<span id="pd-mn-liquid">—</span></b></span>
-              <span class="pd-meter-note-row">סכום המשיכה בתרחיש <b>₪<span id="pd-mn-profit">—</span></b></span>
+              <span class="pd-meter-note-row">רווח למשיכה <b>₪<span id="pd-mn-profit">—</span></b></span>
               <span class="pd-meter-note-row">קאונטר נשאר <b>₪<span id="pd-mn-counter">—</span></b></span>
               <span class="pd-meter-note-row">BadBeat נשאר <b>₪<span id="pd-mn-bb">—</span></b></span>
-              <span class="pd-meter-note-row" id="pd-mn-extra-row" hidden>מזומן נוסף נשאר בקופה <b>₪<span id="pd-mn-extra">—</span></b></span>
               <span class="pd-meter-note-row">המד משווה למזומן בלבד — קאונטר ו-BadBeat שנשארו במועדון נשארים התחייבות</span>
               <span class="pd-meter-note-row">יתרה לאחר המשיכה <b>₪<span id="pd-mn-remain">—</span></b></span>
             </div>
@@ -485,7 +470,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
           <button type="button" class="pd-act-close" onclick="navigate('settlement')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4.5c4-2 8 2 13 0v9c-5 2-9-2-13 0"/></svg> סגור תקופה</button>
           <div class="pd-actions-row">
             <button type="button" class="pd-act" onclick="resetManualProfit()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5v5h5"/><path d="M4.6 10a8 8 0 1 1-1.2 6.5"/></svg> איפוס רווח ידני</button>
-            <button type="button" class="pd-act" onclick="saveManualProfit('pd-manual-profit-input')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 4v4.5h7V4M8 20v-6h8v6"/></svg> שמור רווח ידני</button>
+            <button type="button" class="pd-act" onclick="editProfitValue(event,'total')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 4v4.5h7V4M8 20v-6h8v6"/></svg> הזנת רווח ידני</button>
             <button type="button" class="pd-act-info" onclick="openDashStatDetail('profit')" aria-label="פירוט רווח">i</button>
           </div>
         </div>
@@ -1610,7 +1595,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261114h"></script>
+<script src="app.js?v=20261114i"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
