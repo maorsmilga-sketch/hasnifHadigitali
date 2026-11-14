@@ -2907,3 +2907,117 @@ body:has(#management-section[style*="block"]) #notification {
 .pd-profit-partners { padding: 1px 8px; }
 .pd-c-profit .pd-partner svg { width: 14px; height: 14px; }
 .pd-c-profit .pd-partner-sep { height: 18px; }
+
+/* --- שלב 5יב: חלונית פירוט בגימור זכוכית חלבית למסך בקרה-תרחישים בלבד (אושר 14.11 10:51) ---
+   כל הכללים מוגבלים ל-‎#dash-detail-overlay.pd-style — הדשבורד הישן לא מושפע. */
+#dash-detail-overlay.pd-style {
+  background: rgba(4,4,14,0.66);
+}
+#dash-detail-overlay.pd-style .dash-detail-sheet {
+  background:
+    radial-gradient(120% 40% at 100% 0%, rgba(108,99,255,0.28) 0%, transparent 55%),
+    linear-gradient(180deg, #14142c 0%, #0d0d1f 55%, #111127 100%);
+  border: 1.5px solid rgba(196,181,253,.50);
+  border-bottom: none;
+  box-shadow: 0 0 3px rgba(196,181,253,.45), 0 0 22px rgba(139,92,246,.30), 0 -18px 50px rgba(0,0,0,.5);
+}
+#dash-detail-overlay.pd-style .md-sheet-handle { background: rgba(196,181,253,.45); box-shadow: 0 0 8px rgba(139,92,246,.5); }
+#dash-detail-overlay.pd-style .md-sheet-title { display: none; }
+
+/* כותרת: אייקון + כותרת וכותרת משנה + X עגול */
+#dash-detail-overlay.pd-style .pd-detail-head {
+  display: flex; align-items: center; gap: 12px;
+  margin: 0 0 12px;
+}
+#dash-detail-overlay.pd-style .pd-detail-icon {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 14px;
+  color: var(--pda-text, #c4b5fd);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0) 55%), var(--pda-fill, rgba(139,92,246,.16));
+  border: 1.5px solid var(--pda-hi, rgba(196,181,253,.75));
+  box-shadow: 0 0 3px var(--pda-hi, rgba(196,181,253,.55)), 0 0 12px var(--pda-glow, rgba(139,92,246,.35)), inset 0 1px 0 rgba(255,255,255,.18);
+}
+#dash-detail-overlay.pd-style .pd-detail-titles { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+#dash-detail-overlay.pd-style .pd-detail-title { font-size: 18px; font-weight: 800; color: #fff; }
+#dash-detail-overlay.pd-style .pd-detail-sub { font-size: 12px; color: rgba(226,232,255,.62); }
+#dash-detail-overlay.pd-style .pd-detail-x {
+  flex-shrink: 0; margin-inline-start: auto;
+  width: 34px; height: 34px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 14px; color: rgba(226,232,255,.85); font-family: inherit;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(196,181,253,.35);
+  cursor: pointer; transition: background-color .18s;
+}
+#dash-detail-overlay.pd-style .pd-detail-x:active { background: rgba(255,255,255,.14); }
+
+/* כרטיס הירו — אותו סכום שבשורת הסיכום, בלי חישוב חדש */
+#dash-detail-overlay.pd-style .pd-detail-hero {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 14px 16px 12px; margin-bottom: 12px;
+  border-radius: 18px; text-align: center;
+  background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,0) 40%), linear-gradient(150deg, var(--pda-fill, rgba(139,92,246,.18)), rgba(8,8,20,.42) 70%);
+  border: 1.5px solid var(--pda-hi, rgba(196,181,253,.85));
+  box-shadow: 0 0 3px var(--pda-hi, rgba(196,181,253,.6)), 0 0 14px var(--pda-glow, rgba(139,92,246,.4)), inset 0 1px 0 rgba(255,255,255,.18), inset 0 0 16px var(--pda-soft, rgba(139,92,246,.10));
+  backdrop-filter: blur(10px) saturate(1.3);
+  -webkit-backdrop-filter: blur(10px) saturate(1.3);
+}
+#dash-detail-overlay.pd-style .pd-detail-hero-label { font-size: 12.5px; font-weight: 600; color: rgba(226,232,255,.7); }
+#dash-detail-overlay.pd-style .pd-detail-hero-value {
+  font-size: 30px; font-weight: 900; color: var(--pda-text, #c4b5fd);
+  text-shadow: 0 0 6px var(--pda-glow, rgba(139,92,246,.5));
+  direction: ltr;
+}
+#dash-detail-overlay.pd-style .pd-detail-hero-value.neg { color: #ff7a92; text-shadow: 0 0 6px rgba(255,69,101,.5); }
+
+/* וריאציות צבע לפי סוג הפירוט */
+#dash-detail-overlay.pd-style [data-acc="cyan"]   { --pda-hi: rgba(125,211,252,.85); --pda-glow: rgba(56,189,248,.45); --pda-soft: rgba(56,189,248,.10); --pda-fill: rgba(56,189,248,.16); --pda-text: #7dd3fc; }
+#dash-detail-overlay.pd-style [data-acc="purple"] { --pda-hi: rgba(196,181,253,.85); --pda-glow: rgba(139,92,246,.45); --pda-soft: rgba(139,92,246,.10); --pda-fill: rgba(139,92,246,.18); --pda-text: #c4b5fd; }
+#dash-detail-overlay.pd-style [data-acc="green"]  { --pda-hi: rgba(74,222,128,.85);  --pda-glow: rgba(0,245,138,.45);  --pda-soft: rgba(0,245,138,.08);  --pda-fill: rgba(0,245,138,.14);  --pda-text: #4ade80; }
+#dash-detail-overlay.pd-style [data-acc="amber"]  { --pda-hi: rgba(253,186,116,.85); --pda-glow: rgba(251,146,60,.45); --pda-soft: rgba(251,146,60,.10); --pda-fill: rgba(251,146,60,.14); --pda-text: #fdba74; }
+#dash-detail-overlay.pd-style [data-acc="violet"] { --pda-hi: rgba(216,180,254,.85); --pda-glow: rgba(192,132,252,.45); --pda-soft: rgba(192,132,252,.10); --pda-fill: rgba(192,132,252,.16); --pda-text: #d8b4fe; }
+#dash-detail-overlay.pd-style [data-acc="pink"]   { --pda-hi: rgba(249,168,212,.85); --pda-glow: rgba(244,114,182,.45); --pda-soft: rgba(244,114,182,.10); --pda-fill: rgba(244,114,182,.14); --pda-text: #f9a8d4; }
+#dash-detail-overlay.pd-style [data-acc="blue"]   { --pda-hi: rgba(147,197,253,.85); --pda-glow: rgba(96,165,250,.45); --pda-soft: rgba(96,165,250,.10); --pda-fill: rgba(96,165,250,.15); --pda-text: #93c5fd; }
+#dash-detail-overlay.pd-style [data-acc="teal"]   { --pda-hi: rgba(110,231,183,.85); --pda-glow: rgba(52,211,153,.45); --pda-soft: rgba(52,211,153,.10); --pda-fill: rgba(52,211,153,.14); --pda-text: #6ee7b7; }
+
+/* שורות הפירוט ככרטיסי זכוכית */
+#dash-detail-overlay.pd-style .dash-calc-row {
+  background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0) 55%), rgba(14,14,32,.55);
+  border: 1px solid rgba(196,181,253,.20);
+  border-radius: 14px;
+  margin-bottom: 8px;
+  min-height: 48px;
+}
+#dash-detail-overlay.pd-style .dash-formula {
+  background: rgba(139,92,246,.08);
+  border: 1px solid rgba(196,181,253,.22);
+  border-radius: 14px;
+  margin-bottom: 10px;
+}
+#dash-detail-overlay.pd-style .dash-calc-result {
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0) 55%), rgba(6,40,28,.5);
+  border: 1.5px solid rgba(110,231,183,.65);
+  box-shadow: 0 0 3px rgba(110,231,183,.5), 0 0 12px rgba(0,245,138,.28);
+}
+#dash-detail-overlay.pd-style button.dash-calc-link:active { border-color: rgba(196,181,253,.6); }
+#dash-detail-overlay.pd-style .dash-detail-back {
+  background: rgba(139,92,246,.14);
+  border: 1px solid rgba(196,181,253,.45);
+}
+#dash-detail-overlay.pd-style .md-sheet-close {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  border-top: none;
+  border-radius: 16px;
+  margin-bottom: calc(8px + var(--m-safe-b));
+  box-shadow: 0 0 5px rgba(196,181,253,.7), 0 0 18px rgba(139,92,246,.55), inset 0 1px 0 rgba(255,255,255,.28);
+  font-weight: 800;
+}
+#dash-detail-overlay.pd-style .md-sheet-close:active { background: linear-gradient(135deg, #7c3aed, #5b21b6); }
+#dash-detail-overlay.pd-style .manual-profit-row input {
+  background: rgba(8,8,20,.6);
+  border: 1px solid rgba(196,181,253,.35);
+  color: #fff;
+}
+#dash-detail-overlay.pd-style .md-list-empty { color: rgba(226,232,255,.6); }
+#dash-detail-overlay.pd-style .pd-detail-head[hidden],
+#dash-detail-overlay.pd-style .pd-detail-hero[hidden] { display: none; }

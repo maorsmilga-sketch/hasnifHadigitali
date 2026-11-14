@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261114b">
-<link rel="stylesheet" href="management.css?v=20261114f">
+<link rel="stylesheet" href="management.css?v=20261114g">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -1414,6 +1414,18 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
     <div id="dash-detail-overlay" class="md-sheet-overlay" style="display:none" onclick="closeDashDetail()">
       <div class="md-sheet dash-detail-sheet" onclick="event.stopPropagation()">
         <div class="md-sheet-handle"></div>
+        <div class="pd-detail-head" id="pd-detail-head" hidden>
+          <span class="pd-detail-icon" id="pd-detail-icon" aria-hidden="true"></span>
+          <span class="pd-detail-titles">
+            <span class="pd-detail-title" id="pd-detail-title"></span>
+            <span class="pd-detail-sub" id="pd-detail-sub"></span>
+          </span>
+          <button type="button" class="pd-detail-x" onclick="closeDashDetail()" aria-label="סגירה">✕</button>
+        </div>
+        <div class="pd-detail-hero" id="pd-detail-hero" hidden>
+          <span class="pd-detail-hero-label" id="pd-detail-hero-label"></span>
+          <span class="pd-detail-hero-value" id="pd-detail-hero-value"></span>
+        </div>
         <div class="md-sheet-title" id="dash-detail-title">פירוט</div>
         <button type="button" class="dash-detail-back" id="dash-detail-back" hidden onclick="dashDetailBack()">&#8592; חזרה</button>
         <div id="dash-detail-body" class="md-list"></div>
@@ -1590,7 +1602,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261114f"></script>
+<script src="app.js?v=20261114g"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

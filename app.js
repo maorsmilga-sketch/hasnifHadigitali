@@ -2108,6 +2108,7 @@ async function refreshBTSummary() {
 // ============================================================
 function closeDashDetail() {
   dashDetailStack = [];
+  document.getElementById('dash-detail-overlay')?.classList.remove('pd-style');
   closeSheet('dash-detail-overlay');
 }
 
@@ -2139,7 +2140,9 @@ function dashRow(label, value, { op = '+', sub = '', open = '', go = '' } = {}) 
     </${tag}>`;
 }
 
+let dashLastResult = null; // התוצאה האחרונה שחושבה בחלונית — משמשת את כרטיס ההירו של מסך התרחישים
 function dashResult(label, value) {
+  dashLastResult = { label, value };
   const color = value >= 0 ? 'positive-color' : 'negative-color';
   return `
     <div class="md-list-item dash-calc-row dash-calc-result">
@@ -2238,6 +2241,7 @@ function dashExtraSummaryHtml(x) {
 }
 
 function openDashStatDetail(type) {
+  syncPdDetailMode();
   dashDetailStack = [{ type: type === 'extra' ? 'extra-summary' : type }];
   renderDashDetail();
   openSheet('dash-detail-overlay');
@@ -2261,10 +2265,74 @@ function updateDashBackBtn() {
       : below.type === 'expenses' ? 'חזרה לסיכום הוצאות' : 'חזרה');
   }
 }
+// — חלונית פירוט בגימור זכוכית למסך בקרה-תרחישים (אושר 14.11 10:51) —
+// אותה חלונית ואותם נתונים; מחלקת pd-style מתווספת רק כשמסך התרחישים פעיל,
+// והעיצוב הזכוכי מוגבל אליה ב-CSS. הדשבורד הישן לא משתנה.
+const PD_DETAIL_ICONS = {
+  wallet: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18M16 15h2"/></svg>',
+  coins: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg>',
+  chip: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3"/></svg>',
+  spade: '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12 3C9 7.5 5.5 10.5 5.5 13.7 5.5 16.1 7.4 18 9.7 18c.9 0 1.7-.3 2.3-.7-.2 1.4-.6 2.6-1.2 3.7h2.4c-.6-1.1-1-2.3-1.2-3.7.6.4 1.4.7 2.3.7 2.3 0 4.2-1.9 4.2-4.3C18.5 10.5 15 7.5 12 3z"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><rect x="4" y="14" width="3.6" height="6" rx="1"/><rect x="10.2" y="10" width="3.6" height="10" rx="1"/><rect x="16.4" y="5" width="3.6" height="15" rx="1"/></svg>',
+  user: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.5 3.5-5 7-5s6 1.5 7 5"/></svg>',
+  receipt: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21z"/><path d="M9 8h6M9 12h6"/></svg>',
+  bank: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 4l9 5.5"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3.5 20.5h17"/></svg>',
+  drop: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c2.8 3.6 5.5 6.9 5.5 10a5.5 5.5 0 0 1-11 0c0-3.1 2.7-6.4 5.5-10z"/></svg>',
+  list: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg>',
+};
+const PD_DETAIL_META = {
+  'liquid':       { title: 'כסף נזיל',    sub: 'פירוט מקורות הכסף',              acc: 'cyan',   icon: 'wallet' },
+  'total':        { title: 'סה"כ בקופה',  sub: 'נזיל + חובות',                   acc: 'purple', icon: 'coins' },
+  'counter':      { title: 'Counter',      sub: 'המרה לש"ח',                      acc: 'amber',  icon: 'chip' },
+  'badbeat-full': { title: 'BadBeat',      sub: 'לפי האחוז שנבחר',                acc: 'violet', icon: 'spade' },
+  'profit':       { title: 'רווח כללי',    sub: 'חישוב התקופה',                   acc: 'green',  icon: 'chart' },
+  'profit-ido':   { title: 'רווח עידו',    sub: 'חלוקה וחובות',                   acc: 'blue',   icon: 'user' },
+  'profit-maor':  { title: 'רווח מאור',    sub: 'חלוקה וחובות',                   acc: 'blue',   icon: 'user' },
+  'debts':        { title: 'סה"כ חובות',   sub: 'עידו + מאור + שחקנים',           acc: 'blue',   icon: 'user' },
+  'expenses':     { title: 'סה"כ הוצאות',  sub: 'גנייה · טורנירים · בונוסים · הפניות', acc: 'pink', icon: 'receipt' },
+  'leumi':        { title: 'בנק לאומי',    sub: 'יתרה שמוזנת ידנית',              acc: 'cyan',   icon: 'bank' },
+  'extra-summary':{ title: 'נזיל נוסף',    sub: 'בנקים · כיסים · ביט אחר',        acc: 'teal',   icon: 'drop' },
+  'extra-team':   { title: '',             sub: 'פירוט נזיל נוסף',                acc: 'teal',   icon: 'user' },
+  'bt':           { title: '',             sub: 'רשומות התקופה',                  acc: 'purple', icon: 'list' },
+};
+function isPdDetail() {
+  return !!document.getElementById('dash-detail-overlay')?.classList.contains('pd-style');
+}
+function syncPdDetailMode() {
+  const ov = document.getElementById('dash-detail-overlay');
+  if (!ov) return;
+  ov.classList.toggle('pd-style', !!document.getElementById('page-control')?.classList.contains('active'));
+}
+function pdCleanTitle(raw) {
+  return String(raw || '').replace(/^[^א-תA-Za-z0-9"]+/u, '');
+}
+function updatePdDetailChrome(view, rawTitle) {
+  const head = document.getElementById('pd-detail-head');
+  const hero = document.getElementById('pd-detail-hero');
+  if (!head || !hero) return;
+  if (!isPdDetail()) { head.hidden = true; hero.hidden = true; return; }
+  const meta = PD_DETAIL_META[view.type] || {};
+  let t = meta.title || pdCleanTitle(rawTitle);
+  if (view.type === 'extra-team' && typeof EXTRA_TEAMS !== 'undefined' && EXTRA_TEAMS[view.team]) t = EXTRA_TEAMS[view.team].label;
+  head.hidden = false;
+  head.dataset.acc = meta.acc || 'purple';
+  document.getElementById('pd-detail-icon').innerHTML = PD_DETAIL_ICONS[meta.icon] || '';
+  setText('pd-detail-title', t);
+  setText('pd-detail-sub', meta.sub || '');
+  if (view.type === 'bt' || !dashLastResult) { hero.hidden = true; return; }
+  hero.hidden = false;
+  hero.dataset.acc = meta.acc || 'purple';
+  setText('pd-detail-hero-label', dashLastResult.label);
+  const hv = document.getElementById('pd-detail-hero-value');
+  hv.textContent = '\u200e₪' + fmt(dashLastResult.value);
+  hv.classList.toggle('neg', dashLastResult.value < 0);
+}
+
 function renderDashDetail() {
   const view = dashDetailStack[dashDetailStack.length - 1];
   if (!view) return; // שכבת הפירוט לא פתוחה (שמירה/איפוס ממסך התרחישים) — אין מה לרנדר
   const type = view.type;
+  dashLastResult = null;
   const v = dashStatValues();
   let title = '', html = '';
 
@@ -2278,7 +2346,7 @@ function renderDashDetail() {
   } else if (type === 'total') {
     title = '🏦 סה"כ בקופה';
     html = dashFormula('כסף נזיל + חוב עידו + חוב מאור + חובות שחקנים') +
-      dashRow('כסף נזיל', v.liquid, { op: '' }) +
+      dashRow('כסף נזיל', v.liquid, { op: '', go: isPdDetail() ? "pushDashDetail({type:'liquid'})" : '' }) +
       dashDebtRows(v) +
       dashResult('סה"כ בקופה', v.total);
 
@@ -2375,6 +2443,7 @@ function renderDashDetail() {
   dashDetailSeq++;
   setText('dash-detail-title', title);
   document.getElementById('dash-detail-body').innerHTML = html;
+  updatePdDetailChrome(view, title);
   updateDashBackBtn();
   document.querySelector('#dash-detail-overlay .dash-detail-sheet').scrollTop = 0;
 }
@@ -2391,6 +2460,7 @@ async function openDashBTDetail(type, fromExpenses = false) {
     exp: { title: '🧾 הוצאות כלליות',  table: 'blue_table_expenses',   qs: '?order=created_at.desc' },
   }[type];
   if (!cfg) return;
+  syncPdDetailMode();
 
   const seq = ++dashDetailSeq;
   setText('dash-detail-title', cfg.title);
@@ -2400,6 +2470,7 @@ async function openDashBTDetail(type, fromExpenses = false) {
   const body = document.getElementById('dash-detail-body');
   document.querySelector('#dash-detail-overlay .dash-detail-sheet').scrollTop = 0;
   openSheet('dash-detail-overlay');  // handles display:flex + .open class + animation
+  updatePdDetailChrome({ type: 'bt' }, cfg.title);
   body.innerHTML = '<div class="md-list-empty">טוען נתונים…</div>';
 
   try {
