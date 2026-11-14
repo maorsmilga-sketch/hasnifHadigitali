@@ -2895,3 +2895,15 @@ body:has(#management-section[style*="block"]) #notification {
 .pd-act-close { box-shadow: 0 0 5px rgba(196,181,253,.75), 0 0 16px rgba(139,92,246,.60), 0 0 34px rgba(139,92,246,.30), inset 0 1px 0 rgba(255,255,255,.28); }
 .pd-act { background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(139,92,246,.10)); box-shadow: 0 0 8px rgba(139,92,246,.30), inset 0 1px 0 rgba(255,255,255,.12); }
 .pd-act-info { box-shadow: 0 0 6px rgba(125,211,252,.60), 0 0 14px rgba(56,189,248,.40); }
+
+/* --- שלב 5יא: הקטנת מסגרת כרטיס הרווח הכללי + הדגשת הכתב (בקשת מאור 10:39-10:40, טרם אושר להעלאה) ---
+   קטן יותר משלב 5ו בכל רוחב: ריפוד 7/14/5→5/12/3, פערים 3→2, שורת שותפים 2px→1px, אייקונים 16→14.
+   גודל המספר והטקסטים לא קטנים; הכתב מודגש במשקל ובזוהר. */
+.pd-c-profit { padding: 5px 12px 3px; gap: 2px; margin-bottom: 6px; }
+.pd-profit-head .pd-card-label { font-weight: 700; color: #fff; text-shadow: 0 0 8px rgba(0,245,138,.5); }
+.pd-profit-chart svg { width: 18px; height: 18px; }
+.pd-profit-value { font-weight: 900; color: #5ffa9b; text-shadow: 0 0 10px rgba(190,255,220,.55), 0 0 26px rgba(0,245,138,.85); }
+.pd-profit-value.negative { text-shadow: 0 0 10px rgba(255,205,215,.5), 0 0 24px rgba(255,69,101,.85); }
+.pd-profit-partners { padding: 1px 8px; }
+.pd-c-profit .pd-partner svg { width: 14px; height: 14px; }
+.pd-c-profit .pd-partner-sep { height: 18px; }

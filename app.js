@@ -2263,6 +2263,7 @@ function updateDashBackBtn() {
 }
 function renderDashDetail() {
   const view = dashDetailStack[dashDetailStack.length - 1];
+  if (!view) return; // שכבת הפירוט לא פתוחה (שמירה/איפוס ממסך התרחישים) — אין מה לרנדר
   const type = view.type;
   const v = dashStatValues();
   let title = '', html = '';
