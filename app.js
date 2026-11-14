@@ -1089,7 +1089,17 @@ function mirrorControlPage() {
   if (btnManual) btnManual.classList.toggle('is-active', isManual);
   const rakeCard = document.getElementById('rake-control-card');
   const pdRake = document.getElementById('pd-rake-mini');
-  if (rakeCard && pdRake) pdRake.hidden = rakeCard.hidden;
+  if (rakeCard && pdRake) {
+    // מסך התרחישים: בקרת הגבייה מוצגת תמיד, גם כשהרייק 0 (בדשבורד הכרטיס מוסתר).
+    pdRake.hidden = false;
+    if (rakeCard.hidden) {
+      const rakeApp = n(currentPeriod && currentPeriod.rake_app);
+      const valProfit = document.getElementById('val-profit');
+      setText('pd-ctrl-rake', '₪' + fmt(rakeApp));
+      setText('pd-ctrl-profit', '₪' + (valProfit ? valProfit.textContent : '0'));
+      setText('pd-ctrl-gap', '—');
+    }
+  }
 }
 function syncControlPage() {
   syncDashBBSlider();

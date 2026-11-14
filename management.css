@@ -2690,3 +2690,12 @@ body:has(#management-section[style*="block"]) #notification {
 @media (max-width: 380px) {
   .pd-sc-profit { flex-wrap: wrap; }
 }
+
+/* --- שלב 5ח: שורת הפעולות — גובה שורה אוטומטי (טקסט בשתי שורות לא גולש) + רווח מהכרטיסים מעל --- */
+.pd-actions { grid-template-rows: auto; align-items: stretch; margin-top: 8px; }
+.pd-actions .pd-act, .pd-actions .pd-act-close { align-self: stretch; height: auto; min-height: 46px; }
+.pd-actions .pd-act-info { align-self: center; }
+@media (max-width: 339px) {
+  .pd-actions { grid-template-rows: auto auto; }
+  .pd-actions .pd-act, .pd-actions .pd-act-close { min-height: 44px; }
+}
