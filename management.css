@@ -2068,3 +2068,404 @@ body:has(#management-section[style*="block"]) #notification {
   margin-top: 2px;
 }
 #management-section #page-dashboard .remain-note[hidden] { display: none; }
+
+/* ============================================================
+   בקרה - תרחישים (page-control) — תצוגת תרחישים לפי הסקיצה
+   ============================================================ */
+#page-control .page-header { margin-bottom: 6px; }
+#page-control .page-header h1 { font-size: 19px; margin: 0; }
+#page-control .page-header p { margin: 2px 0 0; font-size: 12px; opacity: .7; }
+.pd-period-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(56,189,248,.12); border: 1px solid rgba(56,189,248,.35);
+  color: #7dd3fc; border-radius: 10px; padding: 4px 12px;
+  font-size: 12px; font-weight: 600; margin: 2px 0 10px;
+}
+
+.pd-summary { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; }
+.pd-row { display: grid; gap: 8px; }
+.pd-row-2 { grid-template-columns: 1fr 1fr; }
+.pd-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+.pd-card {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.10);
+  border-radius: 14px; padding: 10px 6px; color: inherit;
+  font-family: inherit; cursor: pointer; text-align: center; width: 100%;
+  transition: transform .12s ease;
+}
+.pd-card:active { transform: scale(.97); }
+.pd-card-head { display: flex; align-items: center; gap: 6px; }
+.pd-card-icon { display: inline-flex; }
+.pd-card-label { font-size: 12px; font-weight: 600; opacity: .9; display: inline-flex; align-items: center; gap: 4px; }
+.pd-card-value { font-size: 17px; font-weight: 800; }
+.pd-card-value .currency { font-size: 12px; opacity: .75; margin-inline-end: 1px; }
+.pd-card-sub { font-size: 10.5px; opacity: .65; }
+.pd-card-note { font-size: 11px; opacity: .8; line-height: 1.4; }
+.pd-c-total   { background: linear-gradient(135deg, rgba(167,139,250,.20), rgba(167,139,250,.05)); border-color: rgba(167,139,250,.5); }
+.pd-c-total .pd-card-icon { color: #a78bfa; }
+.pd-c-liquid  { background: linear-gradient(135deg, rgba(56,189,248,.18), rgba(56,189,248,.04)); border-color: rgba(56,189,248,.5); }
+.pd-c-liquid .pd-card-icon { color: #38bdf8; }
+.pd-c-counter { background: linear-gradient(180deg, rgba(251,146,60,.14), rgba(251,146,60,.03)); border-color: rgba(251,146,60,.45); }
+.pd-c-counter .pd-card-icon { color: #fb923c; }
+.pd-c-badbeat { background: linear-gradient(180deg, rgba(192,132,252,.14), rgba(192,132,252,.03)); border-color: rgba(192,132,252,.45); }
+.pd-c-badbeat .pd-card-icon { color: #c084fc; }
+.pd-c-rake    { background: linear-gradient(180deg, rgba(52,211,153,.14), rgba(52,211,153,.03)); border-color: rgba(52,211,153,.45); }
+.pd-c-rake .pd-card-icon { color: #34d399; }
+.pd-c-debt    { background: linear-gradient(135deg, rgba(96,165,250,.16), rgba(96,165,250,.04)); border-color: rgba(96,165,250,.45); }
+.pd-c-debt .pd-card-icon { color: #60a5fa; }
+.pd-c-exp     { background: linear-gradient(135deg, rgba(248,113,113,.16), rgba(248,113,113,.04)); border-color: rgba(248,113,113,.45); }
+.pd-c-exp .pd-card-icon { color: #f87171; }
+
+.pd-ring-wrap { position: relative; width: 216px; margin: 0 auto -30px; z-index: 2; }
+.pd-ring { width: 100%; display: block; filter: drop-shadow(0 0 14px rgba(56,189,248,.25)); }
+.pd-ring-track { fill: none; stroke: rgba(255,255,255,.08); stroke-width: 13; }
+.pd-ring-bar {
+  fill: none; stroke: url(#pd-ring-grad); stroke-width: 13; stroke-linecap: round;
+  stroke-dasharray: 603; stroke-dashoffset: 210;
+  transform: rotate(-90deg); transform-origin: center;
+}
+.pd-ring-center {
+  position: absolute; inset: 23px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #1b2240, #10152a 70%);
+  border: none; color: inherit; font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  cursor: pointer; padding: 6px; text-align: center;
+}
+.pd-ring-label { font-size: 11.5px; opacity: .85; display: inline-flex; align-items: center; gap: 4px; }
+.pd-ring-profit { font-size: 24px; font-weight: 800; color: #4ade80; }
+.pd-ring-profit.negative { color: #f87171; }
+.pd-ring-manual { font-size: 10px; color: #fbbf24; }
+.pd-ring-partners { display: flex; align-items: center; gap: 8px; margin-top: 3px; font-size: 11px; }
+.pd-partner { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.pd-partner svg { color: #7dd3fc; margin-bottom: 1px; }
+.pd-partner b { font-size: 12px; font-weight: 700; }
+.pd-partner small { font-size: 9px; opacity: .6; }
+.pd-partner-sep { width: 1px; height: 26px; background: rgba(255,255,255,.15); }
+
+.pd-scenario {
+  background: linear-gradient(180deg, rgba(167,139,250,.08), rgba(255,255,255,.02));
+  border: 1px solid rgba(167,139,250,.3);
+  border-radius: 16px; padding: 38px 10px 10px; margin-bottom: 10px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.pd-scenario-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+.pd-title-icon { color: #c084fc; display: inline-flex; }
+.pd-sc-profit { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pd-sc-profit-label { font-size: 12.5px; font-weight: 600; opacity: .85; }
+.pd-sc-profit-value { font-size: 17px; font-weight: 800; color: #4ade80; display: inline-flex; align-items: center; gap: 6px; }
+.pd-inline-btn { display: inline-flex; color: #a78bfa; cursor: pointer; }
+.pd-sc-profit-btns { display: flex; gap: 6px; margin-inline-start: auto; }
+.pd-mini-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15);
+  color: inherit; border-radius: 10px; padding: 6px 10px; font-size: 12px;
+  font-family: inherit; cursor: pointer;
+}
+.pd-mini-btn:active { transform: scale(.96); }
+.pd-mini-save { border-color: rgba(74,222,128,.5); }
+.pd-manual-row { display: flex; gap: 8px; }
+.pd-manual-row input {
+  flex: 1; background: rgba(0,0,0,.3); border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px; padding: 8px 10px; color: inherit; font-family: inherit; font-size: 14px;
+}
+
+.pd-slider-row { display: flex; flex-direction: column; gap: 2px; }
+.pd-slider-head { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
+.pd-slider-label { display: inline-flex; align-items: center; gap: 4px; }
+.pd-slider-icon { color: #c084fc; display: inline-flex; margin-inline-start: auto; }
+.pd-icon-counter { color: #38bdf8; }
+.pd-badge {
+  border: 1px solid rgba(255,255,255,.25); border-radius: 9px;
+  padding: 1px 10px; font-size: 13px;
+}
+.pd-range { width: 100%; accent-color: #a78bfa; margin: 2px 0 0; }
+.pd-range-counter { accent-color: #38bdf8; }
+.pd-ticks { display: flex; justify-content: space-between; font-size: 10px; opacity: .5; }
+.pd-slider-note { font-size: 11px; opacity: .75; line-height: 1.5; }
+
+.pd-result {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: linear-gradient(135deg, rgba(34,197,94,.28), rgba(34,197,94,.08));
+  border: 1px solid rgba(34,197,94,.55); border-radius: 14px; padding: 10px 12px;
+}
+.pd-result.is-negative { background: linear-gradient(135deg, rgba(239,68,68,.28), rgba(239,68,68,.08)); border-color: rgba(239,68,68,.55); }
+.pd-result-label { font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; }
+.pd-result-value { font-size: 26px; font-weight: 800; color: #4ade80; display: inline-flex; align-items: center; gap: 8px; }
+.pd-result-value svg { color: #4ade80; }
+.pd-result.is-negative .pd-result-value { color: #f87171; }
+.pd-result.is-negative .pd-result-check { visibility: hidden; }
+.pd-mini-stats .pd-card { padding: 8px 6px; }
+
+.pd-actions { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.pd-act-close {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  border: none; color: #fff; border-radius: 13px; padding: 12px;
+  font-size: 15px; font-weight: 800; font-family: inherit; cursor: pointer;
+  box-shadow: 0 4px 18px rgba(139,92,246,.35);
+}
+.pd-act-close:active { transform: scale(.98); }
+.pd-actions-row { display: flex; gap: 8px; }
+.pd-act {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  background: rgba(167,139,250,.12); border: 1px solid rgba(167,139,250,.4);
+  color: #c4b5fd; border-radius: 12px; padding: 10px 6px; font-size: 12.5px;
+  font-weight: 700; font-family: inherit; cursor: pointer;
+}
+.pd-act:active { transform: scale(.97); }
+.pd-act-info {
+  flex: 0 0 42px; border-radius: 50%; border: 1px solid rgba(56,189,248,.45);
+  background: rgba(56,189,248,.10); color: #7dd3fc; font-size: 15px;
+  font-weight: 800; font-family: inherit; cursor: pointer;
+}
+
+/* hidden חייב לנצח display של המחלקות במסך התרחישים */
+#page-control [hidden] { display: none !important; }
+
+/* ============================================================
+   בקרה - תרחישים — דיוק עיצובי לפי הרפרנס (visual refinement only)
+   כל הכללים scoped ל-#page-control בלבד
+   ============================================================ */
+#page-control .page-header h1 { font-size: 24px; font-weight: 800; }
+#page-control .page-header p { font-size: 13px; }
+.pd-glow-line {
+  height: 2px; border-radius: 2px; margin: 4px 0 12px;
+  background: linear-gradient(90deg, transparent, rgba(167,139,250,.85), transparent);
+  box-shadow: 0 0 14px rgba(167,139,250,.55);
+}
+.pd-period-chip { font-size: 12.5px; padding: 5px 14px; }
+
+.pd-summary { gap: 10px; margin-bottom: 8px; }
+.pd-card { padding: 14px 8px; gap: 4px; border-radius: 16px; }
+.pd-card-head { flex-direction: column; gap: 4px; }
+.pd-card-icon svg { width: 26px; height: 26px; }
+.pd-card-label { font-size: 12.5px; font-weight: 500; }
+.pd-card-value { font-size: 21px; font-weight: 800; }
+.pd-card-sub { font-size: 11px; }
+.pd-c-total   { background: linear-gradient(150deg, rgba(139,92,246,.32), rgba(76,29,149,.18) 60%, rgba(139,92,246,.08)); border-color: rgba(167,139,250,.65); box-shadow: 0 0 18px rgba(139,92,246,.22), inset 0 0 24px rgba(139,92,246,.06); }
+.pd-c-liquid  { background: linear-gradient(150deg, rgba(56,189,248,.26), rgba(12,74,110,.18) 60%, rgba(56,189,248,.06)); border-color: rgba(56,189,248,.60); box-shadow: 0 0 18px rgba(56,189,248,.20), inset 0 0 24px rgba(56,189,248,.05); }
+.pd-c-counter { background: linear-gradient(160deg, rgba(251,146,60,.20), rgba(120,53,15,.12) 65%, rgba(251,146,60,.05)); border-color: rgba(251,146,60,.60); box-shadow: 0 0 14px rgba(251,146,60,.16); }
+.pd-c-badbeat { background: linear-gradient(160deg, rgba(192,132,252,.20), rgba(88,28,135,.14) 65%, rgba(192,132,252,.05)); border-color: rgba(192,132,252,.60); box-shadow: 0 0 14px rgba(192,132,252,.16); }
+.pd-c-rake    { background: linear-gradient(160deg, rgba(52,211,153,.18), rgba(6,78,59,.14) 65%, rgba(52,211,153,.05)); border-color: rgba(52,211,153,.55); box-shadow: 0 0 14px rgba(52,211,153,.14); }
+.pd-c-debt    { background: linear-gradient(150deg, rgba(96,165,250,.22), rgba(30,58,138,.14) 60%, rgba(96,165,250,.06)); border-color: rgba(96,165,250,.60); box-shadow: 0 0 14px rgba(96,165,250,.16); }
+.pd-c-exp     { background: linear-gradient(150deg, rgba(244,114,182,.18), rgba(131,24,67,.12) 60%, rgba(244,114,182,.05)); border-color: rgba(244,114,182,.55); box-shadow: 0 0 14px rgba(244,114,182,.14); }
+.pd-c-exp .pd-card-icon { color: #f472b6; }
+.pd-row-3 .pd-card { min-height: 108px; justify-content: center; }
+.pd-row-3 .pd-card-value { font-size: 18px; }
+
+.pd-ring-wrap { width: 224px; margin-bottom: -32px; }
+.pd-ring { filter: drop-shadow(0 0 18px rgba(52,245,165,.35)) drop-shadow(0 0 30px rgba(139,92,246,.15)); }
+.pd-ring-track { stroke-width: 16; }
+.pd-ring-bar { stroke-width: 16; }
+.pd-ring-profit { font-size: 30px; font-weight: 800; }
+.pd-ring-label { font-size: 12.5px; }
+.pd-partner { font-size: 12px; }
+.pd-partner svg { width: 18px; height: 18px; }
+.pd-partner b { font-size: 14px; }
+.pd-partner-sep { height: 28px; }
+
+.pd-scenario {
+  background: linear-gradient(170deg, rgba(99,102,241,.16), rgba(30,27,75,.25) 45%, rgba(17,17,38,.40));
+  border-color: rgba(167,139,250,.50); border-radius: 20px;
+  box-shadow: 0 0 20px rgba(139,92,246,.14), inset 0 1px 0 rgba(255,255,255,.05);
+  padding: 42px 12px 12px; gap: 12px;
+}
+.pd-scenario-title { font-size: 15px; font-weight: 700; }
+.pd-sc-profit { background: rgba(10,10,26,.45); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 10px 12px; }
+.pd-sc-profit-label { font-size: 13px; font-weight: 500; }
+.pd-sc-profit-value { font-size: 20px; font-weight: 800; }
+.pd-mini-btn { padding: 7px 12px; font-size: 12.5px; border-radius: 11px; }
+.pd-mini-btn svg { width: 16px; height: 16px; }
+.pd-mini-btn.is-active {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  border-color: transparent; color: #fff;
+  box-shadow: 0 2px 10px rgba(139,92,246,.35);
+}
+
+.pd-slider-row { background: rgba(10,10,26,.45); border: 1px solid rgba(255,255,255,.07); border-radius: 14px; padding: 10px 12px; gap: 6px; }
+.pd-slider-head { font-size: 13px; font-weight: 500; }
+.pd-badge { font-size: 13.5px; font-weight: 700; padding: 2px 12px; border-radius: 10px; background: rgba(139,92,246,.14); border-color: rgba(167,139,250,.45); color: #c4b5fd; }
+#pd-remain-pct-val { background: rgba(56,189,248,.14); border-color: rgba(56,189,248,.45); color: #7dd3fc; }
+#page-control .pd-range { -webkit-appearance: none; appearance: none; height: 22px; background: transparent; accent-color: unset; }
+#page-control .pd-range::-webkit-slider-runnable-track { height: 8px; border-radius: 999px; }
+#page-control .pd-range-bb::-webkit-slider-runnable-track { background: rgba(167,139,250,.30); }
+#page-control .pd-range-counter::-webkit-slider-runnable-track { background: rgba(56,189,248,.30); }
+#page-control .pd-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; margin-top: -7px; border: none; }
+#page-control .pd-range-bb::-webkit-slider-thumb { background: #c4b5fd; box-shadow: 0 0 12px rgba(196,181,253,.85); }
+#page-control .pd-range-counter::-webkit-slider-thumb { background: #7dd3fc; box-shadow: 0 0 12px rgba(125,211,252,.85); }
+#page-control .pd-range::-moz-range-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,.10); }
+#page-control .pd-range-bb::-moz-range-track { background: rgba(167,139,250,.30); }
+#page-control .pd-range-counter::-moz-range-track { background: rgba(56,189,248,.30); }
+#page-control .pd-range::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; border: none; }
+#page-control .pd-range-bb::-moz-range-thumb { background: #c4b5fd; box-shadow: 0 0 12px rgba(196,181,253,.85); }
+#page-control .pd-range-counter::-moz-range-thumb { background: #7dd3fc; box-shadow: 0 0 12px rgba(125,211,252,.85); }
+
+.pd-result { border-radius: 16px; padding: 14px; background: linear-gradient(135deg, rgba(34,197,94,.32), rgba(6,59,53,.30)); border-color: rgba(34,197,94,.60); box-shadow: 0 0 20px rgba(34,197,94,.18); }
+.pd-result.is-negative { background: linear-gradient(135deg, rgba(239,68,68,.32), rgba(69,10,10,.30)); border-color: rgba(239,68,68,.60); box-shadow: 0 0 20px rgba(239,68,68,.18); }
+.pd-result.is-zero { background: linear-gradient(135deg, rgba(148,163,184,.18), rgba(30,41,59,.30)); border-color: rgba(148,163,184,.45); box-shadow: 0 0 14px rgba(148,163,184,.12); }
+.pd-result.is-zero .pd-result-value { color: #e2e8f0; }
+.pd-result.is-zero .pd-result-check { visibility: hidden; }
+.pd-result-label { font-size: 13px; font-weight: 500; }
+.pd-result-value { font-size: 30px; font-weight: 800; }
+
+.pd-mini-stats .pd-card { padding: 12px 8px; min-height: 92px; justify-content: center; }
+.pd-mini-stats .pd-card-value { font-size: 19px; }
+
+.pd-act-close { padding: 14px; font-size: 16px; font-weight: 800; border-radius: 16px; box-shadow: 0 6px 22px rgba(139,92,246,.40); }
+.pd-act-close svg { width: 20px; height: 20px; }
+.pd-act { padding: 12px 6px; font-size: 13px; background: rgba(17,17,38,.60); border-color: rgba(167,139,250,.50); border-radius: 14px; }
+.pd-act svg { width: 17px; height: 17px; }
+.pd-act-info { flex-basis: 46px; }
+
+/* טבעת דקורטיבית מלאה: בסיס סגול + קשת ירוק ניאון — בלי משמעות מספרית ובלי רווח כהה */
+.pd-ring-track { stroke: #7c3aed; opacity: .9; }
+.pd-ring-bar {
+  stroke: #3cffb4; stroke-linecap: round;
+  stroke-dasharray: 235 125; stroke-dashoffset: 0;
+  transform: rotate(-27.5deg); transform-origin: center;
+}
+
+/* ============================================================
+   בקרה - תרחישים — Visual Refinement שלב 2 (הדמיית יעד 14.11)
+   גרדיאנט ירוק-סגול, טבעת מוגדלת, כרטיסים עשירים — scoped בלבד
+   ============================================================ */
+/* טבעת: גרדיאנט מלא ירוק→סגול, עבה וגדולה יותר, ללא רווח כהה */
+.pd-ring-wrap { width: 256px; margin-bottom: -36px; }
+.pd-ring { filter: drop-shadow(0 0 16px rgba(52,245,165,.30)) drop-shadow(0 0 34px rgba(139,92,246,.22)); }
+.pd-ring-track { stroke: rgba(255,255,255,.05); stroke-width: 20; }
+.pd-ring-bar {
+  stroke: url(#pd-ring-grad); stroke-width: 20; stroke-linecap: butt;
+  stroke-dasharray: 360 0; stroke-dashoffset: 0;
+  transform: none;
+}
+.pd-ring-center { inset: 30px; gap: 2px; }
+.pd-ring-profit { font-size: 34px; font-weight: 900; }
+.pd-ring-label { font-size: 13px; }
+.pd-ring-partners { gap: 10px; margin-top: 4px; }
+.pd-partner { font-size: 12.5px; }
+.pd-partner svg { width: 20px; height: 20px; }
+.pd-partner b { font-size: 15px; }
+.pd-ring-partners .pd-partner:first-child svg { color: #34f5a5; }
+.pd-ring-partners .pd-partner:last-child svg { color: #a78bfa; }
+.pd-partner-sep { height: 30px; background: rgba(255,255,255,.22); }
+
+/* כרטיסי סיכום: טיפוגרפיה, אייקונים ומסגרות חזקים יותר */
+.pd-summary { gap: 12px; margin-bottom: 10px; }
+.pd-card { padding: 16px 8px; gap: 5px; border-radius: 18px; border-width: 1.5px; }
+.pd-card-icon svg { width: 30px; height: 30px; }
+.pd-card-label { font-size: 13.5px; }
+.pd-card-value { font-size: 24px; }
+.pd-card-sub { font-size: 11.5px; }
+.pd-row-2 .pd-card { min-height: 118px; justify-content: center; }
+.pd-row-3 .pd-card { min-height: 122px; }
+.pd-row-3 .pd-card-value { font-size: 20px; }
+.pd-row-3 .pd-card-icon svg { width: 26px; height: 26px; }
+.pd-c-total  { box-shadow: 0 0 22px rgba(139,92,246,.30), inset 0 0 26px rgba(139,92,246,.08); }
+.pd-c-liquid { box-shadow: 0 0 22px rgba(56,189,248,.26), inset 0 0 26px rgba(56,189,248,.07); }
+.pd-c-counter { box-shadow: 0 0 18px rgba(251,146,60,.22); }
+.pd-c-badbeat { box-shadow: 0 0 18px rgba(192,132,252,.22); }
+/* כרטיס בקרת גבייה: סגול עשיר עם הנתון האמיתי בירוק */
+.pd-c-rake {
+  background: linear-gradient(160deg, rgba(139,92,246,.30), rgba(76,29,149,.16) 60%, rgba(139,92,246,.07));
+  border-color: rgba(167,139,250,.65);
+  box-shadow: 0 0 18px rgba(139,92,246,.24);
+}
+.pd-c-rake .pd-card-icon { color: #a78bfa; }
+.pd-c-rake .pd-card-value { color: #4ade80; }
+
+/* אזור תרחיש משיכה: כהה עשיר, מסגרת זוהרת, פקדים גדולים */
+.pd-scenario {
+  padding: 46px 14px 14px; gap: 14px; border-width: 1.5px; border-radius: 22px;
+  background: linear-gradient(170deg, rgba(99,102,241,.20), rgba(30,27,75,.32) 45%, rgba(15,15,34,.48));
+  box-shadow: 0 0 26px rgba(139,92,246,.20), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.pd-scenario-title { font-size: 17px; font-weight: 800; }
+.pd-title-icon svg { width: 22px; height: 22px; }
+.pd-sc-profit { padding: 12px 14px; }
+.pd-sc-profit-label { font-size: 14px; }
+.pd-sc-profit-value { font-size: 24px; }
+.pd-sc-profit-btns { gap: 8px; }
+.pd-mini-btn { padding: 9px 14px; font-size: 14px; border-radius: 12px; }
+.pd-mini-btn svg { width: 18px; height: 18px; }
+
+/* סליידרים: מסלול עבה וידית גדולה */
+.pd-slider-row { padding: 12px 14px; gap: 8px; border-radius: 16px; }
+.pd-slider-head { font-size: 14px; }
+.pd-slider-icon svg { width: 22px; height: 22px; }
+.pd-badge { font-size: 15px; padding: 3px 14px; border-radius: 11px; }
+#page-control .pd-range { height: 26px; }
+#page-control .pd-range::-webkit-slider-runnable-track { height: 10px; }
+#page-control .pd-range::-webkit-slider-thumb { width: 26px; height: 26px; margin-top: -8px; }
+#page-control .pd-range::-moz-range-track { height: 10px; }
+#page-control .pd-range::-moz-range-thumb { width: 26px; height: 26px; }
+.pd-ticks { font-size: 11px; }
+
+/* נזיל שיישאר בקופה: בולט במיוחד */
+.pd-result { border-radius: 18px; padding: 16px; border-width: 1.5px; }
+.pd-result-label { font-size: 14.5px; }
+.pd-result-label svg { width: 24px; height: 24px; }
+.pd-result-value { font-size: 34px; }
+.pd-result-value svg { width: 26px; height: 26px; }
+
+/* כרטיסי חובות/הוצאות: גדולים ואחידים */
+.pd-mini-stats .pd-card { min-height: 104px; padding: 14px 8px; }
+.pd-mini-stats .pd-card-value { font-size: 22px; }
+
+/* שורת פעולות תחתונה: שורה אחת כמו בהדמיה (ⓘ ימין, שמור/איפוס במרכז, סגור תקופה שמאל) */
+.pd-actions {
+  display: grid; gap: 10px; margin-bottom: 16px;
+  grid-template-columns: 54px 1fr 1.35fr;
+  grid-template-rows: 1fr 1fr;
+}
+.pd-actions-row { display: contents; }
+.pd-act-close {
+  grid-column: 3; grid-row: 1 / 3;
+  padding: 10px; font-size: 17px; border-radius: 18px;
+  box-shadow: 0 6px 24px rgba(139,92,246,.45);
+}
+.pd-actions-row .pd-act:nth-child(1) { grid-column: 2; grid-row: 1; }
+.pd-actions-row .pd-act:nth-child(2) { grid-column: 2; grid-row: 2; }
+.pd-act-info {
+  grid-column: 1; grid-row: 1 / 3; align-self: center; justify-self: center;
+  width: 48px; height: 48px; flex: none; font-size: 17px;
+}
+.pd-act { font-size: 12.5px; padding: 8px 6px; border-radius: 13px; flex-direction: column; gap: 4px; }
+
+/* טלפון צר במיוחד: נופל לשתי שורות כדי לשמור אזורי לחיצה נוחים */
+@media (max-width: 339px) {
+  .pd-actions { grid-template-columns: 1fr 1fr 48px; grid-template-rows: auto auto; }
+  .pd-act-close { grid-column: 1 / 4; grid-row: 1; padding: 14px; }
+  .pd-actions-row .pd-act:nth-child(1) { grid-column: 1; grid-row: 2; }
+  .pd-actions-row .pd-act:nth-child(2) { grid-column: 2; grid-row: 2; }
+  .pd-act-info { grid-column: 3; grid-row: 2; width: 44px; height: 44px; }
+}
+
+/* ============================================================
+   בקרה - תרחישים — שלב 3: אייקון גדול לצד הכותרת + סכומים מוגדלים
+   (אושר 14.11 09:17) — scoped ל-#page-control בלבד
+   ============================================================ */
+/* אייקון בשורת הכותרת, משמאל לה (כמו ברפרנס), בגודל בולט */
+.pd-card-head { flex-direction: row; justify-content: center; align-items: center; gap: 8px; }
+.pd-card-icon { order: 2; }
+.pd-card-icon svg { width: 34px; height: 34px; }
+.pd-row-3 .pd-card-icon svg { width: 26px; height: 26px; }
+.pd-row-3 .pd-card-head { gap: 6px; }
+
+/* סכומים בפרופורציית הרפרנס */
+.pd-row-2 .pd-card-value { font-size: 28px; }
+.pd-row-2 .pd-card-value .currency { font-size: 15px; }
+.pd-row-3 .pd-card-value { font-size: 22px; }
+.pd-ring-profit { font-size: 36px; }
+.pd-partner svg { width: 24px; height: 24px; }
+.pd-result-value { font-size: 36px; }
+.pd-mini-stats .pd-card-value { font-size: 24px; }
+
+/* תיקון רוחב 320: מניעת גלילה אופקית משורת 3 הכרטיסים */
+.pd-card { min-width: 0; }
+@media (max-width: 349px) {
+  .pd-row-3 .pd-card-icon svg { width: 20px; height: 20px; }
+  .pd-row-3 .pd-card-head { gap: 4px; }
+  .pd-row-3 .pd-card-label { font-size: 12px; }
+  .pd-row-3 .pd-card-value { font-size: 19px; }
+  .pd-row-3 .pd-card-sub { font-size: 10px; }
+}

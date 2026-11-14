@@ -500,6 +500,7 @@ async function loadPageData(page) {
   try {
     switch (page) {
       case 'dashboard':   await loadDashboard();    break;
+      case 'control':     await loadDashboard(); syncControlPage(); break;
       case 'funds':       await loadFunds();        break;
       case 'blue-table':  await loadBlueTable();    break;
       case 'debts':         await loadDebts();        break;
@@ -617,15 +618,19 @@ async function loadDashboard() {
   // Blue table summary for dashboard card
   refreshBTSummary();
   syncDashBBSlider();
+  mirrorControlPage();
 }
 
 function syncDashBBSlider() {
-  const slider = document.getElementById('dash-bb-percent');
-  const label  = document.getElementById('dash-bb-percent-val');
-  if (!slider) return;
   const pct = getBBPercent();
-  slider.value = String(Math.round(pct));
-  if (label) label.textContent = Math.round(pct) + '%';
+  ['dash-bb-percent', 'pd-bb-percent'].forEach(id => {
+    const s = document.getElementById(id);
+    if (s && document.activeElement !== s) s.value = String(Math.round(pct));
+  });
+  ['dash-bb-percent-val', 'pd-bb-percent-val'].forEach(id => {
+    const l = document.getElementById(id);
+    if (l) l.textContent = Math.round(pct) + '%';
+  });
 }
 
 // ============================================================
@@ -939,13 +944,12 @@ function updateBadBeatDisplay() {
   setText('counter-total-ils', '₪' + fmt(chipsToIls(ctr + bb * pct / 100)));
 }
 
-function onDashBBSliderInput() {
-  const slider = document.getElementById('dash-bb-percent');
+function onDashBBSliderInput(el) {
+  const slider = el || document.getElementById('dash-bb-percent');
   if (!slider || !currentPeriod) return;
   const pct = Math.min(100, Math.max(0, parseFloat(slider.value) || 0));
   currentPeriod.badbeat_percent = pct;
-  const label = document.getElementById('dash-bb-percent-val');
-  if (label) label.textContent = Math.round(pct) + '%';
+  syncDashBBSlider();
   updateBadBeatDisplay();
   refreshDashboardProfitCards();
 }
@@ -984,6 +988,7 @@ function refreshDashboardProfitCards() {
       gapEl.style.color = pctGap > 10 ? 'var(--negative)' : 'var(--positive)';
     }
   }
+  mirrorControlPage();
 }
 
 // כרטיס "נזיל שיישאר בקופה" — אחוז שימוש בקאונטר הוא כלי בדיקה זמני בכרטיס בלבד, לא נשמר
@@ -995,13 +1000,82 @@ function setRemainLiquid(cp, liquid, profit) {
   const badbeatPart = chipsToIls(n(cp.badbeat) * getBBPercent() / 100);
   setText('val-remain-liquid', fmt(liquid - profit - counterPart - badbeatPart));
 }
-function onRemainCounterSliderInput() {
-  const slider = document.getElementById('remain-counter-pct');
+function onRemainCounterSliderInput(el) {
+  const slider = el || document.getElementById('remain-counter-pct');
   if (!slider) return;
   remainCounterPct = Math.min(100, Math.max(0, parseFloat(slider.value) || 0));
-  const label = document.getElementById('remain-counter-pct-val');
-  if (label) label.textContent = Math.round(remainCounterPct) + '%';
+  ['remain-counter-pct', 'pd-remain-pct'].forEach(id => {
+    const s = document.getElementById(id);
+    if (s && s !== slider && document.activeElement !== s) s.value = String(Math.round(remainCounterPct));
+  });
+  ['remain-counter-pct-val', 'pd-remain-pct-val'].forEach(id => {
+    const l = document.getElementById(id);
+    if (l) l.textContent = Math.round(remainCounterPct) + '%';
+  });
   refreshDashboardProfitCards();
+}
+
+// ============================================================
+// בקרה - תרחישים (page-control) — שיקוף תצוגה בלבד מכרטיסי הבקרה
+// הקיימים. לא מחשב דבר מחדש: מעתיק את הערכים שכבר חושבו.
+// ============================================================
+const PD_MIRROR = [
+  ['val-total', 'pd-val-total'],
+  ['val-liquid', 'pd-val-liquid'],
+  ['val-liquid-sub', 'pd-note-liquid'],
+  ['val-counter-ils', 'pd-val-counter-ils'],
+  ['val-counter-sub', 'pd-note-counter'],
+  ['val-badbeat-full-ils', 'pd-val-badbeat-full-ils'],
+  ['val-badbeat-full-sub', 'pd-note-badbeat'],
+  ['val-profit', 'pd-val-profit'],
+  ['val-profit', 'pd-val-profit-scenario'],
+  ['val-profit-sub', 'pd-val-profit-sub'],
+  ['val-remain-liquid', 'pd-val-remain-liquid'],
+  ['val-profit-ido', 'pd-val-profit-ido'],
+  ['val-profit-maor', 'pd-val-profit-maor'],
+  ['val-debt-total', 'pd-val-debt-total'],
+  ['val-expenses-ils', 'pd-val-expenses-ils'],
+  ['ctrl-rake', 'pd-ctrl-rake'],
+  ['ctrl-profit', 'pd-ctrl-profit'],
+  ['ctrl-gap', 'pd-ctrl-gap'],
+];
+function mirrorControlPage() {
+  if (!document.getElementById('page-control')) return;
+  for (const [from, to] of PD_MIRROR) {
+    const src = document.getElementById(from), dst = document.getElementById(to);
+    if (src && dst) dst.textContent = src.textContent;
+  }
+  const sv = document.getElementById('sv-profit');
+  const pdSv = document.getElementById('pd-sv-profit');
+  if (sv && pdSv) pdSv.className = 'pd-ring-profit' + (sv.classList.contains('negative') ? ' negative' : '');
+  const manualTag = document.getElementById('pd-val-profit-sub');
+  if (manualTag) manualTag.hidden = !manualTag.textContent.trim();
+  const remain = document.getElementById('pd-val-remain-liquid');
+  const result = document.getElementById('pd-result');
+  if (remain && result) {
+    const v = parseFloat(remain.textContent.replace(/[^\d.\-]/g, ''));
+    result.classList.toggle('is-negative', !isNaN(v) && v < 0);
+    result.classList.toggle('is-zero', !isNaN(v) && v === 0);
+  }
+  const isManual = getManualProfit(currentPeriod || {}) != null;
+  const btnCalc = document.getElementById('pd-btn-calc');
+  const btnManual = document.getElementById('pd-btn-manual');
+  if (btnCalc) btnCalc.classList.toggle('is-active', !isManual);
+  if (btnManual) btnManual.classList.toggle('is-active', isManual);
+  const rakeCard = document.getElementById('rake-control-card');
+  const pdRake = document.getElementById('pd-rake-mini');
+  if (rakeCard && pdRake) pdRake.hidden = rakeCard.hidden;
+}
+function syncControlPage() {
+  syncDashBBSlider();
+  const s = document.getElementById('pd-remain-pct');
+  if (s && document.activeElement !== s) s.value = String(Math.round(remainCounterPct));
+  const l = document.getElementById('pd-remain-pct-val');
+  if (l) l.textContent = Math.round(remainCounterPct) + '%';
+  const manualP = getManualProfit(currentPeriod || {});
+  const inp = document.getElementById('pd-manual-profit-input');
+  if (inp) inp.value = manualP != null ? manualP : '';
+  mirrorControlPage();
 }
 
 async function onDashBBSliderChange() {
@@ -1031,9 +1105,9 @@ function onBadBeatBlur() {
 }
 
 // — רווח ידני (נשמר ב-current_period.manual_profit; NULL = חישוב אוטומטי) —
-async function saveManualProfit() {
+async function saveManualProfit(inputId) {
   if (!manualProfitReady()) { showNotif('נדרש להריץ את עדכון ה-SQL בסופבייס', 'error'); return; }
-  const val = parseFloat(document.getElementById('manual-profit-input')?.value);
+  const val = parseFloat(document.getElementById(inputId || 'manual-profit-input')?.value);
   if (isNaN(val)) { showNotif('אנא הזן ערך רווח', 'error'); return; }
   try {
     await dbPatch('current_period', '?id=eq.1', { manual_profit: val, updated_at: now() });

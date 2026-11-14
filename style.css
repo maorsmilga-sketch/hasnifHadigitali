@@ -2023,7 +2023,7 @@ button.dash-bt-item:active,
 #page-dashboard .stat-value::selection {
   background: rgba(108, 99, 255, 0.35);
 }
-#page-dashboard .dash-detail-sheet {
+#management-section .dash-detail-sheet {
   max-height: 75vh;
   overflow-y: auto;
 }

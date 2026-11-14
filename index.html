@@ -17,8 +17,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-<link rel="stylesheet" href="style.css?v=20261105d">
-<link rel="stylesheet" href="management.css?v=20261114a">
+<link rel="stylesheet" href="style.css?v=20261114b">
+<link rel="stylesheet" href="management.css?v=20261114b">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -49,7 +49,7 @@
 #funds-tab-extra .fm-category { margin-bottom:6px !important; }
 #funds-tab-extra .bit-other-team-row { margin-top:6px !important; }
 /* popup row compaction + taller sheet */
-#page-dashboard .dash-detail-sheet, #page-settlement .dash-detail-sheet { max-height:86vh !important; }
+#management-section .dash-detail-sheet { max-height:86vh !important; }
 .md-list-item.dash-calc-row { padding:7px 10px !important; min-height:40px !important; box-sizing:border-box !important; }
 .md-list-item.dash-calc-row .md-list-title { font-size:13px !important; }
 .md-list-item.dash-calc-row .md-list-subtitle { font-size:11px !important; }
@@ -145,6 +145,10 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
         <button type="button" class="app-icon" onclick="openPage('dashboard')">
           <span class="app-icon-img">📊</span>
           <span class="app-icon-label">בקרה</span>
+        </button>
+        <button type="button" class="app-icon" onclick="openPage('control')">
+          <span class="app-icon-img">🎛️</span>
+          <span class="app-icon-label">בקרה - תרחישים</span>
         </button>
         <button type="button" class="app-icon" onclick="openPage('funds')">
           <span class="app-icon-img">💰</span>
@@ -296,17 +300,6 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
           </div>
         </div>
 
-        <!-- Detail modal for dashboard blue-table rows -->
-        <div id="dash-detail-overlay" class="md-sheet-overlay" style="display:none" onclick="closeDashDetail()">
-          <div class="md-sheet dash-detail-sheet" onclick="event.stopPropagation()">
-            <div class="md-sheet-handle"></div>
-            <div class="md-sheet-title" id="dash-detail-title">פירוט</div>
-            <button type="button" class="dash-detail-back" id="dash-detail-back" hidden onclick="dashDetailBack()">&#8592; חזרה</button>
-            <div id="dash-detail-body" class="md-list"></div>
-            <button type="button" class="md-sheet-close" onclick="closeDashDetail()">סגור</button>
-          </div>
-        </div>
-
         <div class="dash-sticky-close dash-sticky-bb" id="dash-bb-slider-wrap">
           <div class="dash-bb-slider">
             <div class="dash-bb-slider-head">
@@ -324,6 +317,160 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
           </div>
         </div>
 
+      </div>
+
+      <!-- ===== PAGE: בקרה - תרחישים (תצוגה נוספת בלבד, נתונים זהים לדשבורד) ===== -->
+      <div id="page-control" class="page">
+        <div class="page-header">
+          <h1>בקרה - תרחישים</h1>
+          <p>ניהול תקופה והחלטת משיכה</p>
+        </div>
+        <div class="pd-glow-line" aria-hidden="true"></div>
+        <div class="pd-period-chip"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg> תקופה נוכחית</div>
+
+        <div class="pd-summary">
+          <div class="pd-row pd-row-2">
+            <button type="button" class="pd-card pd-c-total" onclick="openDashStatDetail('total')">
+              <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="10" r="5.5"/><path d="M14.8 6a5.5 5.5 0 1 1-8.3 7.3"/><path d="M6.5 10h5"/></svg></span>
+              <span class="pd-card-label">סה"כ בקופה
+                <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-note-total')">i</span>
+              </span></span>
+              <span class="pd-card-value"><span class="currency">₪</span><span id="pd-val-total">—</span></span>
+              <span class="pd-card-note stat-note" id="pd-note-total" hidden>כסף נזיל + חובות</span>
+            </button>
+            <button type="button" class="pd-card pd-c-liquid" onclick="openDashStatDetail('liquid')">
+              <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="M15.5 14.5h2"/></svg></span>
+              <span class="pd-card-label">כסף נזיל
+                <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-note-liquid')">i</span>
+              </span></span>
+              <span class="pd-card-value"><span class="currency">₪</span><span id="pd-val-liquid">—</span></span>
+              <span class="pd-card-note stat-note" id="pd-note-liquid" hidden></span>
+            </button>
+          </div>
+          <div class="pd-row pd-row-3">
+            <button type="button" class="pd-card pd-c-counter" onclick="openDashStatDetail('counter')">
+              <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 4v2.5M12 17.5V20M4 12h2.5M17.5 12H20M6.3 6.3l1.8 1.8M15.9 15.9l1.8 1.8M17.7 6.3l-1.8 1.8M8.1 15.9l-1.8 1.8"/></svg></span>
+              <span class="pd-card-label">Counter
+                <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-note-counter')">i</span>
+              </span></span>
+              <span class="pd-card-value"><span class="currency">₪</span><span id="pd-val-counter-ils">—</span></span>
+              <span class="pd-card-note stat-note" id="pd-note-counter" hidden></span>
+            </button>
+            <button type="button" class="pd-card pd-c-badbeat" onclick="openDashStatDetail('badbeat-full')">
+              <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C9 7 5.5 9.5 5.5 13a4.2 4.2 0 0 0 6.5 3.4c-.3 1.6-.9 2.8-1.5 3.6h3c-.6-.8-1.2-2-1.5-3.6a4.2 4.2 0 0 0 6.5-3.4C18.5 9.5 15 7 12 3z"/></svg></span>
+              <span class="pd-card-label">BadBeat
+                <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-note-badbeat')">i</span>
+              </span></span>
+              <span class="pd-card-value"><span class="currency">₪</span><span id="pd-val-badbeat-full-ils">—</span></span>
+              <span class="pd-card-note stat-note" id="pd-note-badbeat" hidden></span>
+            </button>
+            <button type="button" class="pd-card pd-c-rake" id="pd-rake-mini" hidden onclick="openDashStatDetail('extra-summary')">
+              <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><path d="M7 20v-6M12 20V6M17 20v-9"/></svg></span>
+              <span class="pd-card-label">בקרת גבייה</span></span>
+              <span class="pd-card-value"><span id="pd-ctrl-rake">—</span></span>
+              <span class="pd-card-sub">רווח <span id="pd-ctrl-profit">—</span> · פער <span id="pd-ctrl-gap">—</span></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pd-ring-wrap">
+          <svg class="pd-ring" viewBox="0 0 220 220" aria-hidden="true">
+            <defs>
+              <linearGradient id="pd-ring-grad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#22ff9a"/>
+                <stop offset="45%" stop-color="#38bdf8"/>
+                <stop offset="100%" stop-color="#8b5cf6"/>
+              </linearGradient>
+            </defs>
+            <circle class="pd-ring-track" cx="110" cy="110" r="96"/>
+            <circle class="pd-ring-bar" cx="110" cy="110" r="96" pathLength="360" stroke-dasharray="235 125" transform="rotate(152 110 110)"/>
+          </svg>
+          <button type="button" class="pd-ring-center" onclick="openDashStatDetail('profit')">
+            <span class="pd-ring-label">רווח כללי
+              <span class="stat-note-i" role="button" aria-label="פירוט רווח" onclick="event.stopPropagation();openDashStatDetail('profit')">i</span>
+            </span>
+            <span class="pd-ring-profit" id="pd-sv-profit">₪<span id="pd-val-profit">—</span></span>
+            <span class="pd-ring-manual" id="pd-val-profit-sub" hidden>ערך ידני</span>
+            <span class="pd-ring-partners">
+              <span class="pd-partner"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.5 3.5-5 7-5s6 1.5 7 5"/></svg>עידו <b id="pd-val-profit-ido">—</b></span>
+              <span class="pd-partner-sep"></span>
+              <span class="pd-partner"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.5 3.5-5 7-5s6 1.5 7 5"/></svg>מאור <b id="pd-val-profit-maor">—</b></span>
+            </span>
+          </button>
+        </div>
+
+        <div class="pd-scenario">
+          <div class="pd-scenario-title">תרחיש משיכה <span class="pd-title-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19 16 8"/><path d="M17 3l.7 1.8 1.8.7-1.8.7L17 8l-.7-1.8-1.8-.7 1.8-.7zM20 10l.4 1 1 .4-1 .4-.4 1-.4-1-1-.4 1-.4zM4 4l.4 1 1 .4-1 .4L4 6.8l-.4-1-1-.4 1-.4z"/></svg></span></div>
+          <div class="pd-sc-profit">
+            <span class="pd-sc-profit-label">רווח למשיכה</span>
+            <span class="pd-sc-profit-value">₪<span id="pd-val-profit-scenario">—</span>
+              <span class="pd-inline-btn" role="button" aria-label="עריכה" onclick="document.getElementById('pd-manual-row').hidden=false;document.getElementById('pd-manual-profit-input').focus()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/></svg></span>
+            </span>
+            <span class="pd-sc-profit-btns">
+              <button type="button" class="pd-mini-btn" id="pd-btn-calc" onclick="resetManualProfit()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/></svg> מחושב</button>
+              <button type="button" class="pd-mini-btn" id="pd-btn-manual" onclick="document.getElementById('pd-manual-row').hidden=false;document.getElementById('pd-manual-profit-input').focus()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/><path d="M14.5 6.5l3 3"/></svg> ידני</button>
+            </span>
+          </div>
+          <div class="pd-manual-row" id="pd-manual-row" hidden>
+            <input type="number" inputmode="decimal" id="pd-manual-profit-input" placeholder="הזן רווח ידני">
+            <button type="button" class="pd-mini-btn pd-mini-save" onclick="saveManualProfit('pd-manual-profit-input')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 4v4.5h7V4M8 20v-6h8v6"/></svg> שמור</button>
+          </div>
+
+          <div class="pd-slider-row">
+            <div class="pd-slider-head">
+              <span class="pd-slider-label">אחוז BadBeat בחישוב
+                <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-bb-note')">i</span>
+              </span>
+              <span class="pd-slider-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C9 7 5.5 9.5 5.5 13a4.2 4.2 0 0 0 6.5 3.4c-.3 1.6-.9 2.8-1.5 3.6h3c-.6-.8-1.2-2-1.5-3.6a4.2 4.2 0 0 0 6.5-3.4C18.5 9.5 15 7 12 3z"/></svg></span>
+              <b class="pd-badge" id="pd-bb-percent-val">65%</b>
+            </div>
+            <input type="range" class="pd-range pd-range-bb" id="pd-bb-percent" min="0" max="100" step="1"
+                   oninput="onDashBBSliderInput(this)" onchange="onDashBBSliderChange()">
+            <div class="pd-ticks" aria-hidden="true"><span>0%</span><span>100%</span></div>
+            <div class="pd-slider-note stat-note" id="pd-bb-note" hidden>100% = כל ה-BadBeat מופחת מהרווח · 0% = לא מופחת בכלל · נשמר לתקופה ומשותף עם מסך הבקרה</div>
+          </div>
+
+          <div class="pd-slider-row">
+            <div class="pd-slider-head">
+              <span class="pd-slider-label">כמה מהקאונטר להשאיר במועדון
+                <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-remain-note')">i</span>
+              </span>
+              <span class="pd-slider-icon pd-icon-counter"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 4v2.5M12 17.5V20M4 12h2.5M17.5 12H20M6.3 6.3l1.8 1.8M15.9 15.9l1.8 1.8M17.7 6.3l-1.8 1.8M8.1 15.9l-1.8 1.8"/></svg></span>
+              <b class="pd-badge" id="pd-remain-pct-val">100%</b>
+            </div>
+            <input type="range" class="pd-range pd-range-counter" id="pd-remain-pct" min="0" max="100" step="1"
+                   oninput="onRemainCounterSliderInput(this)">
+            <div class="pd-ticks" aria-hidden="true"><span>0%</span><span>100%</span></div>
+            <div class="pd-slider-note stat-note" id="pd-remain-note" hidden>סימולציה בלבד — לא נשמר ולא משנה את הרווח, רק את השורה הירוקה למטה</div>
+          </div>
+
+          <div class="pd-result" id="pd-result">
+            <span class="pd-result-label"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/><path d="m13.5 14.5 1.5 1.5 3-3"/></svg> נזיל שיישאר בקופה</span>
+            <span class="pd-result-value">₪<span id="pd-val-remain-liquid">—</span> <span class="pd-result-check"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.5 2.5L16 9.5"/></svg></span></span>
+          </div>
+
+          <div class="pd-row pd-row-2 pd-mini-stats">
+            <button type="button" class="pd-card pd-c-debt" onclick="openDashStatDetail('debts')">
+              <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.5 3.5-5 7-5s6 1.5 7 5"/></svg></span>
+              <span class="pd-card-label">חובות</span></span>
+              <span class="pd-card-value"><span class="currency">₪</span><span id="pd-val-debt-total">—</span></span>
+            </button>
+            <button type="button" class="pd-card pd-c-exp" onclick="openDashStatDetail('expenses')">
+              <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-2-1.5L14 21l-2-1.5L10 21l-2-1.5L6 21z"/><path d="M9 8h6M9 12h6"/></svg></span>
+              <span class="pd-card-label">הוצאות</span></span>
+              <span class="pd-card-value"><span class="currency">₪</span><span id="pd-val-expenses-ils">—</span></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pd-actions">
+          <button type="button" class="pd-act-close" onclick="navigate('settlement')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4.5c4-2 8 2 13 0v9c-5 2-9-2-13 0"/></svg> סגור תקופה</button>
+          <div class="pd-actions-row">
+            <button type="button" class="pd-act" onclick="resetManualProfit()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5v5h5"/><path d="M4.6 10a8 8 0 1 1-1.2 6.5"/></svg> איפוס רווח ידני</button>
+            <button type="button" class="pd-act" onclick="saveManualProfit('pd-manual-profit-input')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 4v4.5h7V4M8 20v-6h8v6"/></svg> שמור רווח ידני</button>
+            <button type="button" class="pd-act-info" onclick="openDashStatDetail('profit')" aria-label="פירוט רווח">i</button>
+          </div>
+        </div>
       </div>
 
       <!-- ===== PAGE 2: FUNDS ===== -->
@@ -1252,6 +1399,17 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
       </div>
 
     </main>
+
+    <!-- Detail sheet (משותף לכל מסכי הניהול - בקרה ובקרה-תרחישים) -->
+    <div id="dash-detail-overlay" class="md-sheet-overlay" style="display:none" onclick="closeDashDetail()">
+      <div class="md-sheet dash-detail-sheet" onclick="event.stopPropagation()">
+        <div class="md-sheet-handle"></div>
+        <div class="md-sheet-title" id="dash-detail-title">פירוט</div>
+        <button type="button" class="dash-detail-back" id="dash-detail-back" hidden onclick="dashDetailBack()">&#8592; חזרה</button>
+        <div id="dash-detail-body" class="md-list"></div>
+        <button type="button" class="md-sheet-close" onclick="closeDashDetail()">סגור</button>
+      </div>
+    </div>
   </div><!-- end #app -->
 
   <!-- CONFIRM DIALOG -->
@@ -1422,7 +1580,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261114a"></script>
+<script src="app.js?v=20261114b"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
