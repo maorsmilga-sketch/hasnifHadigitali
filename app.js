@@ -568,8 +568,8 @@ async function loadDashboard() {
   setText('val-total',           fmt(total));
   setText('val-counter-ils',     fmt(counterIls));
   setText('val-counter-sub',     n(cp.counter) ? `${fmt(cp.counter)} צ'` : '');
-  setText('val-badbeat-full-ils', fmt(chipsToIls(n(cp.badbeat) * getBBPercent() / 100)));
-  setText('val-badbeat-full-sub', n(cp.badbeat) ? `${fmt(cp.badbeat)} צ' · ${Math.round(getBBPercent())}%` : '');
+  setText('val-badbeat-full-ils', fmt(badbeatFull));  // הכרטיס מציג תמיד את מלוא ה-BadBeat; הסליידר משפיע רק על הרווח
+  setText('val-badbeat-full-sub', n(cp.badbeat) ? `${fmt(cp.badbeat)} צ'` + (getBBPercent() < 100 ? ` · ${Math.round(getBBPercent())}% בחישוב הרווח` : '') : '');
   setText('val-profit',          fmt(profit));
   setText('val-profit-sub',      getManualProfit(cp) != null ? 'ערך ידני' : '');
   setRemainLiquid(liquid, profit);
@@ -957,8 +957,8 @@ function refreshDashboardProfitCards() {
   const f = calcPeriodFigures(cp);
   const { liquid, total, counterIls, badbeatFull, profit } = f;
   const half        = profit / 2;
-  setText('val-badbeat-full-ils', fmt(chipsToIls(n(cp.badbeat) * getBBPercent() / 100)));
-  setText('val-badbeat-full-sub', n(cp.badbeat) ? `${fmt(cp.badbeat)} צ' · ${Math.round(getBBPercent())}%` : '');
+  setText('val-badbeat-full-ils', fmt(badbeatFull));  // הכרטיס מציג תמיד את מלוא ה-BadBeat; הסליידר משפיע רק על הרווח
+  setText('val-badbeat-full-sub', n(cp.badbeat) ? `${fmt(cp.badbeat)} צ'` + (getBBPercent() < 100 ? ` · ${Math.round(getBBPercent())}% בחישוב הרווח` : '') : '');
   setText('val-profit', fmt(profit));
   setText('val-profit-sub', getManualProfit(cp) != null ? 'ערך ידני' : '');
   setRemainLiquid(liquid, profit);
