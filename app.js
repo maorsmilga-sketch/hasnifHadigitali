@@ -999,6 +999,39 @@ function setRemainLiquid(cp, liquid, profit) {
   const counterPart = chipsToIls(n(cp.counter) * remainCounterPct / 100);
   const badbeatPart = chipsToIls(n(cp.badbeat) * getBBPercent() / 100);
   setText('val-remain-liquid', fmt(liquid - profit - counterPart - badbeatPart));
+  updatePdMeter(liquid, profit, counterPart, badbeatPart);
+}
+
+/* מד "ניצול הכסף הנזיל" במסך בקרה-תרחישים — הצגה בלבד מתוצאת "נזיל שיישאר" הקיימת:
+   נדרש = רווח למשיכה + Counter שנבחר + BadBeat שנבחר (= נזיל − נשאר). לא מחשב נוסחה חדשה. */
+function updatePdMeter(liquid, profit, counterPart, badbeatPart) {
+  const meter = document.getElementById('pd-meter');
+  if (!meter) return;
+  const required = profit + counterPart + badbeatPart;
+  const remain = liquid - required;
+  setText('pd-meter-required', fmt(required));
+  setText('pd-mn-liquid', fmt(liquid));
+  setText('pd-mn-profit', fmt(profit));
+  setText('pd-mn-counter', fmt(counterPart));
+  setText('pd-mn-bb', fmt(badbeatPart));
+  setText('pd-mn-required', fmt(required));
+  setText('pd-mn-remain', fmt(remain));
+  const remLabel = document.getElementById('pd-meter-remain-label');
+  if (remLabel) remLabel.textContent = remain >= 0 ? 'נשאר' : 'חסר';
+  setText('pd-meter-remain-val', fmt(Math.abs(remain)));
+  const pctEl = document.getElementById('pd-meter-pct');
+  const fill = document.getElementById('pd-meter-fill');
+  meter.classList.remove('is-low', 'is-high', 'is-over', 'is-empty');
+  if (liquid > 0) {
+    const pct = required / liquid * 100;
+    if (pctEl) pctEl.textContent = (Math.round(pct * 10) / 10) + '%';
+    if (fill) fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
+    meter.classList.add(pct > 100 ? 'is-over' : pct >= 90 ? 'is-high' : 'is-low');
+  } else {
+    if (pctEl) pctEl.textContent = '—';
+    if (fill) fill.style.width = '0%';
+    meter.classList.add('is-empty');
+  }
 }
 function onRemainCounterSliderInput(el) {
   const slider = el || document.getElementById('remain-counter-pct');
@@ -1030,7 +1063,6 @@ const PD_MIRROR = [
   ['val-profit', 'pd-val-profit'],
   ['val-profit', 'pd-val-profit-scenario'],
   ['val-profit-sub', 'pd-val-profit-sub'],
-  ['val-remain-liquid', 'pd-val-remain-liquid'],
   ['val-profit-ido', 'pd-val-profit-ido'],
   ['val-profit-maor', 'pd-val-profit-maor'],
   ['val-debt-total', 'pd-val-debt-total'],
@@ -1047,16 +1079,9 @@ function mirrorControlPage() {
   }
   const sv = document.getElementById('sv-profit');
   const pdSv = document.getElementById('pd-sv-profit');
-  if (sv && pdSv) pdSv.className = 'pd-ring-profit' + (sv.classList.contains('negative') ? ' negative' : '');
+  if (sv && pdSv) pdSv.className = 'pd-profit-value' + (sv.classList.contains('negative') ? ' negative' : '');
   const manualTag = document.getElementById('pd-val-profit-sub');
   if (manualTag) manualTag.hidden = !manualTag.textContent.trim();
-  const remain = document.getElementById('pd-val-remain-liquid');
-  const result = document.getElementById('pd-result');
-  if (remain && result) {
-    const v = parseFloat(remain.textContent.replace(/[^\d.\-]/g, ''));
-    result.classList.toggle('is-negative', !isNaN(v) && v < 0);
-    result.classList.toggle('is-zero', !isNaN(v) && v === 0);
-  }
   const isManual = getManualProfit(currentPeriod || {}) != null;
   const btnCalc = document.getElementById('pd-btn-calc');
   const btnManual = document.getElementById('pd-btn-manual');
