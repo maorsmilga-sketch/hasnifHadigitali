@@ -3069,3 +3069,11 @@ body:has(#management-section[style*="block"]) #notification {
   font-size: 16px; font-weight: 700; text-align: center; direction: ltr;
 }
 .pd-profit-edit-controls input:focus { outline: none; border-color: rgba(0,245,138,.6); }
+
+/* --- שורת פעולות תחתונה במסך הבקרה: כרטיס יתרה בלאומי במקום כפתורי הרווח הידני וה-i (בקשת מאור, 14.11.26) --- */
+.pd-c-leumi   { background: linear-gradient(150deg, rgba(56,189,248,.28), rgba(12,74,110,.16) 60%, rgba(56,189,248,.07)); border-color: rgba(56,189,248,.85); box-shadow: 0 0 20px rgba(56,189,248,.40), inset 0 0 18px rgba(56,189,248,.09); }
+.pd-c-leumi .pd-card-icon { color: #38bdf8; }
+.pd-c-leumi .pd-card-value { text-shadow: 0 0 14px rgba(56,189,248,.60); }
+#page-control .pd-actions { display: flex; flex-direction: row; gap: 8px; align-items: stretch; margin-top: 8px; }
+#page-control .pd-actions .pd-c-leumi { flex: 1; min-height: 52px; }
+#page-control .pd-actions .pd-act-close { flex: 1.35; grid-column: auto; grid-row: auto; min-height: 52px; align-self: stretch; }

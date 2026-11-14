@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261114b">
-<link rel="stylesheet" href="management.css?v=20261114j">
+<link rel="stylesheet" href="management.css?v=20261114k">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -467,12 +467,12 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
           </div>
 
         <div class="pd-actions">
+          <button type="button" class="pd-card pd-c-leumi" onclick="openDashStatDetail('leumi')">
+            <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 4l9 5.5"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3.5 20.5h17"/></svg></span>
+            <span class="pd-card-label">יתרה בלאומי</span></span>
+            <span class="pd-card-value"><span class="currency">₪</span><span id="val-bank-leumi">—</span></span>
+          </button>
           <button type="button" class="pd-act-close" onclick="navigate('settlement')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4.5c4-2 8 2 13 0v9c-5 2-9-2-13 0"/></svg> סגור תקופה</button>
-          <div class="pd-actions-row">
-            <button type="button" class="pd-act" onclick="resetManualProfit()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5v5h5"/><path d="M4.6 10a8 8 0 1 1-1.2 6.5"/></svg> איפוס רווח ידני</button>
-            <button type="button" class="pd-act" onclick="editProfitValue(event,'total')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8.5 4v4.5h7V4M8 20v-6h8v6"/></svg> הזנת רווח ידני</button>
-            <button type="button" class="pd-act-info" onclick="openDashStatDetail('profit')" aria-label="פירוט רווח">i</button>
-          </div>
         </div>
       </div>
 
