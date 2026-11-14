@@ -952,7 +952,7 @@ async function persistSliderPercents() {
     currentPeriod.bb_keep_percent = body.bb_keep_percent;
     currentPeriod.counter_keep_percent = body.counter_keep_percent;
   } catch (e) {
-    console.warn('שמירת מיקום הסליידרים נכשלה', e);
+    showNotif('מיקום הסליידר לא נשמר — יתאפס ביציאה מהאתר: ' + e.message, 'error');
   }
 }
 
