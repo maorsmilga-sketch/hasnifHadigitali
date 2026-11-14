@@ -577,6 +577,7 @@ async function loadDashboard() {
   setText('val-profit',          fmt(profit));
   setText('val-profit-sub',      getManualProfit(cp) != null ? 'ערך ידני' : '');
   setRemainLiquid(cp, liquid, profit);
+  updateScenarioView(cp, liquid, total, counterIls, badbeatFull);
   setText('val-profit-ido',      fmt(half));
   setText('val-profit-maor',     fmt(half));
   setText('val-profit-ido-net',  '₪' + fmt(idoNet));
@@ -622,7 +623,7 @@ async function loadDashboard() {
 }
 
 function syncDashBBSlider() {
-  const pct = getBBPercent();
+  const pct = scenarioBBPct();  // במצב פתרון תרחיש — מציג את הערך הפתור (תצוגה בלבד, לא נשמר)
   ['dash-bb-percent', 'pd-bb-percent'].forEach(id => {
     const s = document.getElementById(id);
     if (s && document.activeElement !== s) s.value = String(Math.round(pct));
@@ -948,6 +949,7 @@ function onDashBBSliderInput(el) {
   const slider = el || document.getElementById('dash-bb-percent');
   if (!slider || !currentPeriod) return;
   const pct = Math.min(100, Math.max(0, parseFloat(slider.value) || 0));
+  resetScenarioSolve();
   currentPeriod.badbeat_percent = pct;
   syncDashBBSlider();
   updateBadBeatDisplay();
@@ -968,6 +970,7 @@ function refreshDashboardProfitCards() {
   setText('val-profit', fmt(profit));
   setText('val-profit-sub', getManualProfit(cp) != null ? 'ערך ידני' : '');
   setRemainLiquid(cp, liquid, profit);
+  updateScenarioView(cp, liquid, total, counterIls, badbeatFull);
   setText('val-profit-ido', fmt(half));
   setText('val-profit-maor', fmt(half));
   setText('val-profit-ido-net', '₪' + fmt(half - n(cp.debt_ido)));
@@ -999,43 +1002,194 @@ function setRemainLiquid(cp, liquid, profit) {
   const counterPart = chipsToIls(n(cp.counter) * remainCounterPct / 100);
   const badbeatPart = chipsToIls(n(cp.badbeat) * getBBPercent() / 100);
   setText('val-remain-liquid', fmt(liquid - profit - counterPart - badbeatPart));
-  updatePdMeter(liquid, profit, counterPart, badbeatPart);
 }
 
-/* מד "ניצול הכסף הנזיל" במסך בקרה-תרחישים — הצגה בלבד מתוצאת "נזיל שיישאר" הקיימת:
-   נדרש = רווח למשיכה + Counter שנבחר + BadBeat שנבחר (= נזיל − נשאר). לא מחשב נוסחה חדשה. */
-function updatePdMeter(liquid, profit, counterPart, badbeatPart) {
+/* תרחיש משיכה (page-control) — סימולציה בלבד, לא נשמר:
+   total = סכום משיכה + קאונטר נשאר + BadBeat נשאר + מזומן נוסף שנשאר.
+   הרווח הכללי, החלוקה והיתרות השמורות לא מושפעים. */
+let scenarioTarget = null;   // יעד משיכה שהמשתמש הקליד (₪); null = מצב סליידרים
+let bbSolvePct = null;       // אחוז BadBeat "פתור" לתצוגה בלבד — לא נכתב ל-currentPeriod
+
+function scenarioBBPct() { return bbSolvePct != null ? bbSolvePct : getBBPercent(); }
+
+function updateScenarioView(cp, liquid, total, counterIls, badbeatFull) {
+  if (!document.getElementById('pd-val-profit-scenario')) return;
+  const cKeep = chipsToIls(n(cp.counter) * remainCounterPct / 100);
+  const bKeep = chipsToIls(n(cp.badbeat) * scenarioBBPct() / 100);
+  const floor = total - counterIls - badbeatFull;
+  let W, extra = 0;
+  if (scenarioTarget != null && scenarioTarget < floor) {
+    W = scenarioTarget;              // יעד מתחת לרצפה — תקין; ההפרש נשאר כמזומן בקופה
+    extra = floor - scenarioTarget;
+  } else if (scenarioTarget != null && scenarioTarget > total) {
+    W = total;                       // תקרה — מוצג עם דגל חריגה מפורש
+  } else {
+    W = total - cKeep - bKeep;
+  }
+  setText('pd-val-profit-scenario', fmt(W));
+  // מד נזילות: אותו W מול הכסף הנזיל בלבד
   const meter = document.getElementById('pd-meter');
-  if (!meter) return;
-  const required = profit + counterPart + badbeatPart;
-  const remain = liquid - required;
-  setText('pd-meter-required', fmt(required));
+  setText('pd-meter-required', fmt(W));
   setText('pd-mn-liquid', fmt(liquid));
-  setText('pd-mn-profit', fmt(profit));
-  setText('pd-mn-counter', fmt(counterPart));
-  setText('pd-mn-bb', fmt(badbeatPart));
-  setText('pd-mn-required', fmt(required));
+  setText('pd-mn-profit', fmt(W));
+  setText('pd-mn-counter', fmt(cKeep));
+  setText('pd-mn-bb', fmt(bKeep));
+  const extraRow = document.getElementById('pd-mn-extra-row');
+  if (extraRow) extraRow.hidden = extra <= 0;
+  setText('pd-mn-extra', fmt(extra));
+  const remain = liquid - W;
   setText('pd-mn-remain', fmt(remain));
   const remLabel = document.getElementById('pd-meter-remain-label');
   if (remLabel) remLabel.textContent = remain >= 0 ? 'נשאר' : 'חסר';
   setText('pd-meter-remain-val', fmt(Math.abs(remain)));
-  const pctEl = document.getElementById('pd-meter-pct');
-  const fill = document.getElementById('pd-meter-fill');
-  meter.classList.remove('is-low', 'is-high', 'is-over', 'is-empty');
-  if (liquid > 0) {
-    const pct = required / liquid * 100;
-    if (pctEl) pctEl.textContent = (Math.round(pct * 10) / 10) + '%';
-    if (fill) fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
-    meter.classList.add(pct > 100 ? 'is-over' : pct >= 90 ? 'is-high' : 'is-low');
-  } else {
-    if (pctEl) pctEl.textContent = '—';
-    if (fill) fill.style.width = '0%';
-    meter.classList.add('is-empty');
+  if (meter) {
+    const pctEl = document.getElementById('pd-meter-pct');
+    const fill = document.getElementById('pd-meter-fill');
+    meter.classList.remove('is-low', 'is-high', 'is-over', 'is-empty');
+    if (liquid > 0) {
+      const pct = W / liquid * 100;
+      if (pctEl) pctEl.textContent = (Math.round(pct * 10) / 10) + '%';
+      if (fill) fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
+      meter.classList.add(pct > 100 ? 'is-over' : pct >= 90 ? 'is-high' : 'is-low');
+    } else {
+      if (pctEl) pctEl.textContent = '—';
+      if (fill) fill.style.width = '0%';
+      meter.classList.add('is-empty');
+    }
+  }
+  const note = document.getElementById('pd-target-note');
+  if (note) {
+    let msg = '';
+    if (scenarioTarget != null) {
+      if (scenarioTarget > total) msg = `יעד: ₪${fmt(scenarioTarget)} · חריג מהזמין בתרחיש: ₪${fmt(scenarioTarget - total)}`;
+      else if (extra > 0) msg = `יעד: ₪${fmt(scenarioTarget)} · ההפרש נשאר במועדון כמזומן`;
+      else {
+        const diff = W - scenarioTarget;
+        msg = Math.abs(diff) >= 1
+          ? `יעד: ₪${fmt(scenarioTarget)} · הפרש עיגול: ${diff >= 0 ? '+' : '−'}₪${fmt(Math.abs(diff))}`
+          : `יעד: ₪${fmt(scenarioTarget)}`;
+      }
+    }
+    note.textContent = msg;
+    note.hidden = !msg;
   }
 }
+
+// snapshot של התרחיש הפעיל לשמירה בהיסטוריה בסגירת תקופה; null = לא הופעל תרחיש (מצב ברירת מחדל)
+function getScenarioSnapshot(cp, liquid, total, counterIls, badbeatFull) {
+  const engaged = scenarioTarget != null || bbSolvePct != null || remainCounterPct !== 100;
+  if (!engaged) return null;
+  const cKeep = chipsToIls(n(cp.counter) * remainCounterPct / 100);
+  const bKeep = chipsToIls(n(cp.badbeat) * scenarioBBPct() / 100);
+  const floor = total - counterIls - badbeatFull;
+  let W, extra = 0, status = null, delta = 0;
+  if (scenarioTarget != null && scenarioTarget < floor) {
+    W = scenarioTarget; extra = floor - scenarioTarget;
+  } else if (scenarioTarget != null && scenarioTarget > total) {
+    W = total; status = 'infeasible'; delta = scenarioTarget - total;
+  } else {
+    W = total - cKeep - bKeep;
+    if (scenarioTarget != null) {
+      const d = W - scenarioTarget;
+      if (Math.abs(d) >= 1) { status = 'rounded'; delta = d; }
+    }
+  }
+  return {
+    requested_target_ils: scenarioTarget,
+    simulated_withdrawal_ils: W,
+    counter_pct: Math.round(remainCounterPct),
+    counter_kept_ils: cKeep,
+    bb_pct: Math.round(scenarioBBPct()),
+    bb_kept_ils: bKeep,
+    extra_retained_ils: extra,
+    status: status,
+    delta_ils: delta
+  };
+}
+
+// פתרון יעד → סליידרים: קודם משחררים BadBeat, רק אחריו קאונטר. תצוגה בלבד — לא נשמר.
+function setScenarioSlidersSolved(cPct, bPct) {
+  remainCounterPct = Math.min(100, Math.max(0, cPct));
+  ['remain-counter-pct', 'pd-remain-pct'].forEach(id => {
+    const sl = document.getElementById(id);
+    if (sl) sl.value = String(Math.round(remainCounterPct));
+  });
+  ['remain-counter-pct-val', 'pd-remain-pct-val'].forEach(id => {
+    const l = document.getElementById(id);
+    if (l) l.textContent = Math.round(remainCounterPct) + '%';
+  });
+  if (bPct != null) {
+    bbSolvePct = Math.min(100, Math.max(0, bPct));
+    ['dash-bb-percent', 'pd-bb-percent'].forEach(id => {
+      const sl = document.getElementById(id);
+      if (sl) sl.value = String(Math.round(bbSolvePct));
+    });
+    ['dash-bb-percent-val', 'pd-bb-percent-val'].forEach(id => {
+      const l = document.getElementById(id);
+      if (l) l.textContent = Math.round(bbSolvePct) + '%';
+    });
+  }
+}
+
+function applyScenarioTargetFromInput() {
+  const inp = document.getElementById('pd-target-input');
+  const v = inp ? parseFloat(inp.value) : NaN;
+  const note = document.getElementById('pd-target-note');
+  if (!isFinite(v) || v < 0) {
+    if (note) { note.textContent = 'הזן סכום תקין'; note.hidden = false; }
+    return;
+  }
+  const cp = currentPeriod || {};
+  const liquid = n(cp.bit_maor) + n(cp.bit_ido) + n(cp.bit_ravit) + n(cp.bit_dorin) + n(cp.paybox_maor) + n(cp.paybox_ido) + n(cp.cashcash_ido) + n(cp.cashcash_maor) + liquidExtraParts(cp).total;
+  const total = liquid + n(cp.debt_ido) + n(cp.debt_maor) + otherPlayersDebtTotal();
+  const C = chipsToIls(n(cp.counter)), B = chipsToIls(n(cp.badbeat));
+  scenarioTarget = v;
+  if (v > total) {
+    setScenarioSlidersSolved(0, B > 0 ? 0 : null);
+  } else {
+    const K = total - v;
+    if (K >= C + B) {
+      setScenarioSlidersSolved(100, B > 0 ? 100 : null);
+    } else {
+      const cKeep = Math.min(C, K);
+      const bKeep = K - cKeep;
+      const cPct = C > 0 ? Math.round(cKeep / C * 100) : remainCounterPct;
+      const bPct = B > 0 ? Math.round(bKeep / B * 100) : null;
+      setScenarioSlidersSolved(cPct, bPct);
+    }
+  }
+  refreshDashboardProfitCards();
+}
+
+function resetScenarioSolve() {
+  scenarioTarget = null;
+  if (bbSolvePct != null) { bbSolvePct = null; syncDashBBSlider(); }
+  const inp = document.getElementById('pd-target-input');
+  if (inp) inp.value = '';
+  const note = document.getElementById('pd-target-note');
+  if (note) { note.textContent = ''; note.hidden = true; }
+}
+
+function clearScenarioTarget() {
+  resetScenarioSolve();
+  if (remainCounterPct !== 100) {
+    remainCounterPct = 100;
+    ['remain-counter-pct', 'pd-remain-pct'].forEach(id => {
+      const sl = document.getElementById(id);
+      if (sl) sl.value = '100';
+    });
+    ['remain-counter-pct-val', 'pd-remain-pct-val'].forEach(id => {
+      const l = document.getElementById(id);
+      if (l) l.textContent = '100%';
+    });
+  }
+  refreshDashboardProfitCards();
+}
+
 function onRemainCounterSliderInput(el) {
   const slider = el || document.getElementById('remain-counter-pct');
   if (!slider) return;
+  resetScenarioSolve();
   remainCounterPct = Math.min(100, Math.max(0, parseFloat(slider.value) || 0));
   ['remain-counter-pct', 'pd-remain-pct'].forEach(id => {
     const s = document.getElementById(id);
@@ -1061,7 +1215,6 @@ const PD_MIRROR = [
   ['val-badbeat-full-ils', 'pd-val-badbeat-full-ils'],
   ['val-badbeat-full-sub', 'pd-note-badbeat'],
   ['val-profit', 'pd-val-profit'],
-  ['val-profit', 'pd-val-profit-scenario'],
   ['val-profit-sub', 'pd-val-profit-sub'],
   ['val-profit-ido', 'pd-val-profit-ido'],
   ['val-profit-maor', 'pd-val-profit-maor'],
@@ -1102,7 +1255,7 @@ function mirrorControlPage() {
   }
 }
 function syncControlPage() {
-  syncDashBBSlider();
+  syncDashBBSlider();  // מכבד פתרון תרחיש פעיל (bbSolvePct) — הסימולציה נשמרת בניווט בתוך הסשן
   const s = document.getElementById('pd-remain-pct');
   if (s && document.activeElement !== s) s.value = String(Math.round(remainCounterPct));
   const l = document.getElementById('pd-remain-pct-val');
@@ -2196,6 +2349,15 @@ const EXTRA_SCHEMA_KEYS = ['bank_maor','bank_ido','pocket_maor','pocket_ravit','
 function manualProfitReady() {
   return !!(currentPeriod && Object.prototype.hasOwnProperty.call(currentPeriod, 'manual_profit'));
 }
+// עמודת history.scenario_snapshot קיימת? (בדיקה חיה פעם אחת; נכשל = לא קיימת)
+let _scnColReady = null;
+async function scenarioColumnReady() {
+  if (_scnColReady != null) return _scnColReady;
+  try { await dbGet('history', '?select=scenario_snapshot&limit=1'); _scnColReady = true; }
+  catch (e) { _scnColReady = false; }
+  return _scnColReady;
+}
+
 function getManualProfit(cp) {
   return (manualProfitReady() && cp && cp.manual_profit != null) ? n(cp.manual_profit) : null;
 }
@@ -3471,6 +3633,23 @@ function openPeriodDetail(r) {
     ? `<div class="pd-stat">BadBeat: <strong>${fmt(bbSnap)} צ'</strong> = <strong>₪${fmt(chipsToIls(bbSnap, _hRatio))}</strong></div>`
     : '';
 
+  // תרחיש משיכה שנקבע בסגירה (snapshot אינפורמטיבי — סימולציה בלבד)
+  const scn = r.scenario_snapshot;
+  const scnHtml = scn
+    ? `<div class="pd-section"><div class="pd-section-title">✨ תרחיש משיכה שנקבע בסגירה</div>` +
+      `<div class="pd-stat pd-scn-sim">סימולציה בלבד — לא בוצעה משיכה בפועל</div>` +
+      `<div class="pd-stat">סכום המשיכה בתרחיש: <strong>₪${fmt(scn.simulated_withdrawal_ils)}</strong></div>` +
+      (scn.requested_target_ils != null
+        ? `<div class="pd-stat">יעד מבוקש: <strong>₪${fmt(scn.requested_target_ils)}</strong>` +
+          (scn.status === 'infeasible' ? ` — <span class="negative-color">חריג מהזמין בתרחיש: ₪${fmt(scn.delta_ils)}</span>` :
+           scn.status === 'rounded' ? ` — הפרש עיגול: ${scn.delta_ils >= 0 ? '+' : '−'}₪${fmt(Math.abs(scn.delta_ils))}` : '') +
+          `</div>` : '') +
+      `<div class="pd-stat">קאונטר נשאר: <strong>${scn.counter_pct}%</strong> = <strong>₪${fmt(scn.counter_kept_ils)}</strong></div>` +
+      `<div class="pd-stat">BadBeat נשאר: <strong>${scn.bb_pct}%</strong> = <strong>₪${fmt(scn.bb_kept_ils)}</strong></div>` +
+      (n(scn.extra_retained_ils) > 0 ? `<div class="pd-stat">מזומן נוסף נשאר בקופה: <strong>₪${fmt(scn.extra_retained_ils)}</strong></div>` : '') +
+      `</div>`
+    : '';
+
   // Summary
   const summaryHtml = `<div class="pd-stat-grid">
     <div class="pd-stat-item"><span>רווח כולל</span><strong class="${n(r.profit_total)>=0?'positive-color':'negative-color'}">₪${fmt(r.profit_total)}</strong></div>
@@ -3519,6 +3698,7 @@ function openPeriodDetail(r) {
   body.innerHTML =
     summaryHtml +
     ((counterHtml || badBeatHtml) ? `<div class="pd-section">${counterHtml}${badBeatHtml}</div>` : '') +
+    scnHtml +
     section('💳','משיכות',         wdHtml)  +
     section('💸','החזר גנייה',     rbHtml)  +
     section('🏆','טורנירים',       tnHtml)  +
@@ -3974,13 +4154,21 @@ async function deletePlayer(id) {
 // ============================================================
 // CLOSE PERIOD
 // ============================================================
+// ברירת מחדל לתאריך פתיחת תקופה: שני ימי חמישי אחורה, בלי לספור את יום הסגירה עצמו
+function defaultPeriodStart() {
+  const d = new Date();
+  do { d.setDate(d.getDate() - 1); } while (d.getDay() !== 4);
+  d.setDate(d.getDate() - 7);
+  return israelDateStr(d);
+}
+
 function confirmClosePeriod() {
   document.getElementById('confirm-title').textContent = '⚠️ סגירת תקופה';
   document.getElementById('confirm-msg').innerHTML =
     'פעולה זו תשמור את נתוני התקופה הנוכחית בהיסטוריה ותאפס את כל הנתונים.<br>' +
     '<strong style="color:var(--negative)">פעולה זו בלתי הפיכה!</strong><br><br>' +
     '<label for="close-period-start-date">תאריך תחילת התקופה</label><br>' +
-    `<input type="date" id="close-period-start-date" max="${yesterday()}">`;
+    `<input type="date" id="close-period-start-date" max="${yesterday()}" value="${defaultPeriodStart()}">`;
   document.getElementById('confirm-ok').onclick = () => {
     const dateVal = document.getElementById('close-period-start-date')?.value;
     if (!dateVal)          { showNotif('אנא הזן תאריך תחילת תקופה', 'error');        return; }
@@ -4000,6 +4188,15 @@ function closeConfirm() {
 async function closePeriod(periodStart) {
   showNotif('⏳ מבצע סגירת תקופה...', 'info');
   try {
+    // תרחיש פעיל? חובה שהעמודה תהיה קיימת לפני כל כתיבה — אחרת הסגירה נעצרת כדי לא לאבד את הבחירה
+    const cpPre = currentPeriod;
+    const liquidPre = n(cpPre.bit_maor) + n(cpPre.bit_ido) + n(cpPre.bit_ravit) + n(cpPre.bit_dorin) + n(cpPre.paybox_maor) + n(cpPre.paybox_ido) + n(cpPre.cashcash_ido) + n(cpPre.cashcash_maor) + liquidExtraParts(cpPre).total;
+    const totalPre = liquidPre + n(cpPre.debt_ido) + n(cpPre.debt_maor) + otherPlayersDebtTotal();
+    const scnSnap = getScenarioSnapshot(cpPre, liquidPre, totalPre, chipsToIls(n(cpPre.counter)), chipsToIls(n(cpPre.badbeat)));
+    if (scnSnap && !(await scenarioColumnReady())) {
+      showNotif('כדי לשמור את התרחיש שנבחר בהיסטוריה יש להריץ קודם את עדכון ה-SQL בסופבייס', 'error');
+      return;
+    }
     await persistBadBeatPercent(getBBPercent());
     // 1. Fetch full detail from all blue tables (with player names)
     const [rb, tn, bn, ref, wd, exp] = await Promise.all([
@@ -4089,6 +4286,8 @@ async function closePeriod(periodStart) {
       closed_by:             getDisplayName(),
       notes:                 null,
       counter_snapshot:      n(cp.counter),
+      badbeat_snapshot:      n(cp.badbeat),
+      ...(scnSnap ? { scenario_snapshot: scnSnap } : {}),
       detail_rakeback:       detailRakeback,
       detail_tournaments:    detailTournaments,
       detail_bonuses:        detailBonuses,
@@ -4097,7 +4296,6 @@ async function closePeriod(periodStart) {
       detail_expenses:       detailExpenses,
       chips_per_shekel:      CHIPS_PER_SHEKEL,
       rake_app:              n(cp.rake_app),
-      badbeat_snapshot:      n(cp.badbeat),
       ...(extraSchemaReady() ? {
         liquid_extra_maor:     liquidExtraParts(cp).maorTotal,
         liquid_extra_ido:      liquidExtraParts(cp).idoTotal,
@@ -4123,6 +4321,7 @@ async function closePeriod(periodStart) {
     };
     await dbPatch('current_period', '?id=eq.1', resetData);
     Object.assign(currentPeriod, resetData);
+    try { clearScenarioTarget(); } catch (e) {}
 
     // 4. Delete all blue table records for this period
     await Promise.all([
