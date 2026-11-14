@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261114b">
-<link rel="stylesheet" href="management.css?v=20261114k">
+<link rel="stylesheet" href="management.css?v=20261114l">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -42,12 +42,6 @@
 /* funds extra tab compaction */
 .fm-tabs { margin-bottom:10px !important; }
 .fm-tab { padding:7px 0 !important; font-size:13px !important; }
-#funds-tab-extra .fm-category { padding:8px 10px !important; margin-bottom:8px !important; }
-#funds-tab-extra .fm-cat-label { font-size:13px !important; margin-bottom:6px !important; }
-#funds-tab-extra .fm-cell { min-width:0 !important; }
-#funds-tab-extra .fm-cell.fm-full-width { grid-column:1 / -1 !important; }
-#funds-tab-extra .fm-category { margin-bottom:6px !important; }
-#funds-tab-extra .bit-other-team-row { margin-top:6px !important; }
 /* popup row compaction + taller sheet */
 #management-section .dash-detail-sheet { max-height:86vh !important; }
 .md-list-item.dash-calc-row { padding:7px 10px !important; min-height:40px !important; box-sizing:border-box !important; }
@@ -481,16 +475,22 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
 
         <div class="fm-card">
 
-          <!-- FUNDS TABS -->
-          <div class="fm-tabs">
-            <button type="button" class="fm-tab active" id="fm-tab-regular" onclick="switchFundsTab('regular')">הזנה רגילה</button>
-            <button type="button" class="fm-tab" id="fm-tab-extra" onclick="switchFundsTab('extra')">💧 נזיל נוסף</button>
+          <!-- כותרת המסך — כמו בהדמיה -->
+          <div class="fm-head">
+            <div class="fm-head-title">
+              <span class="fm-head-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><ellipse cx="12" cy="5.5" rx="7" ry="2.8"/><path d="M5 5.5v6c0 1.55 3.13 2.8 7 2.8s7-1.25 7-2.8v-6"/><path d="M5 11.5v6c0 1.55 3.13 2.8 7 2.8s7-1.25 7-2.8v-6"/></svg></span>
+              <div>
+                <div class="fm-head-h1">עדכון יתרות</div>
+                <div class="fm-head-sub">כל הנתונים במקום אחד</div>
+              </div>
+            </div>
+            <div class="fm-head-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> תקופה נוכחית</div>
           </div>
 
           <div id="funds-tab-regular">
 
           <!-- BIT -->
-          <div class="fm-category">
+          <div class="fm-category fm-g-bit">
             <div class="fm-cat-label"><img src="Bit.png" alt="Bit" class="fm-logo"> Bit</div>
             <div class="fm-grid">
               <div class="fm-cell">
@@ -525,7 +525,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
           </div>
 
           <!-- PAYBOX -->
-          <div class="fm-category">
+          <div class="fm-category fm-g-paybox">
             <div class="fm-cat-label"><img src="PayBox.png" alt="PayBox" class="fm-logo"> PayBox</div>
             <div class="fm-grid">
               <div class="fm-cell">
@@ -552,7 +552,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
           </div>
 
           <!-- CHIPS COUNTER -->
-          <div class="fm-category">
+          <div class="fm-category fm-g-chips">
             <div class="fm-cat-label">🎰 ספירת צ'יפים</div>
             <div class="fm-grid">
               <div class="fm-cell">
@@ -579,8 +579,8 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
           </div>
 
           <!-- CONTROL -->
-          <div class="fm-category">
-            <div class="fm-cat-label">🎯 בקרה</div>
+          <div class="fm-category fm-g-control">
+            <div class="fm-cat-label"><span>בקרה</span><span class="fm-ico-side">🎯</span></div>
             <div class="fm-grid">
               <div class="fm-cell fm-full-width">
                 <label class="fm-label fm-label-sm" for="rake_app">Total rake (app)</label>
@@ -594,7 +594,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
           </div>
 
           <!-- CASHCASH -->
-          <div class="fm-category">
+          <div class="fm-category fm-g-cash">
             <div class="fm-cat-label">💰 קאשקאש</div>
             <div class="fm-grid">
               <div class="fm-cell">
@@ -616,8 +616,13 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
 
           </div><!-- end funds-tab-regular -->
 
-          <!-- ===== TAB: נזיל נוסף ===== -->
-          <div id="funds-tab-extra" hidden>
+          <!-- ===== נזיל נוסף — מוצג באותו מסך מאוחד (ללא טאבים) ===== -->
+          <div class="fm-extra-wrap">
+            <div class="fm-extra-title">
+              <span class="fm-extra-title-main"><span class="fm-extra-title-icon">💧</span> נזיל נוסף</span>
+              <span class="fm-extra-title-side">$</span>
+            </div>
+          <div id="funds-tab-extra">
             <div id="extra-schema-warn" hidden style="background:#fff3e0;border:1px solid #ffb74d;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:13px;line-height:1.5;color:#5d4037;">
               ⚠️ כדי שהסכומים בטאב זה יישמרו, נדרשת הרצת SQL חד-פעמית (נשלח אליך). עד אז אי אפשר להזין כאן סכומים.
             </div>
@@ -709,6 +714,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
           </div>
 
           </div><!-- end funds-tab-extra -->
+          </div><!-- end fm-extra-wrap -->
 
         </div>
 

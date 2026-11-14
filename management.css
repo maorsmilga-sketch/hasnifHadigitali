@@ -3077,3 +3077,207 @@ body:has(#management-section[style*="block"]) #notification {
 #page-control .pd-actions { display: flex; flex-direction: row; gap: 8px; align-items: stretch; margin-top: 8px; }
 #page-control .pd-actions .pd-c-leumi { flex: 1; min-height: 52px; }
 #page-control .pd-actions .pd-act-close { flex: 1.35; grid-column: auto; grid-row: auto; min-height: 52px; align-self: stretch; }
+
+/* ============================================================
+   מסך הזנת כספים מאוחד — Neon Premium לפי TARGET (2026-11-14)
+   Scoped ל-#page-funds בלבד; לא משפיע על מסכים אחרים.
+   מבנה = המימוש המאושר; שינוי חזותי בלבד לפי מפרט המשתמש:
+   כותרת ראשית 26/800, כותרות קבוצות 18/700, שמות שדות 14/600,
+   סכומים 22/800, טקסט משני 12/400, שדה 64px+, רדיוס 18/12,
+   מרווחים 12/12/12/8, מסגרות Neon + Glow לפי צבעי הקבוצות.
+   ============================================================ */
+
+/* רקע המסך #070B1B — רק כשמסך הכספים פעיל */
+#management-section:has(#page-funds.page.active),
+#management-section:has(#page-funds.page.active) #main-content { background: #070B1B; }
+
+#management-section #page-funds .fm-card { gap: 12px; padding-top: 4px; }
+#management-section #page-funds #funds-tab-regular { display: flex; flex-direction: column; gap: 12px; }
+
+/* כותרת המסך — כמו ב-TARGET */
+#management-section #page-funds .fm-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 2px 2px 0; }
+#management-section #page-funds .fm-head-title { display: flex; align-items: center; gap: 10px; }
+#management-section #page-funds .fm-head-ico { display: flex; color: #A855F7; }
+#management-section #page-funds .fm-head-ico svg { width: 24px; height: 24px; }
+#management-section #page-funds .fm-head-h1 { font-size: 22px; font-weight: 800; color: #FFFFFF; line-height: 1.2; }
+#management-section #page-funds .fm-head-sub { font-size: 11px; font-weight: 400; color: #B8C3E0; margin-top: 2px; }
+#management-section #page-funds .fm-head-chip {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; color: #B8C3E0;
+  border: 1.5px solid rgba(168,85,247,.55); border-radius: 12px;
+  padding: 8px 12px;
+  background: linear-gradient(145deg, #151B38, #0B1024);
+  box-shadow: 0 0 8px rgba(168,85,247,.35), 0 0 18px rgba(168,85,247,.18);
+}
+#management-section #page-funds .fm-head-chip svg { width: 14px; height: 14px; }
+
+/* מסגרת קבוצה בסיסית */
+#management-section #page-funds .fm-category {
+  border-radius: 18px;
+  padding: 12px;
+  background: linear-gradient(145deg, #151B38, #0B1024);
+}
+#management-section #page-funds .fm-cat-label {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 26px;
+  border-bottom: none;
+  margin-bottom: 8px;
+  padding: 0 2px;
+}
+#management-section #page-funds .fm-logo { height: 22px; }
+
+/* מסגרות Neon + Glow לפי צבעי הקבוצות (מתוך המפרט) */
+#management-section #page-funds .fm-g-bit {
+  border: 1.5px solid #00DFFF;
+  box-shadow: 0 0 8px color-mix(in srgb, #00DFFF 45%, transparent), 0 0 18px color-mix(in srgb, #00DFFF 20%, transparent), inset 0 0 12px color-mix(in srgb, #00DFFF 8%, transparent);
+}
+#management-section #page-funds .fm-g-bit .fm-cat-label { color: #00DFFF; }
+#management-section #page-funds .fm-g-paybox {
+  border: 1.5px solid #168BFF;
+  box-shadow: 0 0 8px color-mix(in srgb, #168BFF 45%, transparent), 0 0 18px color-mix(in srgb, #168BFF 20%, transparent), inset 0 0 12px color-mix(in srgb, #168BFF 8%, transparent);
+}
+#management-section #page-funds .fm-g-paybox .fm-cat-label { color: #168BFF; }
+#management-section #page-funds .fm-g-chips {
+  border: 1.5px solid #C34DFF;
+  box-shadow: 0 0 8px color-mix(in srgb, #C34DFF 45%, transparent), 0 0 18px color-mix(in srgb, #C34DFF 20%, transparent), inset 0 0 12px color-mix(in srgb, #C34DFF 8%, transparent);
+}
+#management-section #page-funds .fm-g-chips .fm-cat-label { color: #C34DFF; }
+#management-section #page-funds .fm-g-control {
+  border: 1.5px solid #C34DFF;
+  box-shadow: 0 0 8px color-mix(in srgb, #C34DFF 45%, transparent), 0 0 18px color-mix(in srgb, #C34DFF 20%, transparent), inset 0 0 12px color-mix(in srgb, #C34DFF 8%, transparent);
+}
+#management-section #page-funds .fm-g-control .fm-cat-label { color: #C34DFF; }
+#management-section #page-funds .fm-g-cash {
+  border: 1.5px solid #00F5A0;
+  box-shadow: 0 0 8px color-mix(in srgb, #00F5A0 45%, transparent), 0 0 18px color-mix(in srgb, #00F5A0 20%, transparent), inset 0 0 12px color-mix(in srgb, #00F5A0 8%, transparent);
+}
+#management-section #page-funds .fm-g-cash .fm-cat-label { color: #00F5A0; }
+
+/* יישור כותרות כמו ב-TARGET: Bit / PayBox / ספירת צ'יפים משמאל, בקרה מפוצלת */
+#management-section #page-funds .fm-g-bit .fm-cat-label,
+#management-section #page-funds .fm-g-paybox .fm-cat-label,
+#management-section #page-funds .fm-g-chips .fm-cat-label { direction: ltr; justify-content: flex-start; }
+#management-section #page-funds .fm-g-control .fm-cat-label { justify-content: space-between; }
+#management-section #page-funds .fm-g-control .fm-ico-side { font-size: 20px; }
+
+/* שדות הזנה — גרדיאנט, מסגרת עדינה, 64px+, סכום 22/800 לבן */
+#management-section #page-funds .fm-cell {
+  background: linear-gradient(145deg, #222C4C, #151B32);
+  border: 1px solid rgba(184,195,224,.18);
+  border-radius: 12px;
+  min-height: 64px;
+  padding: 10px 12px;
+}
+#management-section #page-funds .fm-cell input { min-height: 24px; font-size: 20px; font-weight: 800; color: #FFFFFF; caret-color: #00DFFF; }
+#management-section #page-funds .fm-cell input::placeholder { color: #FFFFFF; opacity: 1; -webkit-text-fill-color: #FFFFFF; }
+#management-section #page-funds .fm-label { font-size: 13px; font-weight: 600; color: #FFFFFF; }
+#management-section #page-funds .fm-subtitle { font-size: 11px; font-weight: 400; color: #B8C3E0; }
+#management-section #page-funds .fm-cur { color: #B8C3E0; font-weight: 700; }
+#management-section #page-funds .fm-grid { gap: 8px; }
+
+/* Focus — מסגרת בצבע הקבוצה */
+#management-section #page-funds .fm-g-bit .fm-cell:focus-within     { border-color: #00DFFF; box-shadow: 0 0 0 3px rgba(0,223,255,.22), 0 0 12px -2px rgba(0,223,255,.4); }
+#management-section #page-funds .fm-g-paybox .fm-cell:focus-within  { border-color: #168BFF; box-shadow: 0 0 0 3px rgba(22,139,255,.22), 0 0 12px -2px rgba(22,139,255,.4); }
+#management-section #page-funds .fm-g-cash .fm-cell:focus-within    { border-color: #00F5A0; box-shadow: 0 0 0 3px rgba(0,245,160,.22), 0 0 12px -2px rgba(0,245,160,.4); }
+#management-section #page-funds .fm-g-control .fm-cell:focus-within { border-color: #C34DFF; box-shadow: 0 0 0 3px rgba(195,77,255,.22), 0 0 12px -2px rgba(195,77,255,.4); }
+#management-section #page-funds .fm-extra-wrap .fm-cell:focus-within { border-color: #A855F7; box-shadow: 0 0 0 3px rgba(168,85,247,.22), 0 0 12px -2px rgba(168,85,247,.4); }
+
+/* ספירת צ'יפים — Counter זהב מימין, BadBeat סגול משמאל (סדר הקוד המקורי = TARGET), אייקונים בפינה כמו ב-TARGET */
+#management-section #page-funds .fm-g-chips .fm-cell { position: relative; }
+#management-section #page-funds .fm-g-chips .fm-cell:has(label[for="badbeat-value"]) {
+  border: 1.5px solid #C34DFF;
+  background: linear-gradient(145deg, rgba(195,77,255,.28), rgba(21,16,42,.95));
+  box-shadow: 0 0 8px color-mix(in srgb, #C34DFF 40%, transparent), inset 0 0 12px color-mix(in srgb, #C34DFF 10%, transparent);
+}
+#management-section #page-funds .fm-g-chips .fm-cell:has(label[for="counter-value"]) {
+  border: 1.5px solid #FFC400;
+  background: linear-gradient(145deg, rgba(255,196,0,.24), rgba(30,24,10,.95));
+  box-shadow: 0 0 8px color-mix(in srgb, #FFC400 40%, transparent), inset 0 0 12px color-mix(in srgb, #FFC400 10%, transparent);
+}
+#management-section #page-funds .fm-g-chips .fm-cell:has(label[for="counter-value"]):focus-within { border-color: #FFC400; box-shadow: 0 0 0 3px rgba(255,196,0,.22), 0 0 12px -2px rgba(255,196,0,.4); }
+#management-section #page-funds .fm-g-chips .fm-cell:has(label[for="badbeat-value"]):focus-within { border-color: #C34DFF; box-shadow: 0 0 0 3px rgba(195,77,255,.22), 0 0 12px -2px rgba(195,77,255,.4); }
+#management-section #page-funds .fm-g-chips .fm-cell:has(label[for="badbeat-value"])::after {
+  content: ''; position: absolute; top: 10px; left: 12px; width: 20px; height: 20px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1.5 C12 5 16 7.5 16 11.5 C16 14 14 15.5 12 15.5 C11.2 15.5 10.6 15.2 10.2 14.7 L11 18.5 L9 18.5 L9.8 14.7 C9.4 15.2 8.8 15.5 8 15.5 C6 15.5 4 14 4 11.5 C4 7.5 8 5 10 1.5 Z' fill='%23C34DFF'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+#management-section #page-funds .fm-g-chips .fm-cell:has(label[for="counter-value"])::after {
+  content: '\1FA99'; position: absolute; top: 9px; left: 10px; font-size: 18px;
+}
+#management-section #page-funds .fm-g-chips .fm-label-chip    { color: #FFC400; }
+#management-section #page-funds .fm-g-chips .fm-label-badbeat { color: #C34DFF; }
+#management-section #page-funds .fm-g-chips .fm-chips-total { margin-top: 8px; padding: 8px 2px 0; }
+
+/* בקרה — שורה אופקית אחת: תווית מימין, ₪+סכום משמאל (כמו ב-TARGET) */
+#management-section #page-funds .fm-g-control .fm-grid { grid-template-columns: 1fr; }
+#management-section #page-funds .fm-g-control .fm-cell { flex-direction: row; align-items: center; justify-content: space-between; min-height: 64px; }
+#management-section #page-funds .fm-g-control .fm-input-row { flex: 1; direction: ltr; }
+#management-section #page-funds .fm-g-control .fm-cur { order: -1; }
+#management-section #page-funds .fm-g-control .fm-cell input { text-align: left; }
+
+/* נזיל נוסף — מסגרת Neon סגולה, תתי-כרטיסים, שדות 3 בשורה (מבנה מאושר), תוכן ממורכז */
+#management-section #page-funds .fm-extra-wrap {
+  border: 1.5px solid #A855F7;
+  border-radius: 18px;
+  padding: 12px;
+  background: linear-gradient(145deg, #151B38, #0B1024);
+  box-shadow: 0 0 8px color-mix(in srgb, #A855F7 45%, transparent), 0 0 18px color-mix(in srgb, #A855F7 20%, transparent), inset 0 0 12px color-mix(in srgb, #A855F7 8%, transparent);
+}
+#management-section #page-funds .fm-extra-title {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 0 2px 10px;
+}
+#management-section #page-funds .fm-extra-title-main { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: #FFFFFF; line-height: 28px; }
+#management-section #page-funds .fm-extra-title-side {
+  width: 24px; height: 24px; border-radius: 7px;
+  background: rgba(0,245,160,.12); border: 1.5px solid rgba(0,245,160,.6);
+  color: #00F5A0; font-size: 13px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+#management-section #page-funds .fm-extra-wrap .fm-category {
+  background: rgba(184,195,224,.05);
+  border: none;
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+#management-section #page-funds .fm-extra-wrap .fm-category:last-child { margin-bottom: 0; }
+#management-section #page-funds .fm-extra-wrap .fm-cat-label { font-size: 15px; font-weight: 700; line-height: 24px; margin-bottom: 8px; color: #FFFFFF; }
+#management-section #page-funds .fm-extra-wrap .fm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+#management-section #page-funds .fm-extra-wrap .fm-cell { min-height: 64px; padding: 10px 12px; align-items: center; text-align: center; }
+#management-section #page-funds .fm-extra-wrap .fm-cell input { text-align: center; }
+#management-section #page-funds .fm-extra-wrap .fm-input-row { justify-content: center; }
+#management-section #page-funds .fm-extra-wrap .fm-label { white-space: normal; line-height: 1.25; text-align: center; }
+/* שדה שלישי בודד בשורה — יושר לתחילת השורה (ימין) ב-RTL */
+#management-section #page-funds .fm-extra-wrap .fm-category .fm-grid .fm-cell:nth-child(3):last-child { grid-column-start: 1; }
+/* ביט אחר ובנק לאומי — רוחב מלא */
+#management-section #page-funds .fm-extra-wrap #funds-tab-extra > .fm-grid > .fm-cell { grid-column: 1 / -1; }
+#management-section #page-funds .fm-extra-wrap .fm-category:has(label[for="bank_leumi"]) .fm-grid { grid-template-columns: 1fr; }
+
+/* פוטר סיכומים — סדר מקורי, רקע כהה, מסגרת סגולה זוהרת, מספרים ירוק-טורקיז מודגשים */
+#management-section #page-funds .fm-sticky-footer {
+  background: rgba(7,11,27,.97);
+  border-top: 1.5px solid rgba(168,85,247,.55);
+  box-shadow: 0 -6px 22px -8px rgba(168,85,247,.5);
+}
+#management-section #page-funds .fm-footer-label { display: flex; align-items: center; gap: 4px; color: #E8ECF8; }
+#management-section #page-funds .fm-footer-item:nth-child(1) .fm-footer-label::before { content: '💧'; font-size: 12px; }
+#management-section #page-funds .fm-footer-item:nth-child(3) .fm-footer-label::before { content: '👛'; font-size: 12px; }
+#management-section #page-funds .fm-footer-item:nth-child(5) .fm-footer-label::before { content: '🪙'; font-size: 12px; }
+#management-section #page-funds .fm-footer-val { font-size: 20px; font-weight: 800; }
+#management-section #page-funds #funds-total  { color: #3be38b; }
+#management-section #page-funds #funds-liquid { color: #2ee6e6; }
+#management-section #page-funds #funds-extra  { color: #2ee6e6; }
+
+/* ============================================================
+   ליטוש אחרון v11 (2026-11-14) — שלוש נקודות בלבד, עדיין Scoped ל-#page-funds:
+   1) שמות שדות 14px + ניגודיות טקסט משני; 2) הפחתת מסגרות פנימיות בנזיל נוסף;
+   3) צמצום שטח ריק מיותר מתחת לסיכום (נשמר מקום לפוטר הקבוע ולגלילה/מקלדת).
+   ============================================================ */
+#management-section #page-funds .fm-label { font-size: 14px; }
+#management-section #page-funds .fm-subtitle,
+#management-section #page-funds .fm-cur,
+#management-section #page-funds .fm-head-sub,
+#management-section #page-funds .fm-head-chip { color: #D5DCF2; }
+#management-section #page-funds .fm-extra-wrap .fm-cell { border-color: rgba(184,195,224,.10); }
+#management-section #page-funds.page.active { padding-bottom: calc(65px + var(--m-safe-b)); }
