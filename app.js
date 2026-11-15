@@ -172,6 +172,7 @@ async function doLogout() {
 }
 
 function resetSignedInState() {
+  window.EventExpenses?.reset();
   currentUserKey  = null;
   currentPeriod   = null;
   players         = [];
@@ -408,6 +409,7 @@ function openBlueTab(tab) {
 }
 
 function goBack() {
+  if (document.getElementById('page-event-expenses')?.classList.contains('active')) { window.EventExpenses?.back(); return; }
   if (navState === 'blue-tab') { openBlueGrid(); return; }
   showHome();
 }
@@ -510,6 +512,7 @@ async function loadPageData(page) {
       case 'players':     await loadPlayers();      break;
       case 'settlement':  loadSettlementPage();     break;
       case 'meetings':    await loadMeetings();     break;
+      case 'event-expenses': await window.EventExpenses.open(); break;
     }
   } catch (e) {
     showNotif('שגיאה בטעינת הדף: ' + e.message, 'error');
@@ -2094,7 +2097,9 @@ async function loadExpensesTable() {
           <div class="md-list-subtitle">${fmtDate(r.created_at)} · ${escHtml(expenseCategoryLabel(r))}</div>
         </div>
         <div class="md-list-trailing negative-color">₪${fmt(r.amount_ils)}</div>
-        <button class="md-icon-btn" onclick="deleteRecord('blue_table_expenses','${r.id}','loadExpensesTable')" title="מחק">🗑️</button>
+        ${r.event_item_id
+          ? `<button class="md-icon-btn" onclick="openLinkedEventExpense('${r.event_item_id}')" title="עריכה דרך האירוע" aria-label="פתח את האירוע">↗</button>`
+          : `<button class="md-icon-btn" onclick="deleteRecord('blue_table_expenses','${r.id}','loadExpensesTable')" title="מחק">🗑️</button>`}
       </div>`).join('');
     const total = data.reduce((s, r) => s + n(r.amount_ils), 0);
     setText('bt-exp-summary', `סה"כ: ₪${fmt(total)}`);
@@ -2131,6 +2136,20 @@ async function addExpense() {
   } catch (e) {
     showNotif('שגיאה: ' + e.message, 'error');
   }
+}
+
+// Generated event expenses are managed only from their originating event.
+async function openLinkedEventExpense(itemId) {
+  try {
+    const rows = await dbGet('event_expense_items', '?id=eq.' + encodeURIComponent(itemId) + '&select=event_id');
+    if (!rows[0]) throw new Error('אירוע המקור לא נמצא');
+    navState = 'page';
+    _hideAll();
+    document.getElementById('page-event-expenses').classList.add('active');
+    _setBackBtn(true);
+    window.scrollTo({ top: 0 });
+    await window.EventExpenses.open(rows[0].event_id);
+  } catch (e) { showNotif('לא ניתן לפתוח אירוע: ' + e.message, 'error'); }
 }
 
 // — Generic delete —
@@ -4110,6 +4129,7 @@ function closeConfirm() {
   if (ok) ok.textContent = 'אשר';
 }
 
+let eventCloseAttemptId = null; // Keep the archive RPC id stable if its response is lost.
 async function closePeriod(periodStart) {
   showNotif('⏳ מבצע סגירת תקופה...', 'info');
   try {
@@ -4186,7 +4206,8 @@ async function closePeriod(periodStart) {
     const profitHalf  = profitTotal / 2;
 
     // 2. Save full snapshot to history
-    await dbPost('history', {
+    eventCloseAttemptId = eventCloseAttemptId || crypto.randomUUID();
+    await sbRpc('event_expense_close_snapshot', { p_operation_id: eventCloseAttemptId, p_expenses: exp || [], p_history: {
       period_start:          periodStart || null,
       period_end:            today(),
       total_expenses_chips:  totalExpenses,
@@ -4213,7 +4234,7 @@ async function closePeriod(periodStart) {
         liquid_extra_ido:      liquidExtraParts(cp).idoTotal,
         liquid_extra_branch:   liquidExtraParts(cp).branchTotal
       } : {})
-    });
+    }});
 
     // 3. Reset current_period — debts are intentionally kept
     const resetData = {
@@ -4245,10 +4266,12 @@ async function closePeriod(periodStart) {
       dbDelete('blue_table_tournaments','?id=not.is.null'),
       dbDelete('blue_table_bonuses',    '?id=not.is.null'),
       dbDelete('blue_table_referrals',  '?id=not.is.null'),
-      dbDelete('withdrawals',           '?id=not.is.null'),
-      dbDelete('blue_table_expenses',   '?id=not.is.null')
+      dbDelete('withdrawals',           '?id=not.is.null')
+      // General expenses were archived/deleted atomically by the scoped snapshot RPC.
+      // Records added after that snapshot are intentionally not deleted.
     ]);
 
+    eventCloseAttemptId = null;
     showNotif('✅ התקופה נסגרה ונשמרה בהיסטוריה!');
     await loadDashboard();
 

@@ -19,6 +19,7 @@
 
 <link rel="stylesheet" href="style.css?v=20261114b">
 <link rel="stylesheet" href="management.css?v=20261115b">
+<link rel="stylesheet" href="event-expenses.css?v=20261115a">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -205,6 +206,10 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
         <button type="button" class="app-icon" data-expense="general" onclick="openBlueTab('expenses')">
           <span class="app-icon-img"><img class="app-icon-3d" src="icons/expenses/general.png" alt="" draggable="false"></span>
           <span class="app-icon-label">הוצאות כללית</span>
+        </button>
+        <button type="button" class="app-icon" data-expense="events" onclick="openPage('event-expenses')">
+          <span class="app-icon-img"><svg class="app-icon-3d" viewBox="0 0 56 56" fill="none" aria-hidden="true"><rect x="9" y="12" width="38" height="36" rx="9" fill="#54359c" stroke="#c4a6ff" stroke-width="2"/><path d="M9 24h38M19 8v9M37 8v9" stroke="#e8d9ff" stroke-width="3" stroke-linecap="round"/><path d="m28 29 2.5 5 5.5.8-4 3.9 1 5.5-5-2.6-5 2.6 1-5.5-4-3.9 5.5-.8z" fill="#ecd8ff"/></svg></span>
+          <span class="app-icon-label">אירוע</span>
         </button>
       </div>
     </div>
@@ -1415,6 +1420,9 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
         </div>
       </div>
 
+      <!-- Independent event module; markup owned by event-expenses.js. -->
+      <div id="page-event-expenses" class="page"></div>
+
     </main>
 
     <!-- Detail sheet (משותף לכל מסכי הניהול - בקרה ובקרה-תרחישים) -->
@@ -1609,7 +1617,8 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261115b"></script>
+<script src="app.js?v=20261115c"></script>
+<script src="event-expenses.js?v=20261115b"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
