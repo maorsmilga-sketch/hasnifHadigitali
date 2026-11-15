@@ -3528,3 +3528,10 @@ body:has(#management-section[style*="block"]) #notification {
   #management-section #blue-grid .app-icon-img { width: 48px; height: 48px; flex-basis: 48px; }
   #management-section #blue-grid .app-icon-3d { width: 48px; height: 48px; }
 }
+
+/* בטיחות המשיכה — סכום מרכזי בצבע החיווי; כתום מקבל צבע משלו */
+.pd-meter.is-high .pd-meter-rem, .pd-meter.is-high .pd-meter-rem b { color: #ffc766; }
+.pd-meter-foot .pd-meter-req { white-space: nowrap; }
+@media (max-width: 345px) { .pd-meter-head .pd-meter-rem { font-size: 16px; } }
+.pd-meter-note-row.pd-mn-block { display: block; text-align: right; line-height: 1.45; }
+.pd-meter-note-row.pd-mn-block[hidden] { display: none; }

@@ -574,7 +574,7 @@ async function loadDashboard() {
   setText('val-profit',          fmt(profit));
   setText('val-profit-sub',      getManualProfit(cp) != null ? 'ערך ידני' : '');
   setRemainLiquid(liquid, profit);
-  updateUtilizationMeter(liquid, profit, f.counterKeepIls, f.bbKeepIls);
+  updateUtilizationMeter(liquid, profit, f.counterIls, f.badbeatFull);
   setText('val-profit-ido',      fmt(half));
   setText('val-profit-maor',     fmt(half));
   setText('val-profit-ido-net',  '₪' + fmt(idoNet));
@@ -983,7 +983,7 @@ function refreshDashboardProfitCards() {
   setText('val-profit', fmt(profit));
   setText('val-profit-sub', getManualProfit(cp) != null ? 'ערך ידני' : '');
   setRemainLiquid(liquid, profit);
-  updateUtilizationMeter(liquid, profit, f.counterKeepIls, f.bbKeepIls);
+  updateUtilizationMeter(liquid, profit, f.counterIls, f.badbeatFull);
   setText('val-profit-ido', fmt(half));
   setText('val-profit-maor', fmt(half));
   setText('val-profit-ido-net', '₪' + fmt(half - n(cp.debt_ido)));
@@ -1044,32 +1044,44 @@ function syncCounterSliders() {
   });
 }
 
-/* מד ניצול הכסף הנזיל (page-control) —
-   הנדרש למשיכה = הרווח המוצג (מחושב לפי הסליידרים, או ערך ידני).
-   המד משווה אותו לכסף הנזיל בלבד. */
-function updateUtilizationMeter(liquid, profit, cKeep, bKeep) {
+/* מד בטיחות המשיכה (page-control) —
+   Counter מלא (100%) + BadBeat × האחוז שנבחר בסליידר = כיסוי נדרש.
+   המשיכה הנבחרת = הרווח המוצג (מחושב או ידני). תצוגה בלבד. */
+function updateUtilizationMeter(liquid, profit, counterFull, bbFull) {
   const meter = document.getElementById('pd-meter');
   if (!meter) return;
+  const bbPct = getBBPercent();
+  const bbCover = bbFull * bbPct / 100;
+  const cover = counterFull + bbCover;
+  const maxW = Math.max(0, liquid - cover);
+  const after = liquid - profit;
+  const margin = after - cover;
+  const baseGap = Math.max(0, cover - liquid);
   setText('pd-meter-required', fmt(profit));
+  setText('pd-meter-max', fmt(maxW));
   setText('pd-mn-liquid', fmt(liquid));
+  setText('pd-mn-counter', fmt(counterFull));
+  setText('pd-mn-bbfull', fmt(bbFull));
+  setText('pd-mn-bbpct', fmt(bbPct));
+  setText('pd-mn-bb', fmt(bbCover));
+  setText('pd-mn-cover', fmt(cover));
+  setText('pd-mn-max', fmt(maxW));
   setText('pd-mn-profit', fmt(profit));
-  setText('pd-mn-counter', fmt(cKeep));
-  setText('pd-mn-bb', fmt(bKeep));
-  const remain = liquid - profit;
-  setText('pd-mn-remain', fmt(remain));
+  setText('pd-mn-remain', fmt(after));
+  setText('pd-mn-margin', (margin < 0 ? '−' : '') + fmt(Math.abs(margin)));
+  const gapRow = document.getElementById('pd-mn-basegap');
+  if (gapRow) gapRow.hidden = baseGap <= 0;
+  setText('pd-mn-basegap-val', fmt(baseGap));
   const remLabel = document.getElementById('pd-meter-remain-label');
-  if (remLabel) remLabel.textContent = remain >= 0 ? 'נשאר' : 'חסר';
-  setText('pd-meter-remain-val', fmt(Math.abs(remain)));
-  const pctEl = document.getElementById('pd-meter-pct');
+  if (remLabel) remLabel.textContent = margin >= 0 ? 'יתרת ביטחון' : 'חוסר בכיסוי';
+  setText('pd-meter-remain-val', fmt(Math.abs(margin)));
   const fill = document.getElementById('pd-meter-fill');
   meter.classList.remove('is-low', 'is-high', 'is-over', 'is-empty');
-  if (liquid > 0) {
-    const pct = profit / liquid * 100;
-    if (pctEl) pctEl.textContent = (Math.round(pct * 10) / 10) + '%';
-    if (fill) fill.style.width = Math.min(100, Math.max(0, pct)) + '%';
-    meter.classList.add(pct > 100 ? 'is-over' : pct >= 90 ? 'is-high' : 'is-low');
+  if (liquid > 0 || cover > 0) {
+    const ratio = cover > 0 ? Math.min(100, Math.max(0, after / cover * 100)) : 100;
+    if (fill) fill.style.width = ratio + '%';
+    meter.classList.add(margin < 0 ? 'is-over' : (cover > 0 && margin < cover * 0.2) ? 'is-high' : 'is-low');
   } else {
-    if (pctEl) pctEl.textContent = '—';
     if (fill) fill.style.width = '0%';
     meter.classList.add('is-empty');
   }

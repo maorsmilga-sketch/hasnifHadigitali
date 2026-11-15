@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261114b">
-<link rel="stylesheet" href="management.css?v=20261115a">
+<link rel="stylesheet" href="management.css?v=20261115b">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -424,23 +424,31 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
 
           <div class="pd-meter is-empty" id="pd-meter">
             <div class="pd-meter-head">
-              <span class="pd-meter-title">ניצול הכסף הנזיל
+              <span class="pd-meter-title">בטיחות המשיכה
                 <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-meter-note')">i</span>
               </span>
-              <span class="pd-meter-rem"><span id="pd-meter-remain-label">נשאר</span>: <b>₪<span id="pd-meter-remain-val">—</span></b></span>
+              <span class="pd-meter-rem"><span id="pd-meter-remain-label">יתרת ביטחון</span>: <b>₪<span id="pd-meter-remain-val">—</span></b></span>
             </div>
             <div class="pd-meter-bar" aria-hidden="true"><div class="pd-meter-fill" id="pd-meter-fill"></div></div>
             <div class="pd-meter-foot">
-              <span class="pd-meter-req">למשיכה: <b>₪<span id="pd-meter-required">—</span></b></span>
-              <b class="pd-meter-pct" id="pd-meter-pct">—</b>
+              <span class="pd-meter-req">משיכה אפשרית: <b>₪<span id="pd-meter-max">—</span></b></span>
+              <span class="pd-meter-req">משיכה נבחרת: <b>₪<span id="pd-meter-required">—</span></b></span>
             </div>
             <div class="pd-meter-note stat-note" id="pd-meter-note" hidden>
               <span class="pd-meter-note-row">כסף נזיל <b>₪<span id="pd-mn-liquid">—</span></b></span>
-              <span class="pd-meter-note-row">רווח למשיכה <b>₪<span id="pd-mn-profit">—</span></b></span>
-              <span class="pd-meter-note-row">קאונטר נשאר <b>₪<span id="pd-mn-counter">—</span></b></span>
-              <span class="pd-meter-note-row">BadBeat נשאר <b>₪<span id="pd-mn-bb">—</span></b></span>
-              <span class="pd-meter-note-row">המד משווה למזומן בלבד — קאונטר ו-BadBeat שנשארו במועדון נשארים התחייבות</span>
-              <span class="pd-meter-note-row">יתרה לאחר המשיכה <b>₪<span id="pd-mn-remain">—</span></b></span>
+              <span class="pd-meter-note-row">Counter מלא (100%) <b>₪<span id="pd-mn-counter">—</span></b></span>
+              <span class="pd-meter-note-row">BadBeat מלא <b>₪<span id="pd-mn-bbfull">—</span></b></span>
+              <span class="pd-meter-note-row"><span>BadBeat לכיסוי (<span id="pd-mn-bbpct">—</span>%)</span> <b>₪<span id="pd-mn-bb">—</span></b></span>
+              <span class="pd-meter-note-row">כיסוי נדרש = Counter + BadBeat לכיסוי <b>₪<span id="pd-mn-cover">—</span></b></span>
+              <span class="pd-meter-note-row">משיכה אפשרית = MAX(0, נזיל − כיסוי) <b>₪<span id="pd-mn-max">—</span></b></span>
+              <span class="pd-meter-note-row">משיכה נבחרת (רווח למשיכה) <b>₪<span id="pd-mn-profit">—</span></b></span>
+              <span class="pd-meter-note-row">נזיל לאחר משיכה <b>₪<span id="pd-mn-remain">—</span></b></span>
+              <span class="pd-meter-note-row">יתרת ביטחון = נזיל לאחר משיכה − כיסוי <b dir="ltr">₪<span id="pd-mn-margin">—</span></b></span>
+              <span class="pd-meter-note-row pd-mn-block" id="pd-mn-basegap" hidden>גם ללא משיכה חסרים <b>₪<span id="pd-mn-basegap-val">—</span></b> לכיסוי</span>
+              <span class="pd-meter-note-row pd-mn-block">ירוק: נשאר עודף של לפחות 20% מהכיסוי הנדרש</span>
+              <span class="pd-meter-note-row pd-mn-block">כתום: הכיסוי מלא, אך היתרה נמוכה מ־20% מהכיסוי</span>
+              <span class="pd-meter-note-row pd-mn-block">אדום: אין מספיק כסף לכיסוי אחרי המשיכה</span>
+              <span class="pd-meter-note-row pd-mn-block">המד משתמש תמיד ב־100% מהקאונטר ובאחוז ה־BadBeat שנבחר בסליידר.</span>
             </div>
           </div>
 
@@ -1601,7 +1609,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261114j"></script>
+<script src="app.js?v=20261115b"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
