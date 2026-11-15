@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261114b">
-<link rel="stylesheet" href="management.css?v=20261114n">
+<link rel="stylesheet" href="management.css?v=20261115a">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
 <style>
@@ -427,12 +427,12 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
               <span class="pd-meter-title">ניצול הכסף הנזיל
                 <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-meter-note')">i</span>
               </span>
-              <b class="pd-meter-pct" id="pd-meter-pct">—</b>
+              <span class="pd-meter-rem"><span id="pd-meter-remain-label">נשאר</span>: <b>₪<span id="pd-meter-remain-val">—</span></b></span>
             </div>
             <div class="pd-meter-bar" aria-hidden="true"><div class="pd-meter-fill" id="pd-meter-fill"></div></div>
             <div class="pd-meter-foot">
               <span class="pd-meter-req">למשיכה: <b>₪<span id="pd-meter-required">—</span></b></span>
-              <span class="pd-meter-rem"><span id="pd-meter-remain-label">נשאר</span>: <b>₪<span id="pd-meter-remain-val">—</span></b></span>
+              <b class="pd-meter-pct" id="pd-meter-pct">—</b>
             </div>
             <div class="pd-meter-note stat-note" id="pd-meter-note" hidden>
               <span class="pd-meter-note-row">כסף נזיל <b>₪<span id="pd-mn-liquid">—</span></b></span>

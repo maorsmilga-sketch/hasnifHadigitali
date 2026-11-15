@@ -2518,13 +2518,15 @@ body:has(#management-section[style*="block"]) #notification {
 
 /* --- מד ניצול הכסף הנזיל --- */
 .pd-meter {
-  position: relative; display: flex; flex-direction: column; gap: 8px;
+  position: relative; z-index: 60; display: flex; flex-direction: column; gap: 8px;
   background: rgba(10,10,26,.45); border: 1px solid rgba(167,139,250,.35);
   border-radius: 14px; padding: 12px 14px;
 }
 .pd-meter-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .pd-meter-title { font-size: 13.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-.pd-meter-pct { font-size: 22px; font-weight: 800; direction: ltr; }
+.pd-meter-pct { font-size: 13.5px; font-weight: 800; direction: ltr; }
+/* שונה לבקשת המשתמש 15.11: הסכום שנשאר בראש המד במקום האחוז; טרם פורסם */
+.pd-meter-head .pd-meter-rem { font-size: 22px; font-weight: 800; }
 .pd-meter-bar {
   height: 12px; border-radius: 999px; overflow: hidden;
   background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.06);
@@ -2545,6 +2547,8 @@ body:has(#management-section[style*="block"]) #notification {
 .pd-meter.is-low .pd-meter-rem, .pd-meter.is-low .pd-meter-rem b,
 .pd-meter.is-high .pd-meter-rem, .pd-meter.is-high .pd-meter-rem b { color: #7dffc8; }
 .pd-meter.is-empty .pd-meter-pct { color: rgba(255,255,255,.5); }
+/* ההערה הצפה של המד נפתחת מעל הכרטיסים שאחריו: backdrop-filter על pd-scenario ועל הכרטיסים יוצר stacking contexts */
+.pd-scenario:has(.pd-meter) { position: relative; z-index: 60; }
 /* פירוט המד מאחורי ⓘ — שכבה צפה, לא דוחפת גובה */
 .pd-meter-note {
   position: absolute; top: calc(100% + 4px); right: 0; left: 0; z-index: 70;
@@ -2597,7 +2601,7 @@ body:has(#management-section[style*="block"]) #notification {
 .pd-ticks { font-size: 9.5px; margin-top: -2px; }
 .pd-meter { padding: 10px 12px; gap: 6px; }
 .pd-meter-title { font-size: 12.5px; }
-.pd-meter-pct { font-size: 20px; }
+.pd-meter-head .pd-meter-rem { font-size: 20px; }
 .pd-meter-bar { height: 10px; }
 .pd-meter-foot { font-size: 11.5px; }
 .pd-mini-stats .pd-card { min-height: 0; padding: 10px 8px; }
