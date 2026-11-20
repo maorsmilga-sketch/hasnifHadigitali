@@ -3643,3 +3643,6 @@ body:has(#management-section[style*="block"]) #notification {
 #management-section #page-funds .fm-category:has(.fm-cat-maor) {border-color:#4d7fb3!important;}
 #management-section #page-funds .fm-category:has(.fm-cat-ido) {border-color:#b89a55!important;}
 #management-section #page-funds .fm-category:has(.fm-cat-branch) {border-color:#8896a8!important;}
+
+/* סכום קטן ליד אחוז הסליידר (תרחישים) */
+#page-control .pd-slider-amt { font-size: 12px; font-weight: 400; color: #8cb9d2; white-space: nowrap; }

@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261114b">
-<link rel="stylesheet" href="management.css?v=20261120-funds-calm1">
+<link rel="stylesheet" href="management.css?v=20261121-slideramt1">
 <link rel="stylesheet" href="event-expenses.css?v=20261115a">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
@@ -405,6 +405,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
                 <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-bb-note')">i</span>
               </span>
               <span class="pd-slider-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3C9 7 5.5 9.5 5.5 13a4.2 4.2 0 0 0 6.5 3.4c-.3 1.6-.9 2.8-1.5 3.6h3c-.6-.8-1.2-2-1.5-3.6a4.2 4.2 0 0 0 6.5-3.4C18.5 9.5 15 7 12 3z"/></svg></span>
+              <span class="pd-slider-amt" id="pd-bb-amt" dir="ltr"></span>
               <b class="pd-badge" id="pd-bb-percent-val">100%</b>
             </div>
             <input type="range" class="pd-range pd-range-bb" id="pd-bb-percent" min="0" max="100" step="1"
@@ -419,6 +420,7 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
                 <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-remain-note')">i</span>
               </span>
               <span class="pd-slider-icon pd-icon-counter"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 4v2.5M12 17.5V20M4 12h2.5M17.5 12H20M6.3 6.3l1.8 1.8M15.9 15.9l1.8 1.8M17.7 6.3l-1.8 1.8M8.1 15.9l-1.8 1.8"/></svg></span>
+              <span class="pd-slider-amt" id="pd-remain-amt" dir="ltr"></span>
               <b class="pd-badge" id="pd-remain-pct-val">100%</b>
             </div>
             <input type="range" class="pd-range pd-range-counter" id="pd-remain-pct" min="0" max="100" step="1"
@@ -1617,7 +1619,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261115c"></script>
+<script src="app.js?v=20261121-slideramt1"></script>
 <script src="event-expenses.js?v=20261115b"></script>
 <script>
 if ('serviceWorker' in navigator) {

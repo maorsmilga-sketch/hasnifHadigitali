@@ -633,6 +633,18 @@ function syncDashBBSlider() {
     const l = document.getElementById(id);
     if (l) l.textContent = Math.round(pct) + '%';
   });
+  updateSliderAmounts();
+}
+
+// סכום קטן ליד אחוז הסליידר (תצוגה בלבד, מסך תרחישים): אותו חישוב כמו counterKeepIls / bbKeepIls
+function updateSliderAmounts() {
+  const cp = currentPeriod || {};
+  const set = (id, chips, pct) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '₪' + fmt(Math.round(chipsToIls(n(chips) * pct / 100)));
+  };
+  set('pd-bb-amt', cp.badbeat, getBBPercent());
+  set('pd-remain-amt', cp.counter, remainCounterPct);
 }
 
 // ============================================================
@@ -1045,6 +1057,7 @@ function syncCounterSliders() {
     const l = document.getElementById(id);
     if (l) l.textContent = Math.round(remainCounterPct) + '%';
   });
+  updateSliderAmounts();
 }
 
 /* מד בטיחות המשיכה (page-control) —
