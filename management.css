@@ -3623,3 +3623,23 @@ body:has(#management-section[style*="block"]) #notification {
   color: #e9edf3;
   text-shadow: none;
 }
+
+/* ============================================================
+   הזנת כספים — עיצוב רגוע מאושר (2026-11-20): שכבת צבע בלבד.
+   מילויים ניטרליים, מסגרות קטגוריה עדינות בצבעי הקבוצות, בלי זוהר.
+   אין שינוי במבנה, מידות, לוגיקה, חישובים או נתונים.
+   ============================================================ */
+#management-section:has(#page-funds.active)::before,#management-section:has(#page-funds.active) #main-content {background:#0f151e;}
+#management-section #page-funds .fm-card,#management-section #page-funds .fm-category,#management-section #page-funds .fm-cell,#management-section #page-funds .fm-extra-wrap,#management-section #page-funds .fm-sticky-footer {background:#0f151e!important;border-color:#3b4c60!important;box-shadow:none!important;}
+#management-section #page-funds * {text-shadow:none!important;}
+#management-section #page-funds .fm-cat-label,#management-section #page-funds .fm-label-chip,#management-section #page-funds .fm-label-badbeat,#management-section #page-funds .fm-footer-val,#management-section #page-funds .fm-chips-total .counter-value {color:#e9edf3!important;}
+#management-section #page-funds .fm-cell::after {background:none!important;box-shadow:none!important;opacity:0!important;}
+#management-section #page-funds .fm-head-chip,#management-section #page-funds .fm-extra-title-side {color:#61c8e5!important;background:#173848!important;border-color:#3b4c60!important;box-shadow:none!important;}
+#management-section #page-funds .fm-head-ico {color:#61c8e5!important;}
+#management-section #page-funds .fm-g-bit {border-color:#2fa3b5!important;}
+#management-section #page-funds .fm-g-paybox {border-color:#407ec0!important;}
+#management-section #page-funds .fm-g-chips,#management-section #page-funds .fm-g-control {border-color:#9869b8!important;}
+#management-section #page-funds .fm-g-cash {border-color:#37a181!important;}
+#management-section #page-funds .fm-category:has(.fm-cat-maor) {border-color:#4d7fb3!important;}
+#management-section #page-funds .fm-category:has(.fm-cat-ido) {border-color:#b89a55!important;}
+#management-section #page-funds .fm-category:has(.fm-cat-branch) {border-color:#8896a8!important;}
