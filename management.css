@@ -3646,3 +3646,4 @@ body:has(#management-section[style*="block"]) #notification {
 
 /* סכום קטן ליד אחוז הסליידר (תרחישים) */
 #page-control .pd-slider-amt { font-size: 12px; font-weight: 400; color: #8cb9d2; white-space: nowrap; }
+@media (max-width: 340px) { #page-control .pd-slider-amt { font-size: 10.5px; letter-spacing: -.2px; } #page-control .pd-slider-head { gap: 4px; } }
