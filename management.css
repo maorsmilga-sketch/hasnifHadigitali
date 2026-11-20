@@ -3597,3 +3597,29 @@ body:has(#management-section[style*="block"]) #notification {
 #management-section:has(#page-control.active) #topbar button,
 #management-section:has(#page-control.active) .user-badge { background: #0f151e; border-color: #3b4c60; color: #e9edf3; box-shadow: none; }
 #management-section:has(#page-control.active) .btn-logout-top { filter: grayscale(1); }
+
+/* Approved calm home menu palette, 2026-11-20. Paint only. */
+#management-section:has(#home-grid:not([hidden]))::before {
+  background: #0f151e;
+}
+#management-section #home-grid .app-icon,
+#management-section #home-grid .app-icon:hover,
+#management-section #home-grid .app-icon:active {
+  background: #0f151e;
+  border-color: #3b4c60;
+  box-shadow: none;
+}
+#management-section #home-grid .app-icon::before,
+#management-section #home-grid .app-icon::after {
+  background: none;
+  box-shadow: none;
+  opacity: 0;
+}
+#management-section #home-grid .app-icon-3d {
+  filter: none;
+}
+#management-section #home-grid .app-icon-label,
+#management-section #home-grid .app-icon-label .letter-emph {
+  color: #e9edf3;
+  text-shadow: none;
+}
