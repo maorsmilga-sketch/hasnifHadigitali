@@ -102,9 +102,34 @@ window.EventExpenses = (() => {
   function interestView() {
     const paid=interest.filter(r=>r.paid), paidTotal=paid.reduce((v,r)=>v+Math.round(Number(r.amount_ils)*100),0)/100;
     const r=receiptEditing || {amount_ils:50,paid:false,method:null};
-    return `<section class="ev-panel"><div class="ev-inline-heading"><h2>מתעניינים ותשלומים</h2><span class="ev-badge">לתיעוד בלבד</span></div><div class="ev-interest-stats"><div><b>${interest.length}</b><span>מתעניינים</span></div><div><b>${paid.length}</b><span>שילמו</span></div><div><b dir="ltr">${money(paidTotal)}</b><span>התקבל</span></div></div><p class="ev-note">הרישום אינו משפיע על יתרות, חובות, רווח או התקזזות. התעניינות אינה אישור השתתפות.</p><div class="ev-method-totals">${Object.entries(methods).map(([v,l])=>`<span>${l} <b dir="ltr">${money(paid.filter(x=>x.method===v).reduce((s,x)=>s+Math.round(Number(x.amount_ils)*100),0)/100)}</b></span>`).join('')}</div></section>
+    return `<section class="ev-panel"><div class="ev-inline-heading"><h2>מתעניינים ותשלומים</h2><span class="ev-badge">לתיעוד בלבד</span></div><div class="ev-interest-stats"><div><b>${interest.length}</b><span>מתעניינים</span></div><div><b>${paid.length}</b><span>שילמו</span></div><div><b dir="ltr">${money(paidTotal)}</b><span>התקבל</span></div></div><button class="ev-button" type="button" data-ev-action onclick="EventExpenses.shareSummary()">שיתוף סיכום</button><p class="ev-note">הרישום אינו משפיע על יתרות, חובות, רווח או התקזזות. התעניינות אינה אישור השתתפות.</p><div class="ev-method-totals">${Object.entries(methods).map(([v,l])=>`<span>${l} <b dir="ltr">${money(paid.filter(x=>x.method===v).reduce((s,x)=>s+Math.round(Number(x.amount_ils)*100),0)/100)}</b></span>`).join('')}</div></section>
       <div class="ev-rows">${interest.map(x=>`<article class="ev-row"><div><strong>${esc(x.player_name)}</strong><p class="${x.paid?'ev-paid':'ev-unpaid'}">${x.paid?'שולם · '+methods[x.method]:'לא שולם'}</p></div><div class="ev-row-end"><b dir="ltr">${money(x.amount_ils)}</b>${!selected.archived?`<div><button class="ev-link" data-ev-action onclick="EventExpenses.editInterest('${x.id}')">ערוך</button><button class="ev-link danger" data-ev-action onclick="EventExpenses.deleteInterest('${x.id}')">הסר</button></div>`:''}</div></article>`).join('')||'<div class="ev-panel ev-empty">לא נוספו מתעניינים עדיין</div>'}</div>
       ${!selected.archived?`<section class="ev-panel" id="ev-interest-editor"><h2>${receiptEditing?'עריכת רישום':'הוסף מתעניין'}</h2><form id="ev-interest-form" onsubmit="event.preventDefault();EventExpenses.saveInterest()"><label>שחקן<div class="player-ac-wrap" id="ev-player-wrap"><input class="player-ac-input" placeholder="חפש ברשימת השחקנים…" autocomplete="off" value="${esc(receiptEditing?.player_name||'')}" ${receiptEditing?'disabled':''}><input type="hidden" id="ev-player" value="${receiptEditing?.player_id||''}"><ul class="player-ac-list"></ul></div></label><div class="ev-two"><label>סכום (₪)<input id="ev-receipt-amount" type="number" inputmode="decimal" min="0.01" max="999999999999.99" step="0.01" value="${r.amount_ils}" required oninput="EventExpenses.receiptChanged()"></label><label>מצב תשלום<select id="ev-paid" onchange="EventExpenses.receiptChanged()"><option value="false" ${!r.paid?'selected':''}>לא שולם</option><option value="true" ${r.paid?'selected':''}>שולם</option></select></label></div><label id="ev-method-label" ${!r.paid?'hidden':''}>אופן תשלום<select id="ev-method" onchange="EventExpenses.receiptChanged()"><option value="">בחר אופן תשלום</option>${Object.entries(methods).map(([v,l])=>`<option value="${v}" ${r.method===v?'selected':''}>${l}</option>`).join('')}</select></label><button class="ev-button primary" data-ev-action type="submit">${receiptEditing?'שמור שינויים':'＋ הוסף לרשימה'}</button>${receiptEditing?'<button class="ev-button" type="button" onclick="EventExpenses.cancelEditor()">סיים עריכה</button>':''}<div class="ev-inline-status" role="status"></div></form></section>`:''}`;
+  }
+  function buildInterestSummary() {
+    const paid=interest.filter(r=>r.paid), unpaid=interest.filter(r=>!r.paid);
+    const paidTotal=paid.reduce((sum,r)=>sum+Math.round(Number(r.amount_ils)*100),0)/100;
+    const lines=[`סיכום מתעניינים ותשלומים — ${selected.name}`,
+      `תאריך: ${fmtDate(selected.event_date)}`,
+      ...(selected.location?[`מיקום: ${selected.location}`]:[]),
+      '',`שילמו (${paid.length}):`];
+    paid.forEach(r=>lines.push(`• ${r.player_name} — ${money(r.amount_ils)} · ${methods[r.method]||'אופן תשלום לא צוין'}`));
+    if(!paid.length)lines.push('עדיין אין תשלומים');
+    lines.push('',`מתעניינים שטרם שילמו (${unpaid.length}):`);
+    unpaid.forEach(r=>lines.push(`• ${r.player_name}`));
+    if(!unpaid.length)lines.push('אין מתעניינים שטרם שילמו');
+    lines.push('',`סה״כ מתעניינים: ${interest.length}`,`סה״כ שילמו: ${paid.length}`,`סה״כ התקבל: ${money(paidTotal)}`);
+    return lines.join('\n');
+  }
+  async function shareSummary() {
+    if(!selected||blocked())return;
+    const text=buildInterestSummary();
+    if(typeof navigator.share==='function') {
+      try { await navigator.share({text});return; }
+      catch(e) { if(e?.name==='AbortError')return; }
+    }
+    // Same manual recipient chooser as attendance management. Never sends automatically.
+    window.location.href='https://wa.me/?text='+encodeURIComponent(text);
   }
   async function open(id) {
     const seq=++loadSeq;
@@ -222,5 +247,5 @@ window.EventExpenses = (() => {
   document.addEventListener('click',e=>{if(!el('page-event-expenses')?.classList.contains('active'))return;if((dirty||busy)&&e.target.closest('#home-btn, .btn-logout-top, #tab-contacts, #tab-management')){e.preventDefault();e.stopImmediatePropagation();blocked();}},true);
   function reset(){archive=false;tab='expenses';retrySave=null;++loadSeq;clearTimeout(timer);events=[];items=[];interest=[];selected=null;editing=null;receiptEditing=null;dirty=false;busy=false;ready=false;error='';el('page-event-expenses')?.replaceChildren();}
   window.addEventListener('beforeunload',e=>{if(dirty||busy){e.preventDefault();e.returnValue='';}});
-  return {open,select,create,back,switchTab,filter,saveMeta,saveItem,itemChanged,editItem,deleteItem,saveInterest,receiptChanged,editInterest,deleteInterest,setArchive,cancelEditor,reset,totals};
+  return {open,select,create,back,switchTab,filter,saveMeta,saveItem,itemChanged,editItem,deleteItem,saveInterest,receiptChanged,editInterest,deleteInterest,setArchive,cancelEditor,reset,totals,shareSummary};
 })();
