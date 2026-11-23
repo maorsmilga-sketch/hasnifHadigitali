@@ -67,10 +67,11 @@
 #page-event-expenses .ev-settlement p{font-size:19px;font-weight:700;margin:7px 0;color:#e0fff5}
 #page-event-expenses .ev-settlement strong{display:block;font-size:33px;color:#80f1cc;margin:8px 0 13px}
 #page-event-expenses .ev-settlement small{display:block;font-size:11px;color:#a2c7c8;line-height:1.6}
-#page-event-expenses .ev-interest-stats{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:8px;margin:18px 0}
-#page-event-expenses .ev-interest-stats div{border:1px solid #ffffff10;border-radius:12px;padding:12px 6px;text-align:center;background:#080f23}
-#page-event-expenses .ev-interest-stats b{display:block;font-size:21px;color:#d6c7ff}
-#page-event-expenses .ev-interest-stats span{display:block;font-size:11px;color:var(--ev-muted);margin-top:6px}
+#page-event-expenses .ev-interest-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:18px 0}
+#page-event-expenses .ev-interest-stats div{min-width:0;aspect-ratio:1;container-type:inline-size;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #ffffff10;border-radius:12px;padding:6px 2px;text-align:center;background:#080f23}
+#page-event-expenses .ev-interest-stats b{display:block;font-size:clamp(15px,30cqw,21px);line-height:1.25;color:#d6c7ff;white-space:nowrap;font-variant-numeric:tabular-nums}
+#page-event-expenses .ev-interest-stats .ev-received{font-size:clamp(8px,calc(145cqw / var(--ev-value-length)),21px)}
+#page-event-expenses .ev-interest-stats span{display:block;font-size:clamp(9px,18cqw,11px);white-space:nowrap;color:var(--ev-muted);margin-top:6px}
 #page-event-expenses .ev-method-totals{display:flex;flex-wrap:wrap;gap:12px;border-top:1px solid #ffffff12;padding-top:13px;margin-top:13px;font-size:11px;color:#b7c0db}
 #page-event-expenses .ev-method-totals b{display:inline-block;margin-inline-start:4px;color:#e0d9ff}
 #page-event-expenses .ev-row .ev-paid{color:#80ddbb}
