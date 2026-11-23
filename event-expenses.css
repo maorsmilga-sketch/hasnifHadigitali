@@ -81,3 +81,6 @@
 @media(max-width:360px){#page-event-expenses .ev-panel{padding:14px}#page-event-expenses .ev-two{gap:8px}#page-event-expenses h1{font-size:24px}#page-event-expenses .ev-heading{gap:5px}#page-event-expenses .ev-badge{font-size:10px;padding:5px 7px}#page-event-expenses .ev-grand{font-size:30px}#page-event-expenses .ev-payer-totals b{font-size:14px}}
 
 #page-event-expenses .ev-inline-status{color:#80ddbb;font-size:12px;line-height:1.7;margin-top:8px;overflow-wrap:anywhere}#page-event-expenses .ev-inline-status.ev-error{color:#ffb9b9}
+
+#page-event-expenses .ev-not-attending{display:table;font-size:12px;font-weight:600;color:#c4cada;border:1px solid #c4cada40;border-radius:7px;padding:3px 8px;margin-top:7px;background:#ffffff06}
+#page-event-expenses .ev-attendance-toggle{font:inherit;font-size:12px;min-height:38px;padding:5px 9px;border:1px solid #ffffff25;border-radius:8px;background:transparent;color:#c4afff;cursor:pointer;margin-top:2px}
