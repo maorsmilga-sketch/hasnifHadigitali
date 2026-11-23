@@ -85,3 +85,13 @@
 
 #page-event-expenses .ev-not-attending{display:table;font-size:12px;font-weight:600;color:#c4cada;border:1px solid #c4cada40;border-radius:7px;padding:3px 8px;margin-top:7px;background:#ffffff06}
 #page-event-expenses .ev-attendance-toggle{font:inherit;font-size:12px;min-height:38px;padding:5px 9px;border:1px solid #ffffff25;border-radius:8px;background:transparent;color:#c4afff;cursor:pointer;margin-top:2px}
+
+/* A quiet, distinct accent for each event, shared by its list card and details frame. */
+#page-event-expenses .ev-event-card[style],
+#page-event-expenses .ev-event-details {
+  border-color: hsl(var(--ev-event-hue) 56% 65% / .65);
+}
+#page-event-expenses .ev-event-card[style] .ev-event-symbol {
+  color: hsl(var(--ev-event-hue) 70% 77%);
+  text-shadow: none;
+}

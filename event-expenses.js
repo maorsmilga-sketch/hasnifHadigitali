@@ -67,11 +67,17 @@ window.EventExpenses = (() => {
       <div class="ev-two"><label>תאריך האירוע<input id="ev-new-date" type="date" required></label><label>מיקום<input id="ev-new-location" maxlength="300" placeholder="מיקום האירוע"></label></div>
       <button class="ev-button primary" data-ev-action type="submit">＋ צור אירוע</button></form></section>
       <div class="ev-section-title">${archive?'אירועים בארכיון':'האירועים הפעילים'} <span>${shown.length}</span></div>
-      <div class="ev-event-list">${shown.map(e=>`<button class="ev-event-card" onclick="EventExpenses.select('${e.id}')"><span class="ev-event-symbol">◈</span><span><strong>${esc(e.name)}</strong><small>${esc(fmtDate(e.event_date))}${e.location?' · '+esc(e.location):''}</small></span><span aria-hidden="true">‹</span></button>`).join('')||'<div class="ev-panel ev-empty">אין אירועים ברשימה הזו</div>'}</div>`;
+      <div class="ev-event-list">${shown.map(e=>`<button class="ev-event-card" style="${eventAccent(e)}" onclick="EventExpenses.select('${e.id}')"><span class="ev-event-symbol">◈</span><span><strong>${esc(e.name)}</strong><small>${esc(fmtDate(e.event_date))}${e.location?' · '+esc(e.location):''}</small></span><span aria-hidden="true">‹</span></button>`).join('')||'<div class="ev-panel ev-empty">אין אירועים ברשימה הזו</div>'}</div>`;
+  }
+  // Presentation only. Creation order keeps colors stable when dates or archive state change.
+  function eventAccent(event) {
+    const ordered = [...events].sort((a,b) => String(a.created_at || '').localeCompare(String(b.created_at || '')) || String(a.id).localeCompare(String(b.id)));
+    const index = Math.max(0, ordered.findIndex(e => e.id === event.id));
+    return `--ev-event-hue:${(215 + index * 67) % 360}`;
   }
   function detail() {
     const s=selected, readonly=(s.archived||editing||receiptEditing)?'disabled':'';
-    return `<section class="ev-panel"><div class="ev-inline-heading"><h2>פרטי האירוע</h2><button class="ev-link" data-ev-action onclick="EventExpenses.setArchive()">${s.archived?'החזר לפעילים':'העבר לארכיון'}</button></div>
+    return `<section class="ev-panel ev-event-details" style="${eventAccent(s)}"><div class="ev-inline-heading"><h2>פרטי האירוע</h2><button class="ev-link" data-ev-action onclick="EventExpenses.setArchive()">${s.archived?'החזר לפעילים':'העבר לארכיון'}</button></div>
       <form id="ev-meta" onsubmit="event.preventDefault();EventExpenses.saveMeta()"><label>שם האירוע<input id="ev-name" value="${esc(s.name)}" maxlength="160" required ${readonly}></label>
       <div class="ev-two"><label>תאריך האירוע<input type="date" id="ev-date" value="${esc(s.event_date)}" required ${readonly}></label><label>מיקום<input id="ev-location" value="${esc(s.location)}" maxlength="300" ${readonly}></label></div></form>
       ${s.archived?'<p class="ev-note">האירוע נשמר לצפייה. אפשר להחזיר אותו לפעילים ללא רישום הוצאות מחדש.</p>':''}</section>
