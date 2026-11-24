@@ -250,8 +250,8 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
               <span class="stat-value"><span class="currency">₪</span><span id="val-remain-liquid">—</span></span>
               <span class="stat-sub" id="val-remain-liquid-sub"></span>
               <span class="remain-slider">
-                <span class="remain-slider-head"><span class="stat-note-i" role="button" aria-label="הסבר" onclick="toggleStatNote(event,'remain-counter-note')">i</span><span class="remain-slider-value" id="remain-counter-pct-val">100%</span></span>
-                <span class="stat-sub stat-note remain-note" id="remain-counter-note" hidden>כמה מהקאונטר להשאיר במועדון</span>
+                <span class="remain-slider-head"><span class="stat-note-i" role="button" aria-label="הסבר" onclick="event.stopPropagation(); document.getElementById('remain-info-dialog').showModal()">i</span><span class="remain-slider-value" id="remain-counter-pct-val">100%</span></span>
+                
                 <input type="range" class="remain-slider-input" id="remain-counter-pct" min="0" max="100" step="1" value="100" aria-label="כמה מהקאונטר להשאיר במועדון" oninput="onRemainCounterSliderInput()" onchange="onRemainCounterSliderChange()">
               </span>
             </div>
@@ -1626,5 +1626,14 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 </script>
+<dialog id="remain-info-dialog" aria-labelledby="remain-info-title" onclick="if(event.target===this)this.close()"><h2 id="remain-info-title">נזיל שיישאר בקופה</h2><p>אחוז גבוה יותר בסליידר משאיר יותר כסף בקופה ופחות לחלוקה לשותפים. אחוז נמוך יותר עושה להפך. זה חישוב בלבד, לא העברת כסף.</p><form method="dialog"><button type="submit">סגירה</button></form></dialog>
+<style>
+#remain-info-dialog{box-sizing:border-box;width:calc(100% - 32px);max-width:390px;max-height:85dvh;overflow:auto;margin:auto;padding:22px 20px 18px;border:1px solid rgba(155,151,200,.3);border-radius:20px;background:#161b25;color:#e8e9f0;font-family:Heebo,sans-serif;text-align:right;box-shadow:0 16px 48px rgba(0,0,0,.35)}
+#remain-info-dialog::backdrop{background:rgba(5,8,15,.72)}
+#remain-info-dialog h2{font-size:18px;margin:0 0 16px;color:#eeedf7}
+#remain-info-dialog p{font-size:13px;line-height:1.65;margin:0 0 14px}
+#remain-info-dialog form{margin:18px 0 0}
+#remain-info-dialog button{display:block;width:100%;border:1px solid rgba(139,124,255,.45);border-radius:10px;background:rgba(108,99,255,.15);color:#eeedf7;padding:10px;font:500 14px Heebo,sans-serif;cursor:pointer}
+</style>
 </body>
 </html>
