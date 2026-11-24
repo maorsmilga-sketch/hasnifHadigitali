@@ -125,12 +125,16 @@ window.EventExpenses = (() => {
       `תאריך: ${fmtDate(selected.event_date)}`,
       ...(selected.location?[`מיקום: ${selected.location}`]:[]),
       '',`שילמו (${paid.length}):`];
-    paid.forEach(r=>lines.push(`• ${dispName(r)} — ${money(r.amount_ils)} · ${methods[r.method]||'אופן תשלום לא צוין'}`));
+    paid.forEach(r=>lines.push(`• ${dispName(r)}${r.not_attending?' (לא מגיע)':''} — ${money(r.amount_ils)} · ${methods[r.method]||'אופן תשלום לא צוין'}`));
     if(!paid.length)lines.push('עדיין אין תשלומים');
     lines.push('',`מתעניינים שטרם שילמו (${unpaid.length}):`);
-    unpaid.forEach(r=>lines.push(`• ${dispName(r)}`));
+    unpaid.forEach(r=>lines.push(`• ${dispName(r)}${r.not_attending?' (לא מגיע)':''}`));
     if(!unpaid.length)lines.push('אין מתעניינים שטרם שילמו');
-    lines.push('',`סה״כ מתעניינים: ${interest.length}`,`סה״כ שילמו: ${paid.length}`,`סה״כ התקבל: ${money(paidTotal)}`);
+    const notAtt=interest.filter(r=>r.not_attending);
+    lines.push('',`לא מגיעים (${notAtt.length}):`);
+    notAtt.forEach(r=>lines.push(`• ${dispName(r)}`));
+    if(!notAtt.length)lines.push('אין מי שסומן כלא מגיע');
+    lines.push('',`סה״כ מתעניינים: ${interest.length}`,`סה״כ לא מגיעים: ${notAtt.length}`,`סה״כ שילמו: ${paid.length}`,`סה״כ התקבל: ${money(paidTotal)}`);
     return lines.join('\n');
   }
   async function shareSummary() {
@@ -269,3 +273,4 @@ window.EventExpenses = (() => {
   window.addEventListener('beforeunload',e=>{if(dirty||busy){e.preventDefault();e.returnValue='';}});
   return {toggleAttendance,open,select,create,back,switchTab,filter,saveMeta,saveItem,itemChanged,editItem,deleteItem,saveInterest,receiptChanged,editInterest,deleteInterest,setArchive,cancelEditor,reset,totals,shareSummary};
 })();
+
