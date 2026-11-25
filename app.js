@@ -947,7 +947,9 @@ function onCounterBlur() {
 // — BadBeat —
 // אחוז ה-BadBeat בחישוב הרווח. נשמר ב-current_period.bb_keep_percent ונטען מחדש בכל כניסה
 // (אושר ע"י מאור 14.11); עמודה ריקה (null) = ברירת המחדל 100%, וגם בתחילת כל תקופה חדשה.
-let bbSliderPct = 100;
+const BB_DEFAULT_PCT = 35;
+let bbSliderPct = BB_DEFAULT_PCT;
+let bbSliderInitDone = false;
 function getBBPercent() {
   return bbSliderPct;
 }
@@ -956,7 +958,9 @@ function sliderPersistReady() {
   return !!(currentPeriod && Object.prototype.hasOwnProperty.call(currentPeriod, 'bb_keep_percent'));
 }
 function initSliderPercentsFromPeriod(cp) {
-  bbSliderPct      = (cp && cp.bb_keep_percent != null)      ? Math.min(100, Math.max(0, n(cp.bb_keep_percent)))      : 100;
+  // BadBeat: בכל פתיחת אפליקציה מתחיל ב-35% (הערך השמור לא נטען). רק בטעינה הראשונה —
+  // טעינות חוזרות של הדשבורד לא דורסות הזזה של הסליידר באמצע שימוש.
+  if (!bbSliderInitDone) { bbSliderPct = BB_DEFAULT_PCT; bbSliderInitDone = true; }
   remainCounterPct = (cp && cp.counter_keep_percent != null) ? Math.min(100, Math.max(0, n(cp.counter_keep_percent))) : 100;
 }
 async function persistSliderPercents() {
