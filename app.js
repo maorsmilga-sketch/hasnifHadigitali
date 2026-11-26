@@ -645,6 +645,8 @@ function updateSliderAmounts() {
   };
   set('pd-bb-amt', cp.badbeat, getBBPercent());
   set('pd-remain-amt', cp.counter, remainCounterPct);
+  const selEl = document.getElementById('pd-val-sel');
+  if (selEl) selEl.textContent = fmt(Math.round(chipsToIls(n(cp.badbeat) * getBBPercent() / 100 + n(cp.counter) * remainCounterPct / 100)));
 }
 
 // ============================================================

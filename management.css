@@ -3647,3 +3647,24 @@ body:has(#management-section[style*="block"]) #notification {
 /* סכום קטן ליד אחוז הסליידר (תרחישים) */
 #page-control .pd-slider-amt { font-size: 12px; font-weight: 400; color: #8cb9d2; white-space: nowrap; }
 @media (max-width: 340px) { #page-control .pd-slider-amt { font-size: 10.5px; letter-spacing: -.2px; } #page-control .pd-slider-head { gap: 4px; } }
+
+/* מסך תרחישים 26.11.26: כרטיס 'נבחר' (Counter+BadBeat לפי הסליידרים) במקום בקרת גבייה; בקרת גבייה עברה לשורה התחתונה, סגור תקופה הוקטן */
+#page-control .pd-c-sel { background: #0f151e; border-color: #3b4c60; box-shadow: none; }
+#page-control .pd-c-sel .pd-card-icon { color: #61c8e5; }
+#page-control .pd-c-sel .pd-card-value { color: #e9edf3; text-shadow: none; }
+#page-control .pd-actions { gap: 6px; }
+#page-control .pd-actions .pd-c-leumi { flex: 1; min-width: 0; }
+#page-control .pd-actions .pd-c-rake { flex: 1.15; min-width: 0; min-height: 52px; padding: 6px 4px; background: #0f151e; border-color: #3b4c60; box-shadow: none; }
+#page-control .pd-actions .pd-c-rake .pd-card-value { font-size: 15px; color: #e9edf3; text-shadow: none; }
+#page-control .pd-actions .pd-c-rake .pd-card-label { font-size: 10.5px; }
+#page-control .pd-actions .pd-c-rake .pd-card-icon { display: none; }
+#page-control .pd-actions .pd-c-rake .pd-card-sub { font-size: 9px; line-height: 1.25; }
+#page-control .pd-actions .pd-act-close { flex: .75; min-width: 0; padding: 6px 4px; font-size: 12.5px; gap: 3px; flex-direction: column; justify-content: center; }
+#page-control .pd-actions .pd-act-close svg { width: 16px; height: 16px; }
+#page-control .pd-actions .pd-c-leumi .pd-card-icon svg { width: 16px; height: 16px; }
+#page-control .pd-actions .pd-c-leumi .pd-card-label { font-size: 10.5px; }
+#page-control .pd-actions .pd-c-leumi .pd-card-value { font-size: 15px; }
+#page-control .pd-c-sel .pd-card-head { gap: 4px; flex-wrap: nowrap; }
+#page-control .pd-c-sel .pd-card-icon { display: none; }
+#page-control .pd-c-sel .pd-card-label { font-size: 10px; white-space: nowrap; letter-spacing: -.1px; }
+#page-control .pd-c-sel .pd-sel-title { unicode-bidi: isolate; direction: ltr; }

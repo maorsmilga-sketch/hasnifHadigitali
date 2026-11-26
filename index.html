@@ -18,7 +18,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <link rel="stylesheet" href="style.css?v=20261114b">
-<link rel="stylesheet" href="management.css?v=20261121-slideramt2">
+<link rel="stylesheet" href="management.css?v=20261126-sel2">
 <link rel="stylesheet" href="event-expenses.css?v=20261123c">
 <link rel="stylesheet" href="landing.css?v=20261001a">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
@@ -364,11 +364,13 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
               <span class="pd-card-value"><span class="currency">₪</span><span id="pd-val-badbeat-full-ils">—</span></span>
               <span class="pd-card-note stat-note" id="pd-note-badbeat" hidden></span>
             </button>
-            <button type="button" class="pd-card pd-c-rake" id="pd-rake-mini" hidden onclick="openDashStatDetail('extra-summary')">
-              <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><path d="M7 20v-6M12 20V6M17 20v-9"/></svg></span>
-              <span class="pd-card-label">בקרת גבייה</span></span>
-              <span class="pd-card-value"><span id="pd-ctrl-rake">—</span></span>
-              <span class="pd-card-sub">רווח <span id="pd-ctrl-profit">—</span> · פער <span id="pd-ctrl-gap">—</span></span>
+            <button type="button" class="pd-card pd-c-sel">
+              <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>
+              <span class="pd-card-label"><bdi dir="ltr" class="pd-sel-title">%BadBeat+Counter</bdi>
+                <span class="stat-note-i" role="button" aria-label="הסבר" aria-expanded="false" onclick="toggleStatNote(event,'pd-note-sel')">i</span>
+              </span></span>
+              <span class="pd-card-value"><span class="currency">₪</span><span id="pd-val-sel">—</span></span>
+              <span class="pd-card-note stat-note" id="pd-note-sel" hidden>Counter + BadBeat לפי האחוזים שנבחרו בשני הסליידרים. תצוגה בלבד</span>
             </button>
           </div>
         </div>
@@ -480,6 +482,12 @@ button.settlement-team-card { appearance:none; -webkit-appearance:none; font-fam
             <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 12 4l9 5.5"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3.5 20.5h17"/></svg></span>
             <span class="pd-card-label">יתרה בלאומי</span></span>
             <span class="pd-card-value"><span class="currency">₪</span><span id="val-bank-leumi">—</span></span>
+          </button>
+          <button type="button" class="pd-card pd-c-rake" id="pd-rake-mini" hidden onclick="openDashStatDetail('extra-summary')">
+            <span class="pd-card-head"><span class="pd-card-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><path d="M7 20v-6M12 20V6M17 20v-9"/></svg></span>
+            <span class="pd-card-label">בקרת גבייה</span></span>
+            <span class="pd-card-value"><span id="pd-ctrl-rake">—</span></span>
+            <span class="pd-card-sub">רווח <span id="pd-ctrl-profit">—</span> · פער <span id="pd-ctrl-gap">—</span></span>
           </button>
           <button type="button" class="pd-act-close" onclick="navigate('settlement')"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4"/><path d="M5 4.5c4-2 8 2 13 0v9c-5 2-9-2-13 0"/></svg> סגור תקופה</button>
         </div>
@@ -1619,7 +1627,7 @@ function showManagementSection() {
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js?v=20261001a"></script>
-<script src="app.js?v=20261125-bb35"></script>
+<script src="app.js?v=20261126-sel"></script>
 <script src="event-expenses.js?v=20261124a"></script>
 <script>
 if ('serviceWorker' in navigator) {
